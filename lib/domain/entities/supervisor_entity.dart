@@ -47,5 +47,26 @@ class SupervisorEntity {
   String toString() {
     return 'SupervisorEntity(id: $id, userId: $userId, department: $department, position: $position, phone: $phone, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
-}
 
+  SupervisorEntity copyWith({
+    String? id,
+    String? userId,
+    String? department,
+    String? position,
+    String? specialization,
+    String? phone,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return SupervisorEntity(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      department: department ?? this.department,
+      position: position ?? this.position,
+      specialization: specialization ?? this.specialization,
+      phone: phone ?? this.phone,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+}

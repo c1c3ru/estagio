@@ -266,6 +266,10 @@ class AppModule extends Module {
           updateContractUsecase: i(),
           deleteContractUsecase: i(),
           registerAuthUserUsecase: i(),
+          getAllSupervisorsUsecase: i(),
+          createSupervisorUsecase: i(),
+          updateSupervisorUsecase: i(),
+          deleteSupervisorUsecase: i(),
         ));
 
     i.addLazySingleton<TimeLogBloc>(() => TimeLogBloc(

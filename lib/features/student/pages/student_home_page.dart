@@ -8,6 +8,11 @@ import '../../../features/auth/bloc/auth_bloc.dart';
 import '../../../features/auth/bloc/auth_event.dart';
 import '../../../features/auth/bloc/auth_state.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import '../../../features/shared/bloc/contract_bloc.dart';
+import '../../../domain/entities/contract_entity.dart';
+import '../../../core/enums/contract_status.dart';
+import '../../../domain/usecases/supervisor/get_all_supervisors_usecase.dart';
+import '../../../domain/entities/supervisor_entity.dart';
 
 class StudentHomePage extends StatefulWidget {
   const StudentHomePage({super.key});
@@ -199,6 +204,59 @@ class _StudentHomePageState extends State<StudentHomePage> {
                         ),
                         const SizedBox(height: 16),
 
+                        // Após o card de progresso do estágio
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Card(
+                                color: AppColors.primary.withOpacity(0.08),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Column(
+                                    children: [
+                                      const Icon(Icons.calendar_view_week,
+                                          color: AppColors.primary),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                          '${state.timeStats.hoursThisWeek.toStringAsFixed(1)} h',
+                                          style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold)),
+                                      const SizedBox(height: 2),
+                                      const Text('Esta semana',
+                                          style: TextStyle(fontSize: 12)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Card(
+                                color: AppColors.success.withOpacity(0.08),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Column(
+                                    children: [
+                                      const Icon(Icons.calendar_month,
+                                          color: AppColors.success),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                          '${state.timeStats.hoursThisMonth.toStringAsFixed(1)} h',
+                                          style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold)),
+                                      const SizedBox(height: 2),
+                                      const Text('Este mês',
+                                          style: TextStyle(fontSize: 12)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
                         // Card com estatísticas de tempo
                         Card(
                           child: Padding(
@@ -232,6 +290,32 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                   ),
                               ],
                             ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Card para criar novo contrato
+                        Card(
+                          color: AppColors.primary.withOpacity(0.08),
+                          child: ListTile(
+                            leading: const Icon(Icons.add_box,
+                                color: AppColors.primary, size: 36),
+                            title: const Text('Novo Contrato',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: const Text(
+                                'Clique para cadastrar um novo contrato'),
+                            onTap: () async {
+                              await showDialog(
+                                context: context,
+                                builder: (context) => _NovoContratoDialog(
+                                    studentId: state.student.id),
+                              );
+                              // Após fechar o modal, recarrega os dados
+                              BlocProvider.of<StudentBloc>(context).add(
+                                LoadStudentDashboardDataEvent(
+                                    userId: state.student.id),
+                              );
+                            },
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -364,6 +448,218 @@ class _StudentHomePageState extends State<StudentHomePage> {
               label: 'Perfil',
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NovoContratoDialog extends StatefulWidget {
+  final String studentId;
+  const _NovoContratoDialog({required this.studentId});
+
+  @override
+  State<_NovoContratoDialog> createState() => _NovoContratoDialogState();
+}
+
+class _NovoContratoDialogState extends State<_NovoContratoDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _companyController = TextEditingController();
+  final _positionController = TextEditingController();
+  final _totalHoursController = TextEditingController();
+  final _weeklyHoursController = TextEditingController();
+  DateTime? _startDate;
+  DateTime? _endDate;
+  bool _loading = false;
+
+  List<SupervisorEntity> _supervisores = [];
+  SupervisorEntity? _supervisorSelecionado;
+  bool _loadingSupervisores = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _buscarSupervisores();
+  }
+
+  Future<void> _buscarSupervisores() async {
+    setState(() => _loadingSupervisores = true);
+    final usecase = Modular.get<GetAllSupervisorsUsecase>();
+    final result = await usecase();
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Erro ao buscar supervisores: ${failure.message}'),
+              backgroundColor: Colors.red),
+        );
+        setState(() => _supervisores = []);
+      },
+      (list) => setState(() => _supervisores = list),
+    );
+    setState(() => _loadingSupervisores = false);
+  }
+
+  @override
+  void dispose() {
+    _companyController.dispose();
+    _positionController.dispose();
+    _totalHoursController.dispose();
+    _weeklyHoursController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate() ||
+        _startDate == null ||
+        _endDate == null ||
+        _supervisorSelecionado == null) return;
+    setState(() => _loading = true);
+    try {
+      final contract = ContractEntity(
+        id: '',
+        studentId: widget.studentId,
+        supervisorId: _supervisorSelecionado!.id,
+        company: _companyController.text.trim(),
+        position: _positionController.text.trim(),
+        startDate: _startDate!,
+        endDate: _endDate!,
+        totalHoursRequired: double.tryParse(_totalHoursController.text) ?? 0,
+        weeklyHoursTarget: double.tryParse(_weeklyHoursController.text) ?? 0,
+        status: ContractStatus.pending,
+        createdAt: DateTime.now(),
+        updatedAt: null,
+      );
+      final bloc = BlocProvider.of<ContractBloc>(context);
+      bloc.add(ContractCreateRequested(contract: contract));
+      await for (final state in bloc.stream) {
+        if (state is ContractCreateSuccess) {
+          if (!mounted) return;
+          Navigator.of(context).pop();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Contrato criado com sucesso!'),
+                backgroundColor: Colors.green),
+          );
+          break;
+        } else if (state is ContractInsertError) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text('Erro ao criar contrato: ${state.message}'),
+                backgroundColor: Colors.red),
+          );
+          break;
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Erro ao criar contrato: $e'),
+            backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Novo Contrato'),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_loadingSupervisores)
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: CircularProgressIndicator(),
+                )
+              else
+                DropdownButtonFormField<SupervisorEntity>(
+                  value: _supervisorSelecionado,
+                  items: _supervisores
+                      .map((s) => DropdownMenuItem(
+                            value: s,
+                            child: Text('${s.position} - ${s.id}'),
+                          ))
+                      .toList(),
+                  onChanged: (s) => setState(() => _supervisorSelecionado = s),
+                  decoration: const InputDecoration(labelText: 'Supervisor'),
+                  validator: (v) => v == null ? 'Obrigatório' : null,
+                ),
+              TextFormField(
+                controller: _companyController,
+                decoration: const InputDecoration(labelText: 'Empresa'),
+                validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
+              ),
+              TextFormField(
+                controller: _positionController,
+                decoration: const InputDecoration(labelText: 'Cargo'),
+                validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                        );
+                        if (picked != null) setState(() => _startDate = picked);
+                      },
+                      child: Text(_startDate == null
+                          ? 'Data Início'
+                          : 'Início: ${_startDate!.toLocal().toString().split(' ')[0]}'),
+                    ),
+                  ),
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                        );
+                        if (picked != null) setState(() => _endDate = picked);
+                      },
+                      child: Text(_endDate == null
+                          ? 'Data Fim'
+                          : 'Fim: ${_endDate!.toLocal().toString().split(' ')[0]}'),
+                    ),
+                  ),
+                ],
+              ),
+              TextFormField(
+                controller: _totalHoursController,
+                decoration: const InputDecoration(labelText: 'Horas Totais'),
+                keyboardType: TextInputType.number,
+                validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
+              ),
+              TextFormField(
+                controller: _weeklyHoursController,
+                decoration:
+                    const InputDecoration(labelText: 'Meta Semanal (horas)'),
+                keyboardType: TextInputType.number,
+                validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
+              ),
+              const SizedBox(height: 16),
+              if (_loading)
+                const CircularProgressIndicator()
+              else
+                ElevatedButton(
+                  onPressed: _submit,
+                  child: const Text('Salvar'),
+                ),
+            ],
+          ),
         ),
       ),
     );

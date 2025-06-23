@@ -10,10 +10,14 @@ import '../../../../domain/entities/student_entity.dart';
 
 class StudentListWidget extends StatelessWidget {
   final List<StudentEntity> students;
+  final void Function(StudentEntity student)? onEdit;
+  final void Function(StudentEntity student)? onDelete;
 
   const StudentListWidget({
     super.key,
     required this.students,
+    this.onEdit,
+    this.onDelete,
   });
 
   Color _getStatusColor(StudentStatus status, BuildContext context) {
@@ -175,8 +179,25 @@ class StudentListWidget extends StatelessWidget {
                 ),
               ],
             ),
-            trailing: Icon(Icons.arrow_forward_ios_rounded,
-                size: 16, color: theme.hintColor),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (onEdit != null)
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.blueGrey),
+                    tooltip: 'Editar',
+                    onPressed: () => onEdit!(student),
+                  ),
+                if (onDelete != null)
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.redAccent),
+                    tooltip: 'Remover',
+                    onPressed: () => onDelete!(student),
+                  ),
+                Icon(Icons.arrow_forward_ios_rounded,
+                    size: 16, color: theme.hintColor),
+              ],
+            ),
             onTap: () {
               // Navegar para a página de detalhes do estudante
               Modular.to.pushNamed('/supervisor/student-details/${student.id}');

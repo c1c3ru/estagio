@@ -24,6 +24,10 @@ import '../../../../domain/usecases/supervisor/get_student_details_for_superviso
 import '../../../../domain/usecases/supervisor/create_student_by_supervisor_usecase.dart';
 import '../../../../domain/usecases/supervisor/update_student_by_supervisor_usecase.dart';
 import '../../../../domain/usecases/supervisor/delete_student_by_supervisor_usecase.dart';
+import '../../../../domain/usecases/supervisor/get_all_supervisors_usecase.dart';
+import '../../../../domain/usecases/supervisor/create_supervisor_usecase.dart';
+import '../../../../domain/usecases/supervisor/update_supervisor_usecase.dart';
+import '../../../../domain/usecases/supervisor/delete_supervisor_usecase.dart';
 // import '../../../../domain/usecases/supervisor/get_all_time_logs_for_supervisor_usecase.dart';
 // import '../../../../domain/usecases/supervisor/approve_or_reject_time_log_usecase.dart';
 
@@ -54,6 +58,10 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
   final UpdateContractUsecase _updateContractUsecase;
   final DeleteContractUsecase _deleteContractUsecase;
   final RegisterUsecase _registerAuthUserUsecase;
+  final GetAllSupervisorsUsecase _getAllSupervisorsUsecase;
+  final CreateSupervisorUsecase _createSupervisorUsecase;
+  final UpdateSupervisorUsecase _updateSupervisorUsecase;
+  final DeleteSupervisorUsecase _deleteSupervisorUsecase;
 
   SupervisorBloc({
     required GetSupervisorDetailsUsecase getSupervisorDetailsUsecase,
@@ -72,6 +80,10 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
     required UpdateContractUsecase updateContractUsecase,
     required DeleteContractUsecase deleteContractUsecase,
     required RegisterUsecase registerAuthUserUsecase,
+    required GetAllSupervisorsUsecase getAllSupervisorsUsecase,
+    required CreateSupervisorUsecase createSupervisorUsecase,
+    required UpdateSupervisorUsecase updateSupervisorUsecase,
+    required DeleteSupervisorUsecase deleteSupervisorUsecase,
   })  : _getSupervisorDetailsUsecase = getSupervisorDetailsUsecase,
         _getAllStudentsForSupervisorUsecase =
             getAllStudentsForSupervisorUsecase,
@@ -88,6 +100,10 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
         _updateContractUsecase = updateContractUsecase,
         _deleteContractUsecase = deleteContractUsecase,
         _registerAuthUserUsecase = registerAuthUserUsecase,
+        _getAllSupervisorsUsecase = getAllSupervisorsUsecase,
+        _createSupervisorUsecase = createSupervisorUsecase,
+        _updateSupervisorUsecase = updateSupervisorUsecase,
+        _deleteSupervisorUsecase = deleteSupervisorUsecase,
         super(const SupervisorInitial()) {
     on<LoadSupervisorDashboardDataEvent>(_onLoadSupervisorDashboardData);
     on<FilterStudentsEvent>(_onFilterStudents);
@@ -102,6 +118,10 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
     on<CreateContractBySupervisorEvent>(_onCreateContractBySupervisor);
     on<UpdateContractBySupervisorEvent>(_onUpdateContractBySupervisor);
     on<ToggleDashboardViewEvent>(_onToggleDashboardView);
+    on<LoadAllSupervisorsEvent>(_onLoadAllSupervisors);
+    on<CreateSupervisorEvent>(_onCreateSupervisor);
+    on<UpdateSupervisorEvent>(_onUpdateSupervisor);
+    on<DeleteSupervisorEvent>(_onDeleteSupervisor);
   }
 
   Future<void> _onLoadSupervisorDashboardData(
@@ -450,5 +470,65 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
           entity: updatedContract));
       add(LoadSupervisorDashboardDataEvent());
     });
+  }
+
+  Future<void> _onLoadAllSupervisors(
+    LoadAllSupervisorsEvent event,
+    Emitter<SupervisorState> emit,
+  ) async {
+    emit(const SupervisorLoading(loadingMessage: 'Carregando supervisores...'));
+    final result = await _getAllSupervisorsUsecase();
+    result.fold(
+      (failure) => emit(SupervisorOperationFailure(message: failure.message)),
+      (supervisors) =>
+          emit(SupervisorListLoadSuccess(supervisors: supervisors)),
+    );
+  }
+
+  Future<void> _onCreateSupervisor(
+    CreateSupervisorEvent event,
+    Emitter<SupervisorState> emit,
+  ) async {
+    emit(const SupervisorLoading(loadingMessage: 'Criando supervisor...'));
+    final result = await _createSupervisorUsecase(event.supervisor);
+    result.fold(
+      (failure) => emit(SupervisorOperationFailure(message: failure.message)),
+      (supervisor) {
+        emit(const SupervisorOperationSuccess(
+            message: 'Supervisor criado com sucesso!'));
+        add(LoadAllSupervisorsEvent());
+      },
+    );
+  }
+
+  Future<void> _onUpdateSupervisor(
+    UpdateSupervisorEvent event,
+    Emitter<SupervisorState> emit,
+  ) async {
+    emit(const SupervisorLoading(loadingMessage: 'Atualizando supervisor...'));
+    final result = await _updateSupervisorUsecase(event.supervisor);
+    result.fold(
+      (failure) => emit(SupervisorOperationFailure(message: failure.message)),
+      (supervisor) {
+        emit(const SupervisorOperationSuccess(
+            message: 'Supervisor atualizado com sucesso!'));
+        add(LoadAllSupervisorsEvent());
+      },
+    );
+  }
+
+  Future<void> _onDeleteSupervisor(
+    DeleteSupervisorEvent event,
+    Emitter<SupervisorState> emit,
+  ) async {
+    emit(const SupervisorLoading(loadingMessage: 'Removendo supervisor...'));
+    try {
+      await _deleteSupervisorUsecase(event.supervisorId);
+      emit(const SupervisorOperationSuccess(
+          message: 'Supervisor removido com sucesso!'));
+      add(LoadAllSupervisorsEvent());
+    } catch (e) {
+      emit(SupervisorOperationFailure(message: e.toString()));
+    }
   }
 }

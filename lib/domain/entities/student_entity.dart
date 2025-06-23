@@ -107,7 +107,7 @@ class StudentEntity extends UserEntity {
       fullName: fullName ?? this.fullName,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
-      role: role ?? this.role,
+      role: role ?? UserRole.student,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -127,7 +127,7 @@ class StudentEntity extends UserEntity {
       contractStartDate: contractStartDate ?? this.contractStartDate,
       contractEndDate: contractEndDate ?? this.contractEndDate,
       isOnTrack: isOnTrack ?? this.isOnTrack,
-      status: status ?? this.status,
+      status: status ?? StudentStatus.pending,
     );
   }
 

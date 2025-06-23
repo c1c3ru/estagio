@@ -209,3 +209,10 @@ class AuthLoadingState extends SupervisorState {
   @override
   List<Object?> get props => [message];
 }
+
+class SupervisorListLoadSuccess extends SupervisorState {
+  final List<SupervisorEntity> supervisors;
+  const SupervisorListLoadSuccess({required this.supervisors});
+  @override
+  List<Object?> get props => [supervisors];
+}

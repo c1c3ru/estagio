@@ -9,6 +9,10 @@ import '../../auth/bloc/auth_state.dart';
 import '../bloc/supervisor_bloc.dart';
 import '../bloc/supervisor_event.dart';
 import '../bloc/supervisor_state.dart';
+import '../widgets/student_list_widget.dart';
+import '../widgets/student_form_dialog.dart';
+import '../../../domain/entities/filter_students_params.dart';
+import '../../../core/enums/student_status.dart';
 
 class SupervisorHomePage extends StatefulWidget {
   const SupervisorHomePage({super.key});
@@ -55,236 +59,322 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
             ),
           ],
         ),
-        body: BlocBuilder<SupervisorBloc, SupervisorState>(
-          builder: (context, state) {
+        body: BlocListener<SupervisorBloc, SupervisorState>(
+          listener: (context, state) {
             if (state is SupervisorLoading) {
-              return const Center(child: CircularProgressIndicator());
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) =>
+                    const Center(child: CircularProgressIndicator()),
+              );
+            } else {
+              Navigator.of(context, rootNavigator: true)
+                  .popUntil((route) => route.isFirst);
             }
+            if (state is SupervisorOperationSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.message)),
+              );
+            }
+            if (state is SupervisorOperationFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content: Text(state.message), backgroundColor: Colors.red),
+              );
+            }
+          },
+          child: BlocBuilder<SupervisorBloc, SupervisorState>(
+            builder: (context, state) {
+              if (state is SupervisorLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-            if (state is SupervisorDashboardLoadSuccess) {
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Welcome Card
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const CircleAvatar(
-                                  radius: 30,
-                                  backgroundColor: AppColors.primary,
-                                  child: Icon(
-                                    Icons.supervisor_account,
-                                    color: AppColors.white,
-                                    size: 30,
+              if (state is SupervisorDashboardLoadSuccess) {
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Welcome Card
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const CircleAvatar(
+                                    radius: 30,
+                                    backgroundColor: AppColors.primary,
+                                    child: Icon(
+                                      Icons.supervisor_account,
+                                      color: AppColors.white,
+                                      size: 30,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'Bem-vindo, Supervisor!',
-                                        style: AppTextStyles.h6,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Dashboard Ativo',
-                                        style:
-                                            AppTextStyles.bodyMedium.copyWith(
-                                          color: AppColors.textSecondary,
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Bem-vindo, Supervisor!',
+                                          style: AppTextStyles.h6,
                                         ),
-                                      ),
-                                    ],
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Dashboard Ativo',
+                                          style:
+                                              AppTextStyles.bodyMedium.copyWith(
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Statistics Cards
+                      const Text(
+                        'Estatísticas de Contratos',
+                        style: AppTextStyles.h6,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _StatCard(
+                              title: 'Total',
+                              value: '${state.contracts.length}',
+                              icon: Icons.description,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _StatCard(
+                              title: 'Ativos',
+                              value:
+                                  '${state.contracts.where((c) => c.endDate.isAfter(DateTime.now())).length}',
+                              icon: Icons.check_circle_outline,
+                              color: AppColors.success,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _StatCard(
+                              title: 'A vencer (30d)',
+                              value: '${state.stats.expiringContractsSoon}',
+                              icon: Icons.warning_amber_rounded,
+                              color: AppColors.warning,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _StatCard(
+                              title: 'Encerrados',
+                              value:
+                                  '${state.contracts.where((c) => c.endDate.isBefore(DateTime.now())).length}',
+                              icon: Icons.cancel_outlined,
+                              color: AppColors.error,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Quick Actions
+                      const Text(
+                        'Ações Rápidas',
+                        style: AppTextStyles.h6,
+                      ),
+                      const SizedBox(height: 12),
+                      Card(
+                        child: Column(
+                          children: [
+                            ListTile(
+                              leading: const CircleAvatar(
+                                backgroundColor: AppColors.primaryLight,
+                                child: Icon(
+                                  Icons.people,
+                                  color: AppColors.primary,
                                 ),
-                              ],
+                              ),
+                              title: const Text('Gerenciar Estudantes'),
+                              subtitle:
+                                  const Text('Visualizar e editar estudantes'),
+                              trailing: const Icon(Icons.arrow_forward_ios),
+                              onTap: () {
+                                // Navegar para lista de estudantes
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Funcionalidade em desenvolvimento'),
+                                    backgroundColor: AppColors.warning,
+                                  ),
+                                );
+                              },
+                            ),
+                            const Divider(),
+                            ListTile(
+                              leading: const CircleAvatar(
+                                backgroundColor: AppColors.secondaryLight,
+                                child: Icon(
+                                  Icons.access_time,
+                                  color: AppColors.secondary,
+                                ),
+                              ),
+                              title: const Text('Aprovar Horas'),
+                              subtitle: Text(
+                                  '${state.pendingApprovals.length} registos pendentes'),
+                              trailing: const Icon(Icons.arrow_forward_ios),
+                              onTap: () {
+                                Modular.to
+                                    .pushNamed('/supervisor/time-approval');
+                              },
+                            ),
+                            const Divider(),
+                            ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor:
+                                    AppColors.warning.withOpacity(0.2),
+                                child: const Icon(
+                                  Icons.description,
+                                  color: AppColors.warning,
+                                ),
+                              ),
+                              title: const Text('Contratos'),
+                              subtitle: Text(
+                                  '${state.contracts.length} contratos ativos'),
+                              trailing: const Icon(Icons.arrow_forward_ios),
+                              onTap: () {
+                                // Navegar para contratos
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Funcionalidade em desenvolvimento'),
+                                    backgroundColor: AppColors.warning,
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Statistics Cards
-                    const Text(
-                      'Estatísticas',
-                      style: AppTextStyles.h6,
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _StatCard(
-                            title: 'Estudantes',
-                            value: '${state.stats.totalStudents}',
-                            icon: Icons.people,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _StatCard(
-                            title: 'Ativos',
-                            value: '${state.stats.activeStudents}',
-                            icon: Icons.access_time,
-                            color: AppColors.success,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _StatCard(
-                            title: 'Contratos',
-                            value: '${state.contracts.length}',
-                            icon: Icons.description,
-                            color: AppColors.warning,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _StatCard(
-                            title: 'Pendentes',
-                            value: '${state.pendingApprovals.length}',
-                            icon: Icons.pending,
-                            color: AppColors.error,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Quick Actions
-                    const Text(
-                      'Ações Rápidas',
-                      style: AppTextStyles.h6,
-                    ),
-                    const SizedBox(height: 12),
-                    Card(
-                      child: Column(
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          ListTile(
-                            leading: const CircleAvatar(
-                              backgroundColor: AppColors.primaryLight,
-                              child: Icon(
-                                Icons.people,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                            title: const Text('Gerenciar Estudantes'),
-                            subtitle:
-                                const Text('Visualizar e editar estudantes'),
-                            trailing: const Icon(Icons.arrow_forward_ios),
-                            onTap: () {
-                              // Navegar para lista de estudantes
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content:
-                                      Text('Funcionalidade em desenvolvimento'),
-                                  backgroundColor: AppColors.warning,
-                                ),
-                              );
-                            },
-                          ),
-                          const Divider(),
-                          ListTile(
-                            leading: const CircleAvatar(
-                              backgroundColor: AppColors.secondaryLight,
-                              child: Icon(
-                                Icons.access_time,
-                                color: AppColors.secondary,
-                              ),
-                            ),
-                            title: const Text('Aprovar Horas'),
-                            subtitle: Text(
-                                '${state.pendingApprovals.length} registos pendentes'),
-                            trailing: const Icon(Icons.arrow_forward_ios),
-                            onTap: () {
-                              Modular.to.pushNamed('/supervisor/time-approval');
-                            },
-                          ),
-                          const Divider(),
-                          ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor:
-                                  AppColors.warning.withOpacity(0.2),
-                              child: const Icon(
-                                Icons.description,
-                                color: AppColors.warning,
-                              ),
-                            ),
-                            title: const Text('Contratos'),
-                            subtitle: Text(
-                                '${state.contracts.length} contratos ativos'),
-                            trailing: const Icon(Icons.arrow_forward_ios),
-                            onTap: () {
-                              // Navegar para contratos
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content:
-                                      Text('Funcionalidade em desenvolvimento'),
-                                  backgroundColor: AppColors.warning,
+                          const Text('Estudantes', style: AppTextStyles.h6),
+                          IconButton(
+                            icon: const Icon(Icons.filter_alt_outlined),
+                            tooltip: 'Filtrar',
+                            onPressed: () async {
+                              await showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                builder: (context) => _StudentFilterSheet(
+                                  onApply: (params) {
+                                    BlocProvider.of<SupervisorBloc>(context)
+                                        .add(FilterStudentsEvent(
+                                            params: params));
+                                  },
                                 ),
                               );
                             },
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            if (state is SupervisorOperationFailure) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      size: 64,
-                      color: AppColors.error,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Erro ao carregar dados',
-                      style: AppTextStyles.h6.copyWith(color: AppColors.error),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      state.message,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
+                      const SizedBox(height: 12),
+                      StudentListWidget(
+                        students: state.students,
+                        onEdit: (student) async {
+                          await showDialog(
+                            context: context,
+                            builder: (context) => StudentFormDialog(
+                              isEdit: true,
+                              initialStudent: student,
+                              onSubmit: (editedStudent, _, __) {
+                                BlocProvider.of<SupervisorBloc>(context).add(
+                                  UpdateStudentBySupervisorEvent(
+                                      studentData: editedStudent),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                        onDelete: (student) async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Remover estudante'),
+                              content: Text(
+                                  'Tem certeza que deseja remover o estudante "${student.fullName}"? Esta ação não pode ser desfeita.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
+                                  child: const Text('Cancelar'),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
+                                  child: const Text('Remover',
+                                      style: TextStyle(color: Colors.red)),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirm == true) {
+                            BlocProvider.of<SupervisorBloc>(context).add(
+                                DeleteStudentBySupervisorEvent(
+                                    studentId: student.id));
+                          }
+                        },
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        Modular.get<SupervisorBloc>()
-                            .add(LoadSupervisorDashboardDataEvent());
-                      },
-                      child: const Text('Tentar novamente'),
-                    ),
-                  ],
-                ),
-              );
-            }
+                    ],
+                  ),
+                );
+              }
 
-            return const Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
+            },
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            await showDialog(
+              context: context,
+              builder: (context) => StudentFormDialog(
+                isEdit: false,
+                onSubmit: (student, email, password) {
+                  BlocProvider.of<SupervisorBloc>(context).add(
+                    CreateStudentBySupervisorEvent(
+                      studentData: student,
+                      initialEmail: email,
+                      initialPassword: password ?? '',
+                    ),
+                  );
+                },
+              ),
+            );
           },
+          child: const Icon(Icons.add),
+          backgroundColor: AppColors.primary,
+          tooltip: 'Adicionar Estudante',
         ),
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
@@ -382,4 +472,191 @@ class _StatCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _StudentFilterSheet extends StatefulWidget {
+  final void Function(FilterStudentsParams params) onApply;
+  const _StudentFilterSheet({required this.onApply});
+
+  @override
+  State<_StudentFilterSheet> createState() => _StudentFilterSheetState();
+}
+
+class _StudentFilterSheetState extends State<_StudentFilterSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _searchController = TextEditingController();
+  StudentStatus? _selectedStatus;
+  bool? _hasActiveContract;
+  DateTime? _startDateFrom;
+  DateTime? _startDateTo;
+  DateTime? _endDateFrom;
+  DateTime? _endDateTo;
+
+  Future<void> _pickDate(BuildContext context, DateTime? initial,
+      Function(DateTime) onPicked) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) onPicked(picked);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        left: 16,
+        right: 16,
+        top: 24,
+      ),
+      child: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Filtros Avançados',
+                  style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _searchController,
+                decoration: const InputDecoration(
+                  labelText: 'Nome ou matrícula',
+                  prefixIcon: Icon(Icons.search),
+                ),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<StudentStatus?>(
+                value: _selectedStatus,
+                decoration: const InputDecoration(labelText: 'Status'),
+                items: [
+                  const DropdownMenuItem<StudentStatus?>(
+                      value: null, child: Text('Todos')),
+                  ...StudentStatus.values
+                      .map((status) => DropdownMenuItem<StudentStatus?>(
+                            value: status,
+                            child: Text(status.displayName),
+                          )),
+                ],
+                onChanged: (v) => setState(() => _selectedStatus = v),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<bool>(
+                value: _hasActiveContract,
+                decoration: const InputDecoration(labelText: 'Contrato ativo'),
+                items: const [
+                  DropdownMenuItem(value: null, child: Text('Todos')),
+                  DropdownMenuItem(value: true, child: Text('Apenas ativos')),
+                  DropdownMenuItem(
+                      value: false, child: Text('Apenas encerrados')),
+                ],
+                onChanged: (v) => setState(() => _hasActiveContract = v),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      readOnly: true,
+                      decoration: const InputDecoration(
+                          labelText: 'Início de (contrato)'),
+                      controller: TextEditingController(
+                          text: _startDateFrom != null
+                              ? _formatDate(_startDateFrom!)
+                              : ''),
+                      onTap: () => _pickDate(context, _startDateFrom,
+                          (d) => setState(() => _startDateFrom = d)),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextFormField(
+                      readOnly: true,
+                      decoration:
+                          const InputDecoration(labelText: 'Início até'),
+                      controller: TextEditingController(
+                          text: _startDateTo != null
+                              ? _formatDate(_startDateTo!)
+                              : ''),
+                      onTap: () => _pickDate(context, _startDateTo,
+                          (d) => setState(() => _startDateTo = d)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      readOnly: true,
+                      decoration:
+                          const InputDecoration(labelText: 'Término de'),
+                      controller: TextEditingController(
+                          text: _endDateFrom != null
+                              ? _formatDate(_endDateFrom!)
+                              : ''),
+                      onTap: () => _pickDate(context, _endDateFrom,
+                          (d) => setState(() => _endDateFrom = d)),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextFormField(
+                      readOnly: true,
+                      decoration:
+                          const InputDecoration(labelText: 'Término até'),
+                      controller: TextEditingController(
+                          text: _endDateTo != null
+                              ? _formatDate(_endDateTo!)
+                              : ''),
+                      onTap: () => _pickDate(context, _endDateTo,
+                          (d) => setState(() => _endDateTo = d)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Cancelar'),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () {
+                      widget.onApply(
+                        FilterStudentsParams(
+                          searchTerm: _searchController.text.isNotEmpty
+                              ? _searchController.text
+                              : null,
+                          status: _selectedStatus,
+                          hasActiveContract: _hasActiveContract,
+                          contractStartDateFrom: _startDateFrom,
+                          contractStartDateTo: _startDateTo,
+                          contractEndDateFrom: _endDateFrom,
+                          contractEndDateTo: _endDateTo,
+                        ),
+                      );
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Aplicar'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 }

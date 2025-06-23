@@ -4,6 +4,7 @@ import 'package:gestao_de_estagio/domain/entities/filter_students_params.dart';
 import '../../../core/enums/contract_status.dart';
 import '../../../domain/entities/contract_entity.dart';
 import '../../../domain/entities/student_entity.dart';
+import '../../../domain/entities/supervisor_entity.dart';
 // Importe UserRole e StudentStatus dos seus enums centrais
 
 abstract class SupervisorEvent extends Equatable {
@@ -142,3 +143,35 @@ class UpdateContractBySupervisorEvent extends SupervisorEvent {
 
 /// Evento para alternar a visualização no dashboard (ex: Lista vs Gantt).
 class ToggleDashboardViewEvent extends SupervisorEvent {}
+
+/// Evento para carregar todos os supervisores (admin).
+class LoadAllSupervisorsEvent extends SupervisorEvent {}
+
+/// Evento para criar supervisor (admin).
+class CreateSupervisorEvent extends SupervisorEvent {
+  final SupervisorEntity supervisor;
+  final String initialEmail;
+  final String initialPassword;
+  const CreateSupervisorEvent(
+      {required this.supervisor,
+      required this.initialEmail,
+      required this.initialPassword});
+  @override
+  List<Object?> get props => [supervisor, initialEmail, initialPassword];
+}
+
+/// Evento para atualizar supervisor (admin).
+class UpdateSupervisorEvent extends SupervisorEvent {
+  final SupervisorEntity supervisor;
+  const UpdateSupervisorEvent({required this.supervisor});
+  @override
+  List<Object?> get props => [supervisor];
+}
+
+/// Evento para deletar supervisor (admin).
+class DeleteSupervisorEvent extends SupervisorEvent {
+  final String supervisorId;
+  const DeleteSupervisorEvent(this.supervisorId);
+  @override
+  List<Object?> get props => [supervisorId];
+}
