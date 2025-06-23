@@ -112,9 +112,13 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 48),
                     TextFormField(
                       controller: _emailController,
+                      style: const TextStyle(color: Colors.black87),
                       decoration: const InputDecoration(
                         labelText: 'E-mail',
                         border: OutlineInputBorder(),
+                        hintText: 'E-mail',
+                        hintStyle: TextStyle(color: Colors.black45),
+                        labelStyle: TextStyle(color: Colors.black54),
                       ),
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
@@ -127,9 +131,13 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _passwordController,
+                      style: const TextStyle(color: Colors.black87),
                       decoration: InputDecoration(
                         labelText: 'Senha',
                         border: const OutlineInputBorder(),
+                        hintText: 'Senha',
+                        hintStyle: const TextStyle(color: Colors.black45),
+                        labelStyle: const TextStyle(color: Colors.black54),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
