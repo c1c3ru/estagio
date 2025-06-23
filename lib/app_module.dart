@@ -93,9 +93,11 @@ import 'core/guards/auth_guard.dart';
 // Pages
 import 'features/auth/pages/login_page.dart';
 import 'features/auth/pages/register_page.dart';
-import 'features/student/pages/student_home_page.dart';
+import 'features/auth/pages/forgot_password_page.dart';
 // Módulos
 import 'features/auth/auth_module.dart';
+import 'features/supervisor/supervisor_module.dart';
+import 'features/student/student_module.dart';
 
 class AppModule extends Module {
   final SharedPreferences? sharedPreferences;
@@ -103,9 +105,7 @@ class AppModule extends Module {
   AppModule({this.sharedPreferences});
 
   @override
-  List<Module> get imports => [
-        AuthModule(),
-      ];
+  List<Module> get imports => [];
 
   @override
   void binds(Injector i) {
@@ -117,13 +117,11 @@ class AppModule extends Module {
 
     if (sharedPreferences != null) {
       i.addInstance<SharedPreferences>(sharedPreferences!);
-      i.addLazySingleton<PreferencesManager>(
-          () => PreferencesManager(i<SharedPreferences>()));
+      i.addLazySingleton<PreferencesManager>(() => PreferencesManager(i()));
     } else {
       i.addLazySingleton<InMemoryPreferencesManager>(
           () => InMemoryPreferencesManager());
-      i.addLazySingleton<PreferencesManager>(
-          (i) => PreferencesManagerMock(i<InMemoryPreferencesManager>()));
+      i.addLazySingleton<PreferencesManager>(() => PreferencesManagerMock(i()));
     }
 
     // =====================================================================
@@ -258,10 +256,16 @@ class AppModule extends Module {
 
   @override
   void routes(RouteManager r) {
+    // Rotas do AuthModule
     r.child('/', child: (context) => const LoginPage());
     r.child('/register', child: (context) => const RegisterPage());
-    r.child('/student/home',
-        child: (context) => const StudentHomePage(),
-        guards: [Modular.get<AuthGuard>()]);
+    r.child('/auth/register', child: (context) => const RegisterPage());
+    r.child('/auth/forgot-password',
+        child: (context) => const ForgotPasswordPage());
+
+    // Rotas filhas para os módulos
+    r.module('/auth', module: AuthModule());
+    r.module('/student', module: StudentModule());
+    r.module('/supervisor', module: SupervisorModule());
   }
 }
