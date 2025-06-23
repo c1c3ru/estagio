@@ -41,7 +41,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthUnauthenticated) {
-          Navigator.of(context).pushReplacementNamed('/login');
+          // Garante que a navegação seja feita fora do build
+          Future.microtask(() => Modular.to.navigate('/login/'));
         }
       },
       child: Scaffold(
