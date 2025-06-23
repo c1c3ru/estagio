@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
 import '../bloc/supervisor_bloc.dart';
 import '../bloc/supervisor_event.dart';
 import '../bloc/supervisor_state.dart';
-import '../../../domain/entities/supervisor_entity.dart';
 import '../widgets/supervisor_form_dialog.dart';
 
 class SupervisorListPage extends StatefulWidget {
