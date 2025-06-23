@@ -47,3 +47,43 @@ app.*.map.json
 # Env files
 .env*
 **/*.env*
+
+# Arquivos de segurança e configuração
+*.key
+*.keystore
+*.jks
+*.p12
+*.pem
+google-services.json
+GoogleService-Info.plist
+key.properties
+
+# Arquivos de log e debug
+*.log.*
+debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Arquivos de cache e temporários
+.temp/
+.cache/
+.gradle/
+*.tmp
+*.bak
+*.swp
+*~.nib
+
+# Arquivos de credenciais
+credentials.json
+service-account.json
+*secret*
+*password*
+*api_key*
+
+# Arquivos de configuração local
+local.properties
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
