@@ -294,32 +294,17 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
           onTap: (index) {
             switch (index) {
               case 0: // Início
-                // Já estamos na página inicial
+                // Já estamos na página inicial, não faz nada
                 break;
               case 1: // Estudantes
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content:
-                        Text('Gerenciamento de estudantes em desenvolvimento'),
-                    backgroundColor: AppColors.warning,
-                  ),
-                );
+                Modular.to.pushNamed('/supervisor/time-approval');
                 break;
               case 2: // Relatórios
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Relatórios em desenvolvimento'),
-                    backgroundColor: AppColors.warning,
-                  ),
-                );
+                // A página de relatórios é o dashboard/home
+                Modular.to.navigate('/supervisor/');
                 break;
               case 3: // Perfil
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Perfil do supervisor em desenvolvimento'),
-                    backgroundColor: AppColors.warning,
-                  ),
-                );
+                Modular.to.pushNamed('/supervisor/profile');
                 break;
             }
           },

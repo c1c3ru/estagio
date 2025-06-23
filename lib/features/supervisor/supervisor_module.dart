@@ -6,6 +6,7 @@ import 'package:gestao_de_estagio/features/supervisor/pages/student_edit_page.da
 import 'package:gestao_de_estagio/features/supervisor/pages/supervisor_dashboard_page.dart';
 import 'package:gestao_de_estagio/features/supervisor/pages/supervisor_home_page.dart';
 import 'package:gestao_de_estagio/features/supervisor/pages/supervisor_time_approval_page.dart';
+import 'package:gestao_de_estagio/features/supervisor/pages/supervisor_profile_page.dart';
 // Para SupabaseClient
 
 // Datasources
@@ -129,6 +130,11 @@ class SupervisorModule extends Module {
     r.child(
       '/time-approval',
       child: (_) => const SupervisorTimeApprovalPage(),
+      transition: TransitionType.fadeIn,
+    );
+    r.child(
+      '/profile',
+      child: (_) => const SupervisorProfilePage(),
       transition: TransitionType.fadeIn,
     );
     r.child(
