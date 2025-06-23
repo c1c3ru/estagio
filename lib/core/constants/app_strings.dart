@@ -19,6 +19,9 @@ class AppStrings {
   static const String noData = 'Nenhum dado encontrado';
   static const String noResults = 'Nenhum resultado encontrado';
   static const String registrationSuccessful = 'Cadastro realizado com sucesso';
+  static const String close = 'Fechar';
+  static const String errorOccurred = 'Ocorreu um erro';
+  static const String tryAgain = 'Tentar novamente';
 
   // Auth
   static const String login = 'Entrar';
@@ -87,7 +90,6 @@ class AppStrings {
   static const String unauthorizedError = 'Não autorizado';
   static const String forbiddenError = 'Acesso negado';
   static const String notFoundError = 'Não encontrado';
-  static const String errorOccurred = 'Ocorreu um erro';
 
   // Additional fields
   static const String requiredField = 'Este campo é obrigatório';
@@ -97,7 +99,6 @@ class AppStrings {
   static const String siapeRegistration = 'Matrícula SIAPE';
   static const String siapeHint = 'Digite sua matrícula SIAPE';
   static const String phoneNumber = 'Telefone';
-  static const String tryAgain = 'Tentar Novamente';
   static const String totalStudents = 'Total de Estudantes';
   static const String activeStudents = 'Estudantes Ativos';
   static const String inactiveStudents = 'Estudantes Inativos';

@@ -23,14 +23,14 @@ class SupervisorRegisterPage extends StatelessWidget {
       ),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthError) {
+          if (state is AuthFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
                 backgroundColor: Theme.of(context).colorScheme.error,
               ),
             );
-          } else if (state is AuthAuthenticated) {
+          } else if (state is AuthSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text(AppStrings.registrationSuccessful),

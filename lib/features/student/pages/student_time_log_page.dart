@@ -18,6 +18,7 @@ import '../../../../domain/entities/time_log_entity.dart';
 import '../bloc/student_bloc.dart';
 import '../bloc/student_event.dart';
 import '../bloc/student_state.dart';
+import '../../../core/utils/feedback_service.dart';
 
 class StudentTimeLogPage extends StatefulWidget {
   const StudentTimeLogPage({super.key});
@@ -301,24 +302,18 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
         bloc: _studentBloc,
         listener: (context, state) {
           if (state is StudentOperationFailure) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: theme.colorScheme.error));
+            FeedbackService.showError(context, state.message);
           } else if (state is StudentTimeLogOperationSuccess ||
               state is StudentTimeLogDeleteSuccess) {
             String message = 'Operação realizada com sucesso!';
             if (state is StudentTimeLogOperationSuccess) {
               message = state.message;
             }
-            if (state is StudentTimeLogDeleteSuccess) message = state.message;
-
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(
-                  content: Text(message), backgroundColor: AppColors.success));
-            _refreshTimeLogs(); // Recarrega a lista após sucesso
+            if (state is StudentTimeLogDeleteSuccess) {
+              message = state.message;
+            }
+            FeedbackService.showSuccess(context, message);
+            _refreshTimeLogs();
           }
         },
         builder: (context, state) {

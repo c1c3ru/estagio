@@ -39,7 +39,7 @@ class _LoginFormState extends State<LoginForm> {
 
   void _submitLogin() {
     if (_formKey.currentState?.validate() ?? false) {
-      _authBloc.add(AuthLoginRequested(
+      _authBloc.add(LoginRequested(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       ));

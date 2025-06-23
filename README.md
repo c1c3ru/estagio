@@ -1,10 +1,11 @@
-Visão Geral do app
+Visão Geral do App
 O Student Supervisor App é uma aplicação Flutter desenvolvida seguindo os princípios da Clean Architecture, projetada para gerenciar estudantes, supervisores e contratos de estágio. A aplicação utiliza Supabase como backend e implementa padrões modernos de desenvolvimento Flutter.
 
 Arquitetura do Projeto
 A aplicação segue a Clean Architecture com separação clara de responsabilidades em camadas:
 
-text
+Plaintext
+
 ┌─────────────────┐
 │   Presentation  │ ← UI/Widgets/Pages/BLoC
 ├─────────────────┤
@@ -13,7 +14,8 @@ text
 │   Data          │ ← Models/DataSources/Repositories
 └─────────────────┘
 Estrutura de Pastas
-text
+Plaintext
+
 lib/
 ├── app_module.dart                    # Configuração principal de injeção de dependências
 ├── main.dart                          # Ponto de entrada da aplicação
@@ -127,19 +129,17 @@ lib/
         └── supervisor_module.dart
 Camadas da Arquitetura
 1. Presentation Layer (features/)
-Responsabilidade: Interface do usuário e gerenciamento de estado
+Responsabilidade: Interface do usuário e gerenciamento de estado.
 
 Componentes:
 
-Pages: Telas da aplicação
-
-BLoC: Gerenciamento de estado usando padrão BLoC
-
-Widgets: Componentes visuais específicos de cada feature
-
+Pages: Telas da aplicação.
+BLoC: Gerenciamento de estado usando padrão BLoC.
+Widgets: Componentes visuais específicos de cada feature.
 Exemplo de estrutura BLoC:
 
-dart
+Dart
+
 // Event
 abstract class AuthEvent extends Equatable {}
 
@@ -149,19 +149,17 @@ abstract class AuthState extends Equatable {}
 // BLoC
 class AuthBloc extends Bloc<AuthEvent, AuthState> {}
 2. Domain Layer (domain/)
-Responsabilidade: Regras de negócio e contratos
+Responsabilidade: Regras de negócio e contratos.
 
 Componentes:
 
-Entities: Modelos de negócio puros
-
-UseCases: Casos de uso específicos
-
-Repository Interfaces: Contratos para acesso a dados
-
+Entities: Modelos de negócio puros.
+UseCases: Casos de uso específicos.
+Repository Interfaces: Contratos para acesso a dados.
 Exemplo de Entity:
 
-dart
+Dart
+
 class StudentEntity extends Equatable {
   final String id;
   final String fullName;
@@ -169,54 +167,42 @@ class StudentEntity extends Equatable {
   // ...
 }
 3. Data Layer (data/)
-Responsabilidade: Acesso e manipulação de dados
+Responsabilidade: Acesso e manipulação de dados.
 
 Componentes:
 
-DataSources: Implementações de acesso a dados (Supabase)
-
-Models: Modelos de dados com serialização
-
-Repository Implementations: Implementações concretas dos repositórios
-
+DataSources: Implementações de acesso a dados (Supabase).
+Models: Modelos de dados com serialização.
+Repository Implementations: Implementações concretas dos repositórios.
 Exemplo de Model:
 
-dart
+Dart
+
 class StudentModel extends StudentEntity {
   // Implementação com fromJson/toJson
   factory StudentModel.fromJson(Map<String, dynamic> json) {}
   Map<String, dynamic> toJson() {}
 }
 Padrões Utilizados
-1. Clean Architecture
-Separação clara de responsabilidades
-
-Inversão de dependências
-
-Testabilidade
-
-2. BLoC Pattern
-Gerenciamento de estado reativo
-
-Separação entre lógica de negócio e UI
-
-Facilita testes unitários
-
-3. Repository Pattern
-Abstração do acesso a dados
-
-Facilita troca de fontes de dados
-
-Melhora testabilidade
-
-4. Dependency Injection
-Usando Modular para injeção de dependências
-
-Facilita testes e manutenção
-
+Clean Architecture
+Separação clara de responsabilidades.
+Inversão de dependências.
+Testabilidade.
+BLoC Pattern
+Gerenciamento de estado reativo.
+Separação entre lógica de negócio e UI.
+Facilita testes unitários.
+Repository Pattern
+Abstração do acesso a dados.
+Facilita troca de fontes de dados.
+Melhora testabilidade.
+Dependency Injection
+Usando Modular para injeção de dependências.
+Facilita testes e manutenção.
 Módulos da Aplicação
 Auth Module
-dart
+Dart
+
 class AuthModule extends Module {
   @override
   List<Bind> get binds => [
@@ -227,21 +213,16 @@ class AuthModule extends Module {
 }
 Student Module
 Dashboard do estudante
-
 Perfil e configurações
-
 Controle de ponto
-
 Supervisor Module
 Dashboard do supervisor
-
 Gerenciamento de estudantes
-
 Aprovação de horas
-
 Configuração do Ambiente
 Dependências Principais
-text
+YAML
+
 dependencies:
   flutter:
     sdk: flutter
@@ -251,36 +232,32 @@ dependencies:
   equatable: ^2.0.5
   dartz: ^0.10.1
 Configuração do Supabase
-dart
+Dart
+
 // Em app_constants.dart
 class AppConstants {
   static const String supabaseUrl = 'YOUR_SUPABASE_URL';
   static const String supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
 }
 Fluxo de Dados
-text
+Plaintext
+
 UI Event → BLoC → UseCase → Repository → DataSource → Supabase
                      ↓
 UI Update ← BLoC ← Entity ← Repository ← Model ← DataSource
 Convenções de Código
 Nomenclatura
-Classes: PascalCase (StudentEntity)
-
-Arquivos: snake_case (student_entity.dart)
-
-Variáveis: camelCase (studentName)
-
-Constantes: UPPER_SNAKE_CASE (API_BASE_URL)
-
+Classes: PascalCase (ex: StudentEntity)
+Arquivos: snake_case (ex: student_entity.dart)
+Variáveis: camelCase (ex: studentName)
+Constantes: UPPER_SNAKE_CASE (ex: API_BASE_URL)
 Estrutura de Arquivos
-Um arquivo por classe
-
-Imports organizados (dart, flutter, packages, relative)
-
-Exports organizados em barrel files quando necessário
-
+Um arquivo por classe.
+Imports organizados (dart, flutter, packages, relative).
+Exports organizados em barrel files quando necessário.
 Estados BLoC
-dart
+Dart
+
 // Estados base
 abstract class StudentState extends Equatable {}
 class StudentInitial extends StudentState {}
@@ -289,7 +266,8 @@ class StudentLoaded extends StudentState {}
 class StudentError extends StudentState {}
 Testes
 Estrutura de Testes
-text
+Plaintext
+
 test/
 ├── features/
 │   ├── auth/
@@ -303,16 +281,18 @@ test/
 └── data/
     └── repositories/
 Exemplo de Teste BLoC
-dart
+Dart
+
 blocTest<AuthBloc, AuthState>(
-  'emits [AuthLoading, AuthAuthenticated] when login succeeds',
+  'emits [AuthLoading, AuthSuccess] when login succeeds',
   build: () => AuthBloc(),
   act: (bloc) => bloc.add(AuthLoginRequested()),
-  expect: () => [AuthLoading(), AuthAuthenticated()],
+  expect: () => [AuthLoading(), AuthSuccess(user)],
 );
 Scripts Úteis
 Comandos Flutter
-bash
+Bash
+
 # Executar aplicação
 flutter run
 
@@ -325,25 +305,18 @@ flutter packages pub run build_runner build
 # Análise de código
 flutter analyze
 Considerações de Segurança
-Nunca commitar chaves de API
-
-Usar variáveis de ambiente para configurações sensíveis
-
-Implementar validação adequada em todas as camadas
-
-Sanitizar dados de entrada
-
+Nunca commitar chaves de API.
+Usar variáveis de ambiente para configurações sensíveis.
+Implementar validação adequada em todas as camadas.
+Sanitizar dados de entrada.
 Roadmap
- Implementação de testes unitários completos
-
- Implementação de testes de integração
-
- Documentação de API
-
- CI/CD pipeline
-
- Monitoramento e analytics
-
+[ ] Implementação de testes unitários completos
+[ ] Implementação de testes de integração
+[ ] Documentação de API
+[ ] CI/CD pipeline
+[ ] Monitoramento e analytics
 Versão: 1.0.0
+
 Última atualização: Junho 2025
+
 Desenvolvido com: Flutter 3.x + Supabase

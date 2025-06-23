@@ -74,7 +74,7 @@ class _SupervisorListPageState extends State<SupervisorListPage> {
                   return Card(
                     child: ListTile(
                       title: Text(
-                          supervisor.position + ' - ' + supervisor.department),
+                          '${supervisor.position} - ${supervisor.department}'),
                       subtitle: Text(
                           'Especialidade: ${supervisor.specialization}\nID: ${supervisor.id}'),
                       trailing: Row(
@@ -85,6 +85,7 @@ class _SupervisorListPageState extends State<SupervisorListPage> {
                                 const Icon(Icons.edit, color: Colors.blueGrey),
                             tooltip: 'Editar',
                             onPressed: () async {
+                              if (!mounted) return;
                               await showDialog(
                                 context: context,
                                 builder: (context) => SupervisorFormDialog(
@@ -104,6 +105,7 @@ class _SupervisorListPageState extends State<SupervisorListPage> {
                                 color: Colors.redAccent),
                             tooltip: 'Remover',
                             onPressed: () async {
+                              if (!mounted) return;
                               final confirm = await showDialog<bool>(
                                 context: context,
                                 builder: (context) => AlertDialog(
@@ -146,6 +148,7 @@ class _SupervisorListPageState extends State<SupervisorListPage> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () async {
+            if (!mounted) return;
             await showDialog(
               context: context,
               builder: (context) => SupervisorFormDialog(

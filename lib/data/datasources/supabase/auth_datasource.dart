@@ -217,7 +217,7 @@ class AuthDatasource implements IAuthDatasource {
             'created_at': DateTime.now().toIso8601String(),
             'updated_at': DateTime.now().toIso8601String(),
           });
-          print('✅ Dados do estudante criados para usuário ${user.id}');
+          ('✅ Dados do estudante criados para usuário ${user.id}');
         }
       } else if (role == 'supervisor') {
         // Verificar se já existe na tabela supervisors

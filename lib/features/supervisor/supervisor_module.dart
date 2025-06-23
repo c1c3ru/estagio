@@ -51,10 +51,6 @@ class SupervisorModule extends Module {
   @override
   void binds(Injector i) {
     // --- Repositories ---
-    i.add<IAuthRepository>(() => AuthRepository(
-          authDatasource: i.get<AuthDatasource>(),
-          preferencesManager: i.get<PreferencesManager>(),
-        ));
     i.add<IStudentRepository>(() => StudentRepository(
         i.get<StudentDatasource>(), i.get<TimeLogDatasource>()));
     i.add<ITimeLogRepository>(

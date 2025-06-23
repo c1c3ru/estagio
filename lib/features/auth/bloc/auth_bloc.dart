@@ -1,58 +1,53 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/enums/user_role.dart';
 import '../../../domain/usecases/auth/login_usecase.dart';
 import '../../../domain/usecases/auth/register_usecase.dart';
 import '../../../domain/usecases/auth/logout_usecase.dart';
 import '../../../domain/usecases/auth/get_current_user_usecase.dart';
-import '../../../domain/usecases/auth/reset_password_usecase.dart';
 import '../../../domain/usecases/auth/update_profile_usecase.dart';
 import '../../../domain/usecases/auth/get_auth_state_changes_usecase.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
+import '../../../domain/entities/user_entity.dart';
 
 // BLoC
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final GetCurrentUserUsecase _getCurrentUserUsecase;
-  final LoginUsecase _loginUsecase;
-  final LogoutUsecase _logoutUsecase;
-  final RegisterUsecase _registerUsecase;
-  final ResetPasswordUsecase _resetPasswordUsecase;
-  final UpdateProfileUsecase _updateProfileUsecase;
-  final GetAuthStateChangesUsecase _getAuthStateChangesUsecase;
-
-  StreamSubscription? _authStateSubscription;
+  final LoginUsecase _loginUseCase;
+  final LogoutUsecase _logoutUseCase;
+  final RegisterUsecase _registerUseCase;
+  final GetCurrentUserUsecase _getCurrentUserUseCase;
+  final GetAuthStateChangesUsecase _getAuthStateChangesUseCase;
+  final UpdateProfileUsecase _updateProfileUseCase;
+  StreamSubscription<UserEntity?>? _authStateSubscription;
 
   AuthBloc({
-    required GetCurrentUserUsecase getCurrentUserUsecase,
-    required LoginUsecase loginUsecase,
-    required LogoutUsecase logoutUsecase,
-    required RegisterUsecase registerUsecase,
-    required ResetPasswordUsecase resetPasswordUsecase,
-    required UpdateProfileUsecase updateProfileUsecase,
-    required GetAuthStateChangesUsecase getAuthStateChangesUsecase,
-  })  : _getCurrentUserUsecase = getCurrentUserUsecase,
-        _loginUsecase = loginUsecase,
-        _logoutUsecase = logoutUsecase,
-        _registerUsecase = registerUsecase,
-        _resetPasswordUsecase = resetPasswordUsecase,
-        _updateProfileUsecase = updateProfileUsecase,
-        _getAuthStateChangesUsecase = getAuthStateChangesUsecase,
-        super(const AuthInitial()) {
-    print('🔵 AuthBloc: CONSTRUÍDO com sucesso');
-
+    required LoginUsecase loginUseCase,
+    required LogoutUsecase logoutUseCase,
+    required RegisterUsecase registerUseCase,
+    required GetCurrentUserUsecase getCurrentUserUseCase,
+    required GetAuthStateChangesUsecase getAuthStateChangesUseCase,
+    required UpdateProfileUsecase updateProfileUseCase,
+  })  : _loginUseCase = loginUseCase,
+        _logoutUseCase = logoutUseCase,
+        _registerUseCase = registerUseCase,
+        _getCurrentUserUseCase = getCurrentUserUseCase,
+        _getAuthStateChangesUseCase = getAuthStateChangesUseCase,
+        _updateProfileUseCase = updateProfileUseCase,
+        super(AuthInitial()) {
     // Registrar handlers de eventos
-    print('🔵 AuthBloc: Registrando handlers de eventos...');
-    on<AuthLoginRequested>(_onLoginRequested);
-    on<AuthRegisterRequested>(_onRegisterRequested);
-    on<AuthLogoutRequested>(_onLogoutRequested);
-    on<AuthResetPasswordRequested>(_onResetPasswordRequested);
-    on<AuthUpdateProfileRequested>(_onUpdateProfileRequested);
-    on<AuthCheckRequested>(_onCheckRequested);
-    on<AuthUserChanged>(_onAuthUserChanged);
-    on<AuthInitializeRequested>(_onInitializeRequested);
-    print('🔵 AuthBloc: Handlers registrados com sucesso');
+    on<LoginRequested>(_onLoginRequested);
+    on<LogoutRequested>(_onLogoutRequested);
+    on<RegisterRequested>(_onRegisterRequested);
+    on<GetCurrentUserRequested>(_onGetCurrentUserRequested);
+    on<AuthStateChanged>(_onAuthStateChanged);
+    on<UpdateProfileRequested>(_onUpdateProfileRequested);
+
+    // Inicia a escuta das mudanças de estado de autenticação
+    _authStateSubscription = _getAuthStateChangesUseCase().listen(
+      (user) => add(AuthStateChanged(user)),
+    );
   }
 
   @override
@@ -61,124 +56,92 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     return super.close();
   }
 
-  void _onInitializeRequested(
-      AuthInitializeRequested event, Emitter<AuthState> emit) {
-    print('🔵 AuthBloc: Configurando listener do stream...');
-    _authStateSubscription = _getAuthStateChangesUsecase().listen((userEntity) {
-      print('🔵 AuthBloc: Mudança de usuário detectada: $userEntity');
-      if (userEntity != null) {
-        add(AuthUserChanged(user: userEntity));
-      } else if (state is! AuthUnauthenticated && state is! AuthLoading) {
-        add(const AuthLogoutRequested());
-      }
-    });
-    print('🔵 AuthBloc: Listener configurado com sucesso');
-  }
-
-  Future<void> _onCheckRequested(
-    AuthCheckRequested event,
-    Emitter<AuthState> emit,
-  ) async {
-    print('🔵 AuthBloc: _onCheckRequested chamado');
-    emit(const AuthLoading());
-    final result = await _getCurrentUserUsecase();
-    result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
-      (user) => user != null
-          ? emit(AuthAuthenticated(user: user))
-          : emit(const AuthUnauthenticated()),
-    );
-  }
-
   Future<void> _onLoginRequested(
-    AuthLoginRequested event,
+    LoginRequested event,
     Emitter<AuthState> emit,
   ) async {
-    print('🔵 AuthBloc: _onLoginRequested chamado');
-    emit(const AuthLoading());
-    final result = await _loginUsecase(
+    emit(AuthLoading());
+    final result = await _loginUseCase(
       email: event.email,
       password: event.password,
     );
     result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
-      (user) => emit(AuthAuthenticated(user: user)),
+      (failure) => emit(AuthFailure(failure.message)),
+      (user) => emit(AuthSuccess(user)),
     );
   }
 
   Future<void> _onLogoutRequested(
-    AuthLogoutRequested event,
+    LogoutRequested event,
     Emitter<AuthState> emit,
   ) async {
-    print('🔵 AuthBloc: _onLogoutRequested chamado');
-    emit(const AuthLoading());
-    final result = await _logoutUsecase();
+    emit(AuthLoading());
+    final result = await _logoutUseCase();
     result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
-      (_) => emit(const AuthUnauthenticated()),
+      (failure) => emit(AuthFailure(failure.message)),
+      (_) => emit(AuthInitial()),
     );
   }
 
   Future<void> _onRegisterRequested(
-    AuthRegisterRequested event,
+    RegisterRequested event,
     Emitter<AuthState> emit,
   ) async {
-    print('🔵 AuthBloc: _onRegisterRequested chamado');
-    emit(const AuthLoading());
-    final result = await _registerUsecase(
+    emit(AuthLoading());
+    final result = await _registerUseCase(
       email: event.email,
       password: event.password,
-      fullName: event.fullName,
-      role: UserRole.fromString(event.role),
-      registration: event.registration,
     );
     result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
-      (user) => emit(const AuthRegistrationSuccess(
-        message:
-            'Conta criada com sucesso! Verifique seu email para confirmar o cadastro.',
-      )),
+      (failure) => emit(AuthFailure(failure.message)),
+      (user) {
+        emit(AuthRegistrationSuccess('Cadastro realizado com sucesso!'));
+        emit(AuthSuccess(user));
+      },
     );
   }
 
-  Future<void> _onResetPasswordRequested(
-    AuthResetPasswordRequested event,
+  Future<void> _onGetCurrentUserRequested(
+    GetCurrentUserRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoading());
-    final result = await _resetPasswordUsecase(email: event.email);
+    emit(AuthLoading());
+    final result = await _getCurrentUserUseCase();
     result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
-      (_) => emit(const AuthPasswordResetSent(
-          message: 'E-mail de redefinição de senha enviado com sucesso.')),
+      (failure) => emit(AuthFailure(failure.message)),
+      (user) {
+        if (user != null) {
+          emit(AuthSuccess(user));
+        } else {
+          emit(AuthInitial());
+        }
+      },
     );
+  }
+
+  void _onAuthStateChanged(
+    AuthStateChanged event,
+    Emitter<AuthState> emit,
+  ) {
+    if (event.user != null) {
+      emit(AuthSuccess(event.user!));
+    } else {
+      emit(AuthInitial());
+    }
   }
 
   Future<void> _onUpdateProfileRequested(
-    AuthUpdateProfileRequested event,
+    UpdateProfileRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoading());
-    final result = await _updateProfileUsecase(
-      userId: event.userId,
-      fullName: event.fullName,
-      email: event.email,
-      password: event.password,
-      phoneNumber: event.phoneNumber,
-      profilePictureUrl: event.profilePictureUrl,
-    );
+    emit(AuthLoading());
+    final result = await _updateProfileUseCase(params: event.params);
     result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
-      (user) => emit(AuthAuthenticated(user: user)),
+      (failure) => emit(AuthFailure(failure.message)),
+      (user) {
+        emit(AuthProfileUpdateSuccess('Perfil atualizado com sucesso!'));
+        emit(AuthSuccess(user));
+      },
     );
-  }
-
-  Future<void> _onAuthUserChanged(
-    AuthUserChanged event,
-    Emitter<AuthState> emit,
-  ) async {
-    if (event.user != null && state is! AuthAuthenticated) {
-      emit(AuthAuthenticated(user: event.user!));
-    }
   }
 }

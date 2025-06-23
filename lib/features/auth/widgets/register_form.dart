@@ -46,11 +46,9 @@ class _RegisterFormState extends State<RegisterForm> {
 
   void _submitRegister() {
     if (_formKey.currentState?.validate() ?? false) {
-      _authBloc.add(AuthRegisterRequested(
-        fullName: _fullNameController.text.trim(),
+      _authBloc.add(RegisterRequested(
         email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-        role: _selectedRole.name,
+        password: _passwordController.text,
       ));
     }
   }

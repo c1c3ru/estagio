@@ -55,15 +55,13 @@ class _SupervisorRegisterFormState extends State<SupervisorRegisterForm> {
   void _onRegister() {
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthBloc>().add(
-            AuthRegisterRequested(
-              fullName: _fullNameController.text.trim(),
+            RegisterRequested(
               email: _emailController.text.trim(),
               password: _passwordController.text,
-              role: UserRole.supervisor.name,
             ),
           );
       // Nota: Os dados específicos do supervisor (SIAPE, etc.) precisarão ser salvos
-      // em um passo separado, possivelmente ouvindo o estado AuthAuthenticated
+      // em um passo separado, possivelmente ouvindo o estado AuthSuccess
       // e disparando um evento para um SupervisorBloc.
     }
   }

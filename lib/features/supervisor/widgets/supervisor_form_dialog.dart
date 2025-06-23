@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../../../domain/entities/supervisor_entity.dart';
 
 class SupervisorFormDialog extends StatefulWidget {

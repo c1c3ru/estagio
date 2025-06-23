@@ -3,11 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
-import '../../../core/theme/app_text_styles.dart';
 import '../../../core/enums/user_role.dart';
+import '../../../core/utils/feedback_service.dart';
+import '../../../core/widgets/loading_indicator.dart';
 import '../bloc/auth_bloc.dart';
-import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
+import '../widgets/login_form.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -17,198 +18,95 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+  late final AuthBloc _authBloc;
 
   @override
   void initState() {
     super.initState();
-    print('🟢 LoginPage: initState chamado');
-  }
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  void _onLoginPressed() {
-    print('🟢 LoginPage: _onLoginPressed chamado');
-    if (_formKey.currentState?.validate() ?? false) {
-      print('🟢 LoginPage: Formulário válido, enviando evento de login');
-      BlocProvider.of<AuthBloc>(context).add(
-        AuthLoginRequested(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-        ),
-      );
-    }
-  }
-
-  void _onRegisterPressed() {
-    Modular.to.pushNamed('/register');
-  }
-
-  void _onForgotPasswordPressed() {
-    Modular.to.pushNamed('/forgot-password');
+    _authBloc = Modular.get<AuthBloc>();
   }
 
   @override
   Widget build(BuildContext context) {
-    print('🟢 LoginPage: BUILD chamado');
-
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: BlocListener<AuthBloc, AuthState>(
+      body: BlocConsumer<AuthBloc, AuthState>(
+        bloc: _authBloc,
         listener: (context, state) {
-          print('🟢 LoginPage: Estado recebido: $state');
-          if (state is AuthAuthenticated) {
-            final route = state.user.role == UserRole.student
-                ? '/student'
-                : '/supervisor';
-            print('🟢 LoginPage: Redirecionando para: $route');
-            Modular.to.pushReplacementNamed(route);
-          } else if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.error,
-              ),
-            );
+          if (state is AuthFailure) {
+            FeedbackService.showError(context, state.message);
+          } else if (state is AuthSuccess) {
+            FeedbackService.showSuccess(context, AppStrings.loginSuccess);
+            // Navegar para a página apropriada baseado no papel do usuário
+            switch (state.user.role) {
+              case UserRole.student:
+                Modular.to.navigate('/student/');
+                break;
+              case UserRole.supervisor:
+                Modular.to.navigate('/supervisor/');
+                break;
+              default:
+                FeedbackService.showError(
+                    context, 'Papel de usuário não suportado');
+            }
           }
         },
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Icon(
-                      Icons.school,
-                      size: 80,
-                      color: AppColors.primary,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      AppStrings.appName,
-                      style: AppTextStyles.h3,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Faça login para continuar',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
+        builder: (context, state) {
+          if (state is AuthLoading) {
+            return const Center(child: LoadingIndicator());
+          }
+
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 64),
+                  Image.asset(
+                    'assets/images/estagio.png',
+                    height: 120,
+                  ),
+                  const SizedBox(height: 32),
+                  Text(
+                    'Bem-vindo ao Sistema de Estágio',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Faça login para continuar',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge
+                        ?.copyWith(color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(height: 32),
+                  const LoginForm(),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () =>
+                        Modular.to.pushNamed('/auth/forgot-password'),
+                    child: const Text(AppStrings.forgotPassword),
+                  ),
+                  const SizedBox(height: 32),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Não tem uma conta? ',
+                        style: Theme.of(context).textTheme.bodyMedium,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 48),
-                    TextFormField(
-                      controller: _emailController,
-                      style: const TextStyle(color: Colors.black87),
-                      decoration: const InputDecoration(
-                        labelText: 'E-mail',
-                        border: OutlineInputBorder(),
-                        hintText: 'E-mail',
-                        hintStyle: TextStyle(color: Colors.black45),
-                        labelStyle: TextStyle(color: Colors.black54),
+                      TextButton(
+                        onPressed: () => Modular.to.pushNamed('/auth/register'),
+                        child: const Text(AppStrings.register),
                       ),
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value?.isEmpty ?? true) {
-                          return 'Campo obrigatório';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _passwordController,
-                      style: const TextStyle(color: Colors.black87),
-                      decoration: InputDecoration(
-                        labelText: 'Senha',
-                        border: const OutlineInputBorder(),
-                        hintText: 'Senha',
-                        hintStyle: const TextStyle(color: Colors.black45),
-                        labelStyle: const TextStyle(color: Colors.black54),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                        ),
-                      ),
-                      obscureText: _obscurePassword,
-                      validator: (value) {
-                        if (value?.isEmpty ?? true) {
-                          return 'Campo obrigatório';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 24),
-                    BlocBuilder<AuthBloc, AuthState>(
-                      builder: (context, state) {
-                        print(
-                            '🟢 LoginPage: BlocBuilder - Estado atual: $state');
-                        return SizedBox(
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed:
-                                state is AuthLoading ? null : _onLoginPressed,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: AppColors.white,
-                            ),
-                            child: state is AuthLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          AppColors.white),
-                                    ),
-                                  )
-                                : const Text('Entrar'),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: _onRegisterPressed,
-                      child: const Text(
-                        'Não tem uma conta? Cadastrar',
-                        style: TextStyle(color: AppColors.primary),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: _onForgotPasswordPressed,
-                      child: const Text(
-                        'Esqueci minha senha',
-                        style: TextStyle(color: AppColors.primary),
-                      ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

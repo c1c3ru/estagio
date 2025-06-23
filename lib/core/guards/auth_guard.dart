@@ -12,7 +12,7 @@ class AuthGuard extends RouteGuard {
     // Check if user is authenticated
     final currentState = _authBloc.state;
 
-    if (currentState is AuthAuthenticated) {
+    if (currentState is AuthSuccess) {
       return true;
     }
 

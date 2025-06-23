@@ -1,6 +1,6 @@
 // lib/features/auth/presentation/bloc/auth_state.dart
 import 'package:equatable/equatable.dart';
-import '../../../../domain/entities/user_entity.dart'; // Importa UserEntity do domínio
+import '../../../domain/entities/user_entity.dart'; // Importa UserEntity do domínio
 
 abstract class AuthState extends Equatable {
   const AuthState();
@@ -10,20 +10,16 @@ abstract class AuthState extends Equatable {
 }
 
 /// Estado inicial, antes de qualquer ação de autenticação.
-class AuthInitial extends AuthState {
-  const AuthInitial();
-}
+class AuthInitial extends AuthState {}
 
 /// Estado enquanto uma operação de autenticação está em progresso.
-class AuthLoading extends AuthState {
-  const AuthLoading();
-}
+class AuthLoading extends AuthState {}
 
 /// Estado de sucesso na autenticação (login ou verificação de status).
-class AuthAuthenticated extends AuthState {
+class AuthSuccess extends AuthState {
   final UserEntity user;
 
-  const AuthAuthenticated({required this.user});
+  const AuthSuccess(this.user);
 
   @override
   List<Object> get props => [user];
@@ -37,13 +33,11 @@ class AuthUnauthenticated extends AuthState {
 /// Estado de sucesso no registo (geralmente leva a um passo de confirmação de email).
 class AuthRegistrationSuccess extends AuthState {
   final String message;
-  // Pode incluir o UserEntity se o registo retornar os dados do utilizador criado.
-  // final UserEntity? user;
 
-  const AuthRegistrationSuccess({required this.message /*, this.user */});
+  const AuthRegistrationSuccess(this.message);
 
   @override
-  List<Object?> get props => [message];
+  List<Object> get props => [message];
 }
 
 /// Estado de sucesso no envio de email de redefinição de senha.
@@ -56,46 +50,21 @@ class AuthPasswordResetEmailSent extends AuthState {
   List<Object?> get props => [message];
 }
 
-/// Estado de sucesso no envio de email de redefinição de senha.
-class AuthPasswordResetSent extends AuthState {
-  final String message;
-
-  const AuthPasswordResetSent({required this.message});
-
-  @override
-  List<Object?> get props => [message];
-}
-
 /// Estado de falha em qualquer operação de autenticação.
-class AuthError extends AuthState {
+class AuthFailure extends AuthState {
   final String message;
 
-  const AuthError({required this.message});
+  const AuthFailure(this.message);
 
   @override
   List<Object> get props => [message];
 }
 
-/// Estado de sucesso na atualização do perfil (opcional, pode ser tratado por um ProfileBloc)
+/// Estado de sucesso na atualização do perfil
 class AuthProfileUpdateSuccess extends AuthState {
-  final UserEntity updatedUser;
-  const AuthProfileUpdateSuccess({required this.updatedUser});
-
-  @override
-  List<Object?> get props => [updatedUser];
-}
-
-class AuthSuccess extends AuthState {
-  final UserEntity user;
-  const AuthSuccess({required this.user});
-
-  @override
-  List<Object> get props => [user];
-}
-
-class AuthFailure extends AuthState {
   final String message;
-  const AuthFailure({required this.message});
+
+  const AuthProfileUpdateSuccess(this.message);
 
   @override
   List<Object> get props => [message];

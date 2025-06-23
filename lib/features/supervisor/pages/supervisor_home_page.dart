@@ -53,8 +53,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
             IconButton(
               icon: const Icon(Icons.logout),
               onPressed: () {
-                BlocProvider.of<AuthBloc>(context)
-                    .add(const AuthLogoutRequested());
+                BlocProvider.of<AuthBloc>(context).add(LogoutRequested());
               },
             ),
           ],
@@ -283,6 +282,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                             icon: const Icon(Icons.filter_alt_outlined),
                             tooltip: 'Filtrar',
                             onPressed: () async {
+                              if (!mounted) return;
                               await showModalBottomSheet(
                                 context: context,
                                 isScrollControlled: true,
@@ -302,6 +302,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                       StudentListWidget(
                         students: state.students,
                         onEdit: (student) async {
+                          if (!mounted) return;
                           await showDialog(
                             context: context,
                             builder: (context) => StudentFormDialog(
@@ -317,6 +318,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                           );
                         },
                         onDelete: (student) async {
+                          if (!mounted) return;
                           final confirm = await showDialog<bool>(
                             context: context,
                             builder: (context) => AlertDialog(
@@ -356,6 +358,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () async {
+            if (!mounted) return;
             await showDialog(
               context: context,
               builder: (context) => StudentFormDialog(

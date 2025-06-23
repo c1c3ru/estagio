@@ -7,14 +7,13 @@ import 'package:gestao_de_estagio/features/auth/bloc/auth_bloc.dart';
 import 'package:gestao_de_estagio/features/auth/bloc/auth_state.dart'
     as auth_state;
 
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../domain/entities/time_log_entity.dart';
 
 import '../bloc/student_bloc.dart';
 import '../bloc/student_event.dart';
 import '../bloc/student_state.dart';
+import '../../../core/utils/feedback_service.dart';
 
 class TimeTrackerWidget extends StatefulWidget {
   // Pode receber o activeTimeLog diretamente ou buscar através do BLoC
@@ -103,83 +102,44 @@ class _TimeTrackerWidgetState extends State<TimeTrackerWidget> {
             _activeTimeLog = state.activeTimeLog;
           });
         } else if (state is StudentTimeLogOperationSuccess) {
-          // Após check-in ou check-out, o evento FetchActiveTimeLogEvent
-          // deve ser disparado pela página ou pelo BLoC para atualizar o estado.
-          // Se este widget for independente, ele precisa buscar o novo estado.
           if (_userId != null) {
             _studentBloc.add(FetchActiveTimeLogEvent(userId: _userId!));
           }
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.success,
-              ),
-            );
+          FeedbackService.showSuccess(context, state.message);
         } else if (state is StudentOperationFailure) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: theme.colorScheme.error,
-              ),
-            );
+          FeedbackService.showError(context, state.message);
         }
       },
       child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize
-                .min, // Para que o Card não ocupe todo o espaço vertical
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                _activeTimeLog != null
-                    ? 'Check-in ativo desde:'
-                    : 'Pronto para começar?',
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
+                'Registro de Horas',
+                style: theme.textTheme.titleLarge,
               ),
-              if (_activeTimeLog != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text(
-                    _formatTimeOfDay(_activeTimeLog!.checkInTime),
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
               const SizedBox(height: 16),
-              BlocBuilder<StudentBloc, StudentState>(
-                bloc: _studentBloc,
-                builder: (context, state) {
-                  bool isLoading = state
-                      is StudentLoading; // Verifica se está a carregar uma operação de log
-                  bool isCheckedIn = _activeTimeLog != null;
-
-                  return AppButton(
-                    text:
-                        isCheckedIn ? AppStrings.checkOut : AppStrings.checkIn,
-                    onPressed: isLoading
-                        ? null
-                        : (isCheckedIn ? _performCheckOut : _performCheckIn),
-                    isLoading: isLoading,
-                    backgroundColor:
-                        isCheckedIn ? AppColors.warning : AppColors.success,
-                    icon: isCheckedIn
-                        ? Icons.logout_outlined
-                        : Icons.login_outlined,
-                  );
-                },
-              ),
+              if (_activeTimeLog != null) ...[
+                Text(
+                  'Check-in: ${_formatTimeOfDay(_activeTimeLog!.checkInTime)}',
+                  style: theme.textTheme.bodyLarge,
+                ),
+                const SizedBox(height: 8),
+                AppButton(
+                  text: 'Finalizar Registro',
+                  onPressed: _performCheckOut,
+                  type: AppButtonType.outlined,
+                  icon: Icons.logout,
+                ),
+              ] else
+                AppButton(
+                  text: 'Iniciar Registro',
+                  onPressed: _performCheckIn,
+                  icon: Icons.login,
+                ),
             ],
           ),
         ),

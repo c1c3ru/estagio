@@ -169,7 +169,7 @@ class _StudentColleaguesPageState extends State<StudentColleaguesPage> {
                           child: ElevatedButton.icon(
                             onPressed: () {
                               final authState = context.read<AuthBloc>().state;
-                              if (authState is AuthAuthenticated) {
+                              if (authState is AuthSuccess) {
                                 Navigator.pushNamed(
                                   context,
                                   '/student/contracts',

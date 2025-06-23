@@ -18,6 +18,7 @@ import '../bloc/supervisor_bloc.dart' as bloc;
 import '../bloc/supervisor_event.dart' as event;
 import '../bloc/supervisor_state.dart' as supervisor_state;
 import '../widgets/supervisor_app_drawer.dart';
+import '../../../core/utils/feedback_service.dart';
 
 class SupervisorTimeApprovalPage extends StatefulWidget {
   const SupervisorTimeApprovalPage({super.key});
@@ -167,24 +168,12 @@ class _SupervisorTimeApprovalPageState
         bloc: _supervisorBloc,
         listener: (context, currentState) {
           if (currentState is supervisor_state.SupervisorOperationFailure) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(
-                  content: Text(currentState.message),
-                  backgroundColor: theme.colorScheme.error));
+            FeedbackService.showError(context, currentState.message);
           } else if (currentState
                   is supervisor_state.SupervisorOperationSuccess &&
               (currentState.entity is TimeLogEntity ||
                   currentState.message.contains("Registo de tempo"))) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(
-                  content: Text(currentState.message),
-                  backgroundColor: AppColors.success));
-            // Recarrega a lista após uma ação de aprovação/rejeição
-            // A lógica no BLoC já deve atualizar a lista se o estado for SupervisorTimeLogsForApprovalLoadSuccess
-            // Se não, podemos disparar o evento aqui:
-            // _loadPendingApprovals();
+            FeedbackService.showSuccess(context, currentState.message);
           }
         },
         builder: (context, currentState) {
@@ -269,24 +258,24 @@ class _SupervisorTimeApprovalPageState
   }
 
   Widget _buildErrorStatePage(BuildContext context, String message) {
-    final theme = Theme.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 60, color: theme.colorScheme.error),
+            Icon(Icons.error_outline,
+                size: 60, color: Theme.of(context).colorScheme.error),
             const SizedBox(height: 16),
             Text(
               AppStrings.errorOccurred,
-              style: theme.textTheme.headlineSmall,
+              style: Theme.of(context).textTheme.headlineSmall,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               message,
-              style: theme.textTheme.bodyLarge,
+              style: Theme.of(context).textTheme.bodyLarge,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),

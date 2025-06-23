@@ -1,14 +1,14 @@
 import 'package:dartz/dartz.dart';
-import '../../repositories/i_auth_repository.dart';
-import '../../entities/user_entity.dart';
 import '../../../core/errors/app_exceptions.dart';
+import '../../../domain/entities/user_entity.dart';
+import '../../repositories/i_auth_repository.dart';
 
 class GetCurrentUserUsecase {
-  final IAuthRepository _authRepository;
+  final IAuthRepository _repository;
 
-  GetCurrentUserUsecase(this._authRepository);
+  const GetCurrentUserUsecase(this._repository);
 
   Future<Either<AppFailure, UserEntity?>> call() async {
-    return await _authRepository.getCurrentUser();
+    return _repository.getCurrentUser();
   }
 }

@@ -47,6 +47,7 @@ app.*.map.json
 # Env files
 .env*
 **/*.env*
+!.env.example
 
 # Arquivos de segurança e configuração
 *.key

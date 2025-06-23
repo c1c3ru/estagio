@@ -20,10 +20,9 @@ class RoleGuard extends RouteGuard {
     final authBloc = Modular.get<AuthBloc>();
     final currentState = authBloc.state;
 
-    if (currentState is AuthAuthenticated) {
+    if (currentState is AuthSuccess) {
       // Utilizador está autenticado, verifica o papel
-      final UserRole currentUserRole =
-          currentState.user.role; // Access role through the user object
+      final UserRole currentUserRole = currentState.user.role;
 
       if (allowedRoles.contains(currentUserRole)) {
         // O papel do utilizador está na lista de papéis permitidos

@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app_module.dart';
 import 'app_widget.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,8 +19,17 @@ Future<void> main() async {
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
 
-  // Initialize SharedPreferences
-  await SharedPreferences.getInstance();
+  SharedPreferences? sharedPreferences;
+  if (!kIsWeb) {
+    try {
+      sharedPreferences = await SharedPreferences.getInstance();
+    } catch (_) {
+      sharedPreferences = null;
+    }
+  }
 
-  runApp(ModularApp(module: AppModule(), child: const AppWidget()));
+  runApp(ModularApp(
+    module: AppModule(sharedPreferences: sharedPreferences),
+    child: const AppWidget(),
+  ));
 }

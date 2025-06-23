@@ -1,6 +1,7 @@
 // lib/features/auth/presentation/bloc/auth_event.dart
 import 'package:equatable/equatable.dart';
-import 'package:gestao_de_estagio/domain/entities/user_entity.dart';
+import '../../../domain/entities/user_entity.dart';
+import '../../../domain/usecases/auth/update_profile_usecase.dart';
 
 abstract class AuthEvent extends Equatable {
   const AuthEvent();
@@ -9,19 +10,11 @@ abstract class AuthEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class AuthCheckRequested extends AuthEvent {
-  const AuthCheckRequested();
-}
-
-class AuthInitializeRequested extends AuthEvent {
-  const AuthInitializeRequested();
-}
-
-class AuthLoginRequested extends AuthEvent {
+class LoginRequested extends AuthEvent {
   final String email;
   final String password;
 
-  const AuthLoginRequested({
+  const LoginRequested({
     required this.email,
     required this.password,
   });
@@ -30,27 +23,47 @@ class AuthLoginRequested extends AuthEvent {
   List<Object> get props => [email, password];
 }
 
-class AuthLogoutRequested extends AuthEvent {
-  const AuthLogoutRequested();
-}
+class LogoutRequested extends AuthEvent {}
 
-class AuthRegisterRequested extends AuthEvent {
+class RegisterRequested extends AuthEvent {
   final String email;
   final String password;
-  final String fullName;
-  final String role;
-  final String? registration;
 
-  const AuthRegisterRequested({
+  const RegisterRequested({
     required this.email,
     required this.password,
-    required this.fullName,
-    required this.role,
-    this.registration,
   });
 
   @override
-  List<Object?> get props => [email, password, fullName, role, registration];
+  List<Object> get props => [email, password];
+}
+
+class GetCurrentUserRequested extends AuthEvent {}
+
+class AuthStateChanged extends AuthEvent {
+  final UserEntity? user;
+
+  const AuthStateChanged(this.user);
+
+  @override
+  List<Object?> get props => [user];
+}
+
+class UpdateProfileRequested extends AuthEvent {
+  final UpdateProfileParams params;
+
+  const UpdateProfileRequested({required this.params});
+
+  @override
+  List<Object> get props => [params];
+}
+
+class AuthCheckRequested extends AuthEvent {
+  const AuthCheckRequested();
+}
+
+class AuthInitializeRequested extends AuthEvent {
+  const AuthInitializeRequested();
 }
 
 class AuthResetPasswordRequested extends AuthEvent {
@@ -88,17 +101,6 @@ class AuthUpdateProfileRequested extends AuthEvent {
         phoneNumber,
         profilePictureUrl,
       ];
-}
-
-/// Evento para ouvir mudanças no estado de autenticação (ex: do stream do Supabase)
-class AuthStateChangedEvent extends AuthEvent {
-  final bool isAuthenticated;
-  final UserEntity? user; // Usando UserEntity do domínio
-
-  const AuthStateChangedEvent({required this.isAuthenticated, this.user});
-
-  @override
-  List<Object?> get props => [isAuthenticated, user];
 }
 
 class AuthUserChanged extends AuthEvent {

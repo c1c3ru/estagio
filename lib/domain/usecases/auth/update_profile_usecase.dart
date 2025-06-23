@@ -1,42 +1,51 @@
 // lib/domain/usecases/auth/update_profile_usecase.dart
 import 'package:dartz/dartz.dart';
 import '../../../core/errors/app_exceptions.dart';
-import '../../entities/user_entity.dart';
+import '../../../domain/entities/user_entity.dart';
 import '../../repositories/i_auth_repository.dart';
+
+class UpdateProfileParams {
+  final String? fullName;
+  final String? email;
+  final String? password;
+  final String? phoneNumber;
+  final String? profilePictureUrl;
+
+  const UpdateProfileParams({
+    this.fullName,
+    this.email,
+    this.password,
+    this.phoneNumber,
+    this.profilePictureUrl,
+  });
+}
 
 class UpdateProfileUsecase {
   final IAuthRepository _repository;
 
-  UpdateProfileUsecase(this._repository);
+  const UpdateProfileUsecase(this._repository);
 
   Future<Either<AppFailure, UserEntity>> call({
-    required String userId,
-    String? fullName,
-    String? email,
-    String? password,
-    String? phoneNumber,
-    String? profilePictureUrl,
+    required UpdateProfileParams params,
   }) async {
-    if (fullName != null && fullName.isEmpty) {
-      return const Left(
-          ValidationFailure('O nome completo não pode estar vazio.'));
+    if (params.email != null && !_isValidEmail(params.email!)) {
+      return Left(const ValidationFailure('E-mail inválido'));
     }
 
-    if (email != null && !_isValidEmail(email)) {
-      return const Left(ValidationFailure('Formato de email inválido.'));
+    if (params.password != null && !_isValidPassword(params.password!)) {
+      return Left(const ValidationFailure(
+          'A senha deve ter no mínimo 8 caracteres, uma letra maiúscula, uma minúscula e um número'));
     }
 
-    return await _repository.updateProfile(
-      userId: userId,
-      fullName: fullName,
-      email: email,
-      password: password,
-      phoneNumber: phoneNumber,
-      profilePictureUrl: profilePictureUrl,
-    );
+    return _repository.updateProfile(params: params);
   }
 
   bool _isValidEmail(String email) {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
+  bool _isValidPassword(String password) {
+    return RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$')
+        .hasMatch(password);
   }
 }

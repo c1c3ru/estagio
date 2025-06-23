@@ -25,24 +25,19 @@ class _StudentHomePageState extends State<StudentHomePage> {
   @override
   void initState() {
     super.initState();
-    print('🟢 StudentHomePage: initState chamado');
 
     // Obter o ID do usuário autenticado
     final authState = BlocProvider.of<AuthBloc>(context).state;
-    if (authState is AuthAuthenticated) {
+    if (authState is AuthSuccess) {
       final userId = authState.user.id;
-      print('🟢 StudentHomePage: Usuário autenticado ID: $userId');
       // Carregar dados do dashboard
       BlocProvider.of<StudentBloc>(context)
           .add(LoadStudentDashboardDataEvent(userId: userId));
-    } else {
-      print('🟢 StudentHomePage: Usuário não autenticado');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    print('🟢 StudentHomePage: BUILD chamado');
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthUnauthenticated) {
@@ -59,16 +54,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
             IconButton(
               icon: const Icon(Icons.logout),
               onPressed: () {
-                BlocProvider.of<AuthBloc>(context)
-                    .add(const AuthLogoutRequested());
+                BlocProvider.of<AuthBloc>(context).add(LogoutRequested());
               },
             ),
           ],
         ),
         body: BlocBuilder<StudentBloc, StudentState>(
           builder: (context, state) {
-            print('🟢 StudentHomePage: BlocBuilder - Estado: $state');
-
             return SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -305,6 +297,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                             subtitle: const Text(
                                 'Clique para cadastrar um novo contrato'),
                             onTap: () async {
+                              if (!mounted) return;
                               await showDialog(
                                 context: context,
                                 builder: (context) => _NovoContratoDialog(
@@ -368,6 +361,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                               const SizedBox(height: 16),
                               ElevatedButton(
                                 onPressed: () {
+                                  if (!mounted) return;
                                   BlocProvider.of<StudentBloc>(context).add(
                                       const LoadStudentDashboardDataEvent(
                                           userId:
@@ -380,9 +374,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
                         else
                           ElevatedButton(
                             onPressed: () {
+                              if (!mounted) return;
                               final authState =
                                   BlocProvider.of<AuthBloc>(context).state;
-                              if (authState is AuthAuthenticated) {
+                              if (authState is AuthSuccess) {
                                 BlocProvider.of<StudentBloc>(context).add(
                                     LoadStudentDashboardDataEvent(
                                         userId: authState.user.id));

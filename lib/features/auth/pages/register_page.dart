@@ -44,12 +44,9 @@ class _RegisterPageState extends State<RegisterPage> {
   void _onRegisterPressed() {
     if (_formKey.currentState?.validate() ?? false) {
       Modular.get<AuthBloc>().add(
-        AuthRegisterRequested(
+        RegisterRequested(
           email: _emailController.text.trim(),
           password: _passwordController.text,
-          fullName: _nameController.text.trim(),
-          role: _selectedRole.name,
-          registration: _registrationController.text.trim(),
         ),
       );
     }
@@ -138,7 +135,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 );
               },
             );
-          } else if (state is AuthError) {
+          } else if (state is AuthFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),

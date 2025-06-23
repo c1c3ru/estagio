@@ -2,12 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:intl/intl.dart'; // Para formatação de datas
 import 'package:gestao_de_estagio/core/enums/class_shift.dart';
 import 'package:gestao_de_estagio/core/enums/internship_shift.dart';
 import 'package:gestao_de_estagio/features/auth/bloc/auth_bloc.dart';
 import 'package:gestao_de_estagio/features/auth/bloc/auth_state.dart'
     as auth_state;
+import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';

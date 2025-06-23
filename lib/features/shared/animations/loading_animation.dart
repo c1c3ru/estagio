@@ -1,60 +1,54 @@
 // lib/features/shared/animations/loading_animation.dart
 import 'package:flutter/material.dart';
-import 'lottie_animations.dart'; // Para LottieAssetPaths e AppLottieAnimation
+import 'package:lottie/lottie.dart';
+import '../../../core/constants/app_strings.dart';
 
 class LottieLoadingIndicator extends StatelessWidget {
+  final String? message;
   final double size;
-  final String? message; // Mensagem opcional abaixo da animação
 
   const LottieLoadingIndicator({
     super.key,
-    this.size = 80.0,
     this.message,
+    this.size = 200,
   });
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          AppLottieAnimation(
-            assetPath:
-                LottieAssetPaths.loadingDots, // Use o seu asset de loading
+          Lottie.asset(
+            'assets/animations/Loading_animations.json',
             width: size,
             height: size,
-            repeat: true,
+            fit: BoxFit.contain,
           ),
-          if (message != null && message!.isNotEmpty) ...[
+          if (message != null) ...[
             const SizedBox(height: 16),
             Text(
               message!,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: Theme.of(context).textTheme.bodyLarge,
               textAlign: TextAlign.center,
             ),
-          ]
+          ],
         ],
       ),
     );
   }
 }
 
-// Um widget de overlay de loading com animação Lottie
-class LottieLoadingOverlay extends StatelessWidget {
-  final bool isLoading;
+class LoadingOverlay extends StatelessWidget {
   final Widget child;
-  final double opacity;
-  final Color? backgroundColor; // Cor do overlay
-  final String? loadingMessage;
+  final bool isLoading;
+  final String? message;
 
-  const LottieLoadingOverlay({
+  const LoadingOverlay({
     super.key,
-    required this.isLoading,
     required this.child,
-    this.opacity = 0.3,
-    this.backgroundColor,
-    this.loadingMessage,
+    required this.isLoading,
+    this.message,
   });
 
   @override
@@ -63,13 +57,10 @@ class LottieLoadingOverlay extends StatelessWidget {
       children: [
         child,
         if (isLoading)
-          Positioned.fill(
-            child: Container(
-              color: (backgroundColor ?? Colors.black).withOpacity(opacity),
-              child: LottieLoadingIndicator(
-                size: 100, // Tamanho maior para overlay
-                message: loadingMessage,
-              ),
+          Container(
+            color: Colors.black54,
+            child: LottieLoadingIndicator(
+              message: message ?? AppStrings.loading,
             ),
           ),
       ],
