@@ -43,6 +43,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<GetCurrentUserRequested>(_onGetCurrentUserRequested);
     on<AuthStateChanged>(_onAuthStateChanged);
     on<UpdateProfileRequested>(_onUpdateProfileRequested);
+    on<AuthInitializeRequested>((event, emit) async {
+      // emit(AuthLoading());
+      // final user = await getCurrentUserUseCase();
+      // if (user != null) emit(AuthAuthenticated(user));
+      // else emit(AuthUnauthenticated());
+    });
 
     // Inicia a escuta das mudanças de estado de autenticação
     _authStateSubscription = _getAuthStateChangesUseCase().listen(

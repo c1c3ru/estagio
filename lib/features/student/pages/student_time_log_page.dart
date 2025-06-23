@@ -290,6 +290,10 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppStrings.timeLog),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Modular.to.navigate('/student/'),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

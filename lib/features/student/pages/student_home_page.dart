@@ -58,6 +58,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
               },
             ),
           ],
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Modular.to.pop(),
+          ),
         ),
         body: BlocBuilder<StudentBloc, StudentState>(
           builder: (context, state) {
@@ -408,7 +412,15 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 // Já está na home
                 break;
               case 1:
-                Modular.to.pushNamed('/student/contracts');
+                final authState = BlocProvider.of<AuthBloc>(context).state;
+                if (authState is AuthSuccess) {
+                  Modular.to.pushNamed('/student/contracts',
+                      arguments: {"studentId": authState.user.id});
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Usuário não autenticado!')),
+                  );
+                }
                 break;
               case 2:
                 Modular.to.pushNamed('/student/time-log');

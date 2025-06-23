@@ -140,8 +140,12 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
               TextFormField(
                 controller: _registrationController,
                 decoration: const InputDecoration(labelText: 'Matrícula'),
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'Informe a matrícula' : null,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Informe a matrícula';
+                  if (!RegExp(r'^\d{7}\$').hasMatch(v))
+                    return 'A matrícula deve ter exatamente 7 dígitos';
+                  return null;
+                },
               ),
               TextFormField(
                 controller: _courseController,

@@ -9,6 +9,7 @@ import '../../../core/widgets/loading_indicator.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_state.dart';
 import '../widgets/login_form.dart';
+import '../../shared/animations/lottie_animations.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -29,11 +30,20 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Login'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Modular.to.navigate('/'),
+        ),
+      ),
       body: BlocConsumer<AuthBloc, AuthState>(
         bloc: _authBloc,
         listener: (context, state) {
           if (state is AuthFailure) {
-            FeedbackService.showError(context, state.message);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
           } else if (state is AuthSuccess) {
             FeedbackService.showSuccess(context, AppStrings.loginSuccess);
             // Navegar para a página apropriada baseado no papel do usuário
@@ -62,8 +72,8 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 64),
-                  Image.asset(
-                    'assets/images/estagio.png',
+                  AppLottieAnimation(
+                    assetPath: 'assets/animations/Loading_animations.json',
                     height: 120,
                   ),
                   const SizedBox(height: 32),

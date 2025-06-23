@@ -160,7 +160,10 @@ class StudentModule extends Module {
     r.child(
       Modular
           .initialRoute, // Equivalente a '/' dentro deste módulo, resultando em '/student/'
-      child: (_) => const StudentHomePage(),
+      child: (_) => BlocProvider(
+        create: (_) => Modular.get<StudentBloc>(),
+        child: const StudentHomePage(),
+      ),
       transition: TransitionType.fadeIn,
     );
 

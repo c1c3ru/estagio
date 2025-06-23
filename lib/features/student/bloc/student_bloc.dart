@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/usecases/student/get_student_dashboard_usecase.dart';
 import '../../../domain/entities/contract_entity.dart';
+import '../../../domain/entities/time_log_entity.dart';
 
 import '../../../data/models/student_model.dart';
 
@@ -106,8 +107,14 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
   ) async {
     emit(const StudentLoading());
     try {
-      // Implementar lógica para carregar logs de tempo
-      emit(const StudentLoading());
+      // Aqui você deve chamar o usecase real para buscar os logs do estudante
+      // Exemplo fictício:
+      // final result = await _getStudentTimeLogsUsecase(event.userId);
+      // result.fold(
+      //   (failure) => emit(StudentOperationFailure(message: failure.message)),
+      //   (logs) => emit(StudentTimeLogsLoadSuccess(timeLogs: logs)),
+      // );
+      emit(const StudentTimeLogsLoadSuccess(timeLogs: [])); // Remover depois
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
     }
@@ -119,8 +126,22 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
   ) async {
     emit(const StudentLoading());
     try {
-      // Implementar lógica para criar log manual
-      emit(const StudentLoading());
+      // Chame o usecase real para criar o log
+      // final result = await _createTimeLogUsecase(...);
+      // result.fold(
+      //   (failure) => emit(StudentOperationFailure(message: failure.message)),
+      //   (log) => emit(StudentTimeLogOperationSuccess(timeLog: log, message: 'Registo criado com sucesso!')),
+      // );
+      emit(
+        StudentTimeLogOperationSuccess(
+            timeLog: TimeLogEntity(
+              id: 'fake',
+              studentId: 'fake',
+              clockIn: DateTime.now(),
+              createdAt: DateTime.now(),
+            ),
+            message: 'Registo criado com sucesso!'),
+      );
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
     }
@@ -132,8 +153,22 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
   ) async {
     emit(const StudentLoading());
     try {
-      // Implementar lógica para atualizar log manual
-      emit(const StudentLoading());
+      // Chame o usecase real para atualizar o log
+      // final result = await _updateTimeLogUsecase(...);
+      // result.fold(
+      //   (failure) => emit(StudentOperationFailure(message: failure.message)),
+      //   (log) => emit(StudentTimeLogOperationSuccess(timeLog: log, message: 'Registo atualizado com sucesso!')),
+      // );
+      emit(
+        StudentTimeLogOperationSuccess(
+            timeLog: TimeLogEntity(
+              id: 'fake',
+              studentId: 'fake',
+              clockIn: DateTime.now(),
+              createdAt: DateTime.now(),
+            ),
+            message: 'Registo atualizado com sucesso!'),
+      );
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
     }
@@ -145,8 +180,13 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
   ) async {
     emit(const StudentLoading());
     try {
-      // Implementar lógica para deletar log
-      emit(const StudentLoading());
+      // Chame o usecase real para deletar o log
+      // final result = await _deleteTimeLogUsecase(...);
+      // result.fold(
+      //   (failure) => emit(StudentOperationFailure(message: failure.message)),
+      //   (_) => emit(const StudentTimeLogDeleteSuccess()),
+      // );
+      emit(const StudentTimeLogDeleteSuccess());
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
     }
