@@ -366,7 +366,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildProgressSection() {
-    final progress = 150 / 300; // Mock data
+    const progress = 150 / 300; // Mock data
     return _buildInfoCard(
       title: 'Progresso do Estágio',
       icon: Icons.analytics_outlined,
@@ -378,7 +378,7 @@ class _ProfilePageState extends State<ProfilePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Progresso Geral', style: AppTextStyles.bodyMedium),
+                const Text('Progresso Geral', style: AppTextStyles.bodyMedium),
                 Text('${(progress * 100).toInt()}%',
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.bold,
@@ -387,7 +387,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ],
             ),
             const SizedBox(height: 8),
-            LinearProgressIndicator(
+            const LinearProgressIndicator(
               value: progress,
               backgroundColor: AppColors.background,
               valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),

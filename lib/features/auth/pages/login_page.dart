@@ -44,6 +44,13 @@ class _LoginPageState extends State<LoginPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
             );
+          } else if (state is AuthProfileIncomplete) {
+            // Redirecionar para a tela de completar perfil conforme o papel do usuário
+            if (state.user.role == UserRole.student) {
+              Modular.to.navigate('/student/profile');
+            } else if (state.user.role == UserRole.supervisor) {
+              Modular.to.navigate('/supervisor/profile');
+            }
           } else if (state is AuthSuccess) {
             FeedbackService.showSuccess(context, AppStrings.loginSuccess);
             // Navegar para a página apropriada baseado no papel do usuário

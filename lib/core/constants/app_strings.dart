@@ -105,4 +105,8 @@ class AppStrings {
   static const String expiringContracts = 'Contratos Expirando';
   static const String checkIn = 'Entrada';
   static const String checkOut = 'Saída';
+
+  // Supabase
+  static const String supabaseUrl = 'YOUR_SUPABASE_URL';
+  static const String supabaseAnnonKey = 'YOUR_SUPABASE_ANON_KEY';
 }

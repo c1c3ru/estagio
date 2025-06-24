@@ -16,6 +16,10 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/loading_indicator.dart';
 import '../../../../domain/entities/student_entity.dart';
+import '../../../../domain/entities/contract_entity.dart';
+import '../../../../domain/entities/supervisor_entity.dart';
+import '../../../../domain/usecases/contract/get_active_contract_by_student_usecase.dart';
+import '../../../../domain/usecases/supervisor/get_supervisor_by_id_usecase.dart';
 
 import '../bloc/student_bloc.dart' as student_bloc;
 import '../bloc/student_event.dart' as student_event;
@@ -367,6 +371,58 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
 
         const SizedBox(height: 24),
 
+        // Supervisor do contrato ativo
+        FutureBuilder<ContractEntity?>(
+          future: _getActiveContract(student.id),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: LinearProgressIndicator(),
+              );
+            }
+            final contract = snapshot.data;
+            if (contract == null || contract.supervisorId.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  'Nenhum supervisor associado. A associação é feita ao criar um contrato. Caso não tenha contrato ativo, crie um novo contrato para associar um supervisor.',
+                  style: TextStyle(color: Colors.orange[800]),
+                  textAlign: TextAlign.center,
+                ),
+              );
+            }
+            return FutureBuilder<SupervisorEntity?>(
+              future: _getSupervisorById(contract.supervisorId),
+              builder: (context, supSnapshot) {
+                if (supSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: LinearProgressIndicator(),
+                  );
+                }
+                if (!supSnapshot.hasData || supSnapshot.data == null) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      'Supervisor não encontrado. Verifique com o suporte.',
+                      style: TextStyle(color: Colors.red[800]),
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                }
+                final supervisor = supSnapshot.data!;
+                return _buildReadOnlyInfo(
+                  context,
+                  'Supervisor do Contrato Ativo',
+                  '${supervisor.position} - ${supervisor.department}',
+                  icon: Icons.verified_user_outlined,
+                );
+              },
+            );
+          },
+        ),
+
         // Informações do contrato
         Text(
           'Informações do Contrato',
@@ -605,5 +661,17 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
             fontWeight: FontWeight.bold,
           ),
     );
+  }
+
+  Future<ContractEntity?> _getActiveContract(String studentId) async {
+    final usecase = Modular.get<GetActiveContractByStudentUsecase>();
+    final result = await usecase(studentId);
+    return result.fold((_) => null, (c) => c);
+  }
+
+  Future<SupervisorEntity?> _getSupervisorById(String supervisorId) async {
+    final usecase = Modular.get<GetSupervisorByIdUsecase>();
+    final result = await usecase(supervisorId);
+    return result.fold((_) => null, (s) => s);
   }
 }

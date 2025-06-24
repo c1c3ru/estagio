@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'core/constants/app_strings.dart';
+
 import 'app_module.dart';
 import 'app_widget.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await dotenv.load(fileName: ".env");
 
   await Supabase.initialize(
@@ -26,8 +27,10 @@ Future<void> main() async {
     }
   }
 
-  runApp(ModularApp(
-    module: AppModule(sharedPreferences: sharedPreferences),
-    child: const AppWidget(),
-  ));
+  runApp(
+    ModularApp(
+      module: AppModule(sharedPreferences: sharedPreferences),
+      child: const AppWidget(),
+    ),
+  );
 }

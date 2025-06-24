@@ -95,3 +95,12 @@ class AuthProfileUpdated extends AuthState {
   @override
   List<Object?> get props => [updatedUser];
 }
+
+/// Estado quando o perfil do usuário está incompleto e precisa ser preenchido
+class AuthProfileIncomplete extends AuthState {
+  final UserEntity user;
+  const AuthProfileIncomplete(this.user);
+
+  @override
+  List<Object?> get props => [user];
+}

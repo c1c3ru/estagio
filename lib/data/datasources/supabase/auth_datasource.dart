@@ -262,8 +262,10 @@ class AuthDatasource implements IAuthDatasource {
           }
           await _supabaseClient.from('students').insert({
             'id': user.id,
-            'full_name': fullName,
+            'full_name': '',
             'registration_number': registration ?? 'PENDENTE',
+            'course': 'PENDENTE',
+            'advisor_name': 'PENDENTE',
             'status': 'active',
           });
           if (kDebugMode) {

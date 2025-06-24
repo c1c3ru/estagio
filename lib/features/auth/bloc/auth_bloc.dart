@@ -11,6 +11,8 @@ import '../../../domain/usecases/auth/reset_password_usecase.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 import '../../../domain/entities/user_entity.dart';
+import '../../../domain/entities/student_entity.dart';
+import '../../../domain/entities/supervisor_entity.dart';
 
 // BLoC
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
@@ -73,7 +75,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
     result.fold(
       (failure) => emit(AuthFailure(failure.message)),
-      (user) => emit(AuthSuccess(user)),
+      (user) {
+        if (_isProfileIncomplete(user)) {
+          emit(AuthProfileIncomplete(user));
+        } else {
+          emit(AuthSuccess(user));
+        }
+      },
     );
   }
 
@@ -85,7 +93,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await _logoutUseCase();
     result.fold(
       (failure) => emit(AuthFailure(failure.message)),
-      (_) => emit(AuthInitial()),
+      (_) => emit(AuthUnauthenticated()),
     );
   }
 
@@ -103,7 +111,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
     result.fold(
       (failure) => emit(AuthFailure(failure.message)),
-      (user) => emit(AuthSuccess(user)),
+      (user) {
+        if (_isProfileIncomplete(user)) {
+          emit(AuthProfileIncomplete(user));
+        } else {
+          emit(AuthSuccess(user));
+        }
+      },
     );
   }
 
@@ -117,7 +131,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       (failure) => emit(AuthFailure(failure.message)),
       (user) {
         if (user != null) {
-          emit(AuthSuccess(user));
+          if (_isProfileIncomplete(user)) {
+            emit(AuthProfileIncomplete(user));
+          } else {
+            emit(AuthSuccess(user));
+          }
         } else {
           emit(AuthInitial());
         }
@@ -130,7 +148,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) {
     if (event.user != null) {
-      emit(AuthSuccess(event.user!));
+      if (_isProfileIncomplete(event.user!)) {
+        emit(AuthProfileIncomplete(event.user!));
+      } else {
+        emit(AuthSuccess(event.user!));
+      }
     } else {
       emit(AuthInitial());
     }
@@ -184,5 +206,35 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       (failure) => emit(AuthInitial()),
       (user) => emit(user != null ? AuthSuccess(user) : AuthInitial()),
     );
+  }
+
+  // Função auxiliar para checar perfil incompleto
+  bool _isProfileIncomplete(UserEntity user) {
+    if (user.role.name == 'student' && user is StudentEntity) {
+      final course = user.course;
+      final advisor = user.advisorName;
+      if (user.fullName.isEmpty ||
+          course.isEmpty ||
+          course == 'PENDENTE' ||
+          advisor.isEmpty ||
+          advisor == 'PENDENTE') {
+        return true;
+      }
+    }
+    if (user.role.name == 'supervisor' && user is SupervisorEntity) {
+      final supervisor = user as SupervisorEntity;
+      final department = supervisor.department;
+      final position = supervisor.position;
+      final specialization = supervisor.specialization;
+      if (department.isEmpty ||
+          department == 'PENDENTE' ||
+          position.isEmpty ||
+          position == 'PENDENTE' ||
+          specialization.isEmpty ||
+          specialization == 'PENDENTE') {
+        return true;
+      }
+    }
+    return false;
   }
 }
