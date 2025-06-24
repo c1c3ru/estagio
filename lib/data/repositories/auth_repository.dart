@@ -89,10 +89,6 @@ class AuthRepository implements IAuthRepository {
         role: UserRole.student, // Valor padrão student
         registration: null, // Valor padrão null
       );
-      if (userData == null) {
-        return Left(
-            AuthFailure('Dados de usuário não retornados pelo registro.'));
-      }
       final userModel = UserModel.fromJson(userData);
       await _preferencesManager.saveUserData(userModel.toJson());
       return Right(userModel.toEntity());
@@ -146,10 +142,6 @@ class AuthRepository implements IAuthRepository {
         phoneNumber: params.phoneNumber,
         profilePictureUrl: params.profilePictureUrl,
       );
-      if (userData == null) {
-        return Left(
-            AuthFailure('Dados de usuário não retornados pela atualização.'));
-      }
       return Right(UserModel.fromJson(userData).toEntity());
     } catch (e) {
       return Left(AuthFailure(e.toString()));

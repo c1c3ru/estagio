@@ -9,17 +9,19 @@ import 'package:dartz/dartz.dart' as _i2;
 import 'package:gestao_de_estagio/core/errors/app_exceptions.dart' as _i5;
 import 'package:gestao_de_estagio/domain/entities/user_entity.dart' as _i6;
 import 'package:gestao_de_estagio/domain/usecases/auth/get_auth_state_changes_usecase.dart'
-    as _i11;
-import 'package:gestao_de_estagio/domain/usecases/auth/get_current_user_usecase.dart'
-    as _i3;
-import 'package:gestao_de_estagio/domain/usecases/auth/login_usecase.dart'
-    as _i7;
-import 'package:gestao_de_estagio/domain/usecases/auth/logout_usecase.dart'
-    as _i8;
-import 'package:gestao_de_estagio/domain/usecases/auth/register_usecase.dart'
-    as _i9;
-import 'package:gestao_de_estagio/domain/usecases/auth/update_profile_usecase.dart'
     as _i10;
+import 'package:gestao_de_estagio/domain/usecases/auth/get_current_user_usecase.dart'
+    as _i9;
+import 'package:gestao_de_estagio/domain/usecases/auth/login_usecase.dart'
+    as _i3;
+import 'package:gestao_de_estagio/domain/usecases/auth/logout_usecase.dart'
+    as _i7;
+import 'package:gestao_de_estagio/domain/usecases/auth/register_usecase.dart'
+    as _i8;
+import 'package:gestao_de_estagio/domain/usecases/auth/reset_password_usecase.dart'
+    as _i12;
+import 'package:gestao_de_estagio/domain/usecases/auth/update_profile_usecase.dart'
+    as _i11;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -46,38 +48,10 @@ class _FakeEither_0<L, R> extends _i1.SmartFake implements _i2.Either<L, R> {
         );
 }
 
-/// A class which mocks [GetCurrentUserUsecase].
-///
-/// See the documentation for Mockito's code generation for more information.
-class MockGetCurrentUserUsecase extends _i1.Mock
-    implements _i3.GetCurrentUserUsecase {
-  MockGetCurrentUserUsecase() {
-    _i1.throwOnMissingStub(this);
-  }
-
-  @override
-  _i4.Future<_i2.Either<_i5.AppFailure, _i6.UserEntity?>> call() =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #call,
-          [],
-        ),
-        returnValue:
-            _i4.Future<_i2.Either<_i5.AppFailure, _i6.UserEntity?>>.value(
-                _FakeEither_0<_i5.AppFailure, _i6.UserEntity?>(
-          this,
-          Invocation.method(
-            #call,
-            [],
-          ),
-        )),
-      ) as _i4.Future<_i2.Either<_i5.AppFailure, _i6.UserEntity?>>);
-}
-
 /// A class which mocks [LoginUsecase].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockLoginUsecase extends _i1.Mock implements _i7.LoginUsecase {
+class MockLoginUsecase extends _i1.Mock implements _i3.LoginUsecase {
   MockLoginUsecase() {
     _i1.throwOnMissingStub(this);
   }
@@ -115,7 +89,7 @@ class MockLoginUsecase extends _i1.Mock implements _i7.LoginUsecase {
 /// A class which mocks [LogoutUsecase].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockLogoutUsecase extends _i1.Mock implements _i8.LogoutUsecase {
+class MockLogoutUsecase extends _i1.Mock implements _i7.LogoutUsecase {
   MockLogoutUsecase() {
     _i1.throwOnMissingStub(this);
   }
@@ -140,7 +114,7 @@ class MockLogoutUsecase extends _i1.Mock implements _i8.LogoutUsecase {
 /// A class which mocks [RegisterUsecase].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockRegisterUsecase extends _i1.Mock implements _i9.RegisterUsecase {
+class MockRegisterUsecase extends _i1.Mock implements _i8.RegisterUsecase {
   MockRegisterUsecase() {
     _i1.throwOnMissingStub(this);
   }
@@ -175,18 +149,65 @@ class MockRegisterUsecase extends _i1.Mock implements _i9.RegisterUsecase {
       ) as _i4.Future<_i2.Either<_i5.AppFailure, _i6.UserEntity>>);
 }
 
+/// A class which mocks [GetCurrentUserUsecase].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockGetCurrentUserUsecase extends _i1.Mock
+    implements _i9.GetCurrentUserUsecase {
+  MockGetCurrentUserUsecase() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i4.Future<_i2.Either<_i5.AppFailure, _i6.UserEntity?>> call() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [],
+        ),
+        returnValue:
+            _i4.Future<_i2.Either<_i5.AppFailure, _i6.UserEntity?>>.value(
+                _FakeEither_0<_i5.AppFailure, _i6.UserEntity?>(
+          this,
+          Invocation.method(
+            #call,
+            [],
+          ),
+        )),
+      ) as _i4.Future<_i2.Either<_i5.AppFailure, _i6.UserEntity?>>);
+}
+
+/// A class which mocks [GetAuthStateChangesUsecase].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockGetAuthStateChangesUsecase extends _i1.Mock
+    implements _i10.GetAuthStateChangesUsecase {
+  MockGetAuthStateChangesUsecase() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i4.Stream<_i6.UserEntity?> call() => (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [],
+        ),
+        returnValue: _i4.Stream<_i6.UserEntity?>.empty(),
+      ) as _i4.Stream<_i6.UserEntity?>);
+}
+
 /// A class which mocks [UpdateProfileUsecase].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockUpdateProfileUsecase extends _i1.Mock
-    implements _i10.UpdateProfileUsecase {
+    implements _i11.UpdateProfileUsecase {
   MockUpdateProfileUsecase() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
   _i4.Future<_i2.Either<_i5.AppFailure, _i6.UserEntity>> call(
-          {required _i10.UpdateProfileParams? params}) =>
+          {required _i11.UpdateProfileParams? params}) =>
       (super.noSuchMethod(
         Invocation.method(
           #call,
@@ -206,21 +227,31 @@ class MockUpdateProfileUsecase extends _i1.Mock
       ) as _i4.Future<_i2.Either<_i5.AppFailure, _i6.UserEntity>>);
 }
 
-/// A class which mocks [GetAuthStateChangesUsecase].
+/// A class which mocks [ResetPasswordUsecase].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockGetAuthStateChangesUsecase extends _i1.Mock
-    implements _i11.GetAuthStateChangesUsecase {
-  MockGetAuthStateChangesUsecase() {
+class MockResetPasswordUsecase extends _i1.Mock
+    implements _i12.ResetPasswordUsecase {
+  MockResetPasswordUsecase() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.Stream<_i6.UserEntity?> call() => (super.noSuchMethod(
+  _i4.Future<_i2.Either<_i5.AppFailure, void>> call({required String? email}) =>
+      (super.noSuchMethod(
         Invocation.method(
           #call,
           [],
+          {#email: email},
         ),
-        returnValue: _i4.Stream<_i6.UserEntity?>.empty(),
-      ) as _i4.Stream<_i6.UserEntity?>);
+        returnValue: _i4.Future<_i2.Either<_i5.AppFailure, void>>.value(
+            _FakeEither_0<_i5.AppFailure, void>(
+          this,
+          Invocation.method(
+            #call,
+            [],
+            {#email: email},
+          ),
+        )),
+      ) as _i4.Future<_i2.Either<_i5.AppFailure, void>>);
 }

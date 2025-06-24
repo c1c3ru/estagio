@@ -5,9 +5,9 @@ import 'package:gestao_de_estagio/core/utils/validators.dart';
 void main() {
   group('Validators', () {
     group('siapeRegistration', () {
-      test('should return null for valid 7-digit SIAPE', () {
+      test('should return null for valid 6-digit SIAPE', () {
         // Arrange
-        const validSiape = '1234567';
+        const validSiape = '123456';
 
         // Act
         final result = Validators.siapeRegistration(validSiape);
@@ -32,44 +32,45 @@ void main() {
         expect(result, equals('Matrícula SIAPE é obrigatória.'));
       });
 
-      test('should return error for less than 7 digits', () {
+      test('should return error for less than 6 digits', () {
         // Arrange
-        const shortSiape = '123456';
+        const shortSiape = '12345';
 
         // Act
         final result = Validators.siapeRegistration(shortSiape);
 
         // Assert
         expect(
-            result, equals('Matrícula SIAPE deve ter exatamente 7 dígitos.'));
+            result, equals('Matrícula SIAPE deve ter exatamente 6 dígitos.'));
       });
 
-      test('should return error for more than 7 digits', () {
+      test('should return error for more than 6 digits', () {
         // Arrange
-        const longSiape = '12345678';
+        const longSiape = '1234567';
 
         // Act
         final result = Validators.siapeRegistration(longSiape);
 
         // Assert
         expect(
-            result, equals('Matrícula SIAPE deve ter exatamente 7 dígitos.'));
+            result, equals('Matrícula SIAPE deve ter exatamente 6 dígitos.'));
       });
 
-      test('should return error for non-numeric characters', () {
+      test('should return null for alphanumeric string that cleans to 6 digits',
+          () {
         // Arrange
-        const alphanumericSiape = '123456a';
+        const alphanumericSiape = '1a2b3c4d5e6f';
 
         // Act
         final result = Validators.siapeRegistration(alphanumericSiape);
 
         // Assert
-        expect(result, equals('Matrícula SIAPE deve conter apenas números.'));
+        expect(result, isNull);
       });
 
       test('should handle spaces and special characters', () {
         // Arrange
-        const siapeWithSpaces = '123 456 7';
+        const siapeWithSpaces = '123 456';
 
         // Act
         final result = Validators.siapeRegistration(siapeWithSpaces);
@@ -78,7 +79,9 @@ void main() {
         expect(result, isNull); // Should be valid after cleaning
       });
 
-      test('should return error for string with letters', () {
+      test(
+          'should return error for string with letters that do not clean to 6 digits',
+          () {
         // Arrange
         const siapeWithLetters = 'abc1234';
 
@@ -86,14 +89,15 @@ void main() {
         final result = Validators.siapeRegistration(siapeWithLetters);
 
         // Assert
-        expect(result, equals('Matrícula SIAPE deve conter apenas números.'));
+        expect(
+            result, equals('Matrícula SIAPE deve ter exatamente 6 dígitos.'));
       });
     });
 
     group('siapeRegistrationUnique', () {
       test('should return null for valid and unique SIAPE', () {
         // Arrange
-        const validSiape = '1234567';
+        const validSiape = '123456';
 
         // Act
         final result =
@@ -105,7 +109,7 @@ void main() {
 
       test('should return error for non-unique SIAPE', () {
         // Arrange
-        const duplicateSiape = '1234567';
+        const duplicateSiape = '123456';
 
         // Act
         final result =
@@ -125,7 +129,7 @@ void main() {
 
         // Assert
         expect(
-            result, equals('Matrícula SIAPE deve ter exatamente 7 dígitos.'));
+            result, equals('Matrícula SIAPE deve ter exatamente 6 dígitos.'));
       });
     });
   });

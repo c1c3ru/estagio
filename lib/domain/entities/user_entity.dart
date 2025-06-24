@@ -26,6 +26,16 @@ class UserEntity extends Equatable {
     this.updatedAt,
   });
 
+  static final UserEntity empty = UserEntity(
+    id: '',
+    email: '',
+    fullName: '',
+    role: UserRole.student,
+    createdAt: DateTime.fromMicrosecondsSinceEpoch(0),
+    emailConfirmed: false,
+    isActive: false,
+  );
+
   @override
   List<Object?> get props => [
         id,

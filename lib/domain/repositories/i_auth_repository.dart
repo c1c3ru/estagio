@@ -27,4 +27,6 @@ abstract class IAuthRepository {
   Future<Either<AppFailure, void>> resetPassword({
     required String email,
   });
+
+  Future<bool> isLoggedIn();
 }

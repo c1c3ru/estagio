@@ -252,21 +252,16 @@ class AppModule extends Module {
           notificationRepository: i(),
           authRepository: i(),
         ));
-    i.addLazySingleton(() => AuthGuard(i()));
+    i.addLazySingleton<AuthGuard>(() => AuthGuard(i()));
   }
 
   @override
   void routes(RouteManager r) {
-    // Rotas do AuthModule
     r.child('/', child: (context) => const LoginPage());
-    r.child('/register', child: (context) => const RegisterPage());
-    r.child('/auth/register', child: (context) => const RegisterPage());
-    r.child('/auth/forgot-password',
-        child: (context) => const ForgotPasswordPage());
-
-    // Rotas filhas para os módulos
     r.module('/auth', module: AuthModule());
-    r.module('/student', module: StudentModule());
-    r.module('/supervisor', module: SupervisorModule());
+    r.module('/student',
+        module: StudentModule(), guards: [Modular.get<AuthGuard>()]);
+    r.module('/supervisor',
+        module: SupervisorModule(), guards: [Modular.get<AuthGuard>()]);
   }
 }
