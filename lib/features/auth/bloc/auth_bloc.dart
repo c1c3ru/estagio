@@ -8,6 +8,7 @@ import '../../../domain/usecases/auth/logout_usecase.dart';
 import '../../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../../domain/usecases/auth/update_profile_usecase.dart';
 import '../../../domain/usecases/auth/get_auth_state_changes_usecase.dart';
+import '../../../domain/usecases/auth/reset_password_usecase.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 import '../../../domain/entities/user_entity.dart';
@@ -20,6 +21,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final GetCurrentUserUsecase _getCurrentUserUseCase;
   final GetAuthStateChangesUsecase _getAuthStateChangesUseCase;
   final UpdateProfileUsecase _updateProfileUseCase;
+  final ResetPasswordUsecase _resetPasswordUseCase;
   StreamSubscription<UserEntity?>? _authStateSubscription;
 
   AuthBloc({
@@ -29,12 +31,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required GetCurrentUserUsecase getCurrentUserUseCase,
     required GetAuthStateChangesUsecase getAuthStateChangesUseCase,
     required UpdateProfileUsecase updateProfileUseCase,
+    required ResetPasswordUsecase resetPasswordUseCase,
   })  : _loginUseCase = loginUseCase,
         _logoutUseCase = logoutUseCase,
         _registerUseCase = registerUseCase,
         _getCurrentUserUseCase = getCurrentUserUseCase,
         _getAuthStateChangesUseCase = getAuthStateChangesUseCase,
         _updateProfileUseCase = updateProfileUseCase,
+        _resetPasswordUseCase = resetPasswordUseCase,
         super(AuthInitial()) {
     // Registrar handlers de eventos
     on<LoginRequested>(_onLoginRequested);
@@ -43,6 +47,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<GetCurrentUserRequested>(_onGetCurrentUserRequested);
     on<AuthStateChanged>(_onAuthStateChanged);
     on<UpdateProfileRequested>(_onUpdateProfileRequested);
+    on<AuthResetPasswordRequested>(_onResetPasswordRequested);
     on<AuthInitializeRequested>((event, emit) async {
       // emit(AuthLoading());
       // final user = await getCurrentUserUseCase();
@@ -101,8 +106,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     result.fold(
       (failure) => emit(AuthFailure(failure.message)),
       (user) {
-        emit(AuthRegistrationSuccess('Cadastro realizado com sucesso!'));
-        emit(AuthSuccess(user));
+        // Verificar se o usuário precisa confirmar email
+        if (user.emailConfirmed == false) {
+          emit(AuthEmailConfirmationRequired(
+            email: user.email,
+            message:
+                'Cadastro realizado com sucesso! Verifique seu e-mail para confirmar a conta.',
+          ));
+        } else {
+          emit(AuthRegistrationSuccess('Cadastro realizado com sucesso!'));
+          emit(AuthSuccess(user));
+        }
       },
     );
   }
@@ -148,6 +162,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthProfileUpdateSuccess('Perfil atualizado com sucesso!'));
         emit(AuthSuccess(user));
       },
+    );
+  }
+
+  Future<void> _onResetPasswordRequested(
+    AuthResetPasswordRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    final result = await _resetPasswordUseCase(email: event.email);
+    result.fold(
+      (failure) => emit(AuthFailure(failure.message)),
+      (_) => emit(const AuthPasswordResetEmailSent(
+          message: 'E-mail de redefinição enviado!')),
     );
   }
 }

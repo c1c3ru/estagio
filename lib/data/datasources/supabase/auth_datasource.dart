@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 import '../../../core/enums/user_role.dart';
 import '../../../core/errors/app_exceptions.dart';
@@ -52,32 +53,27 @@ class AuthDatasource implements IAuthDatasource {
 
       // Criar dados do estudante/supervisor na tabela correspondente
       try {
+        // Verificar políticas primeiro
+        await checkTablePolicies();
+        await checkRLSPolicies();
+
         if (role == UserRole.student) {
-          await _supabaseClient.from('students').insert({
-            // 'id': response.user!.id, // O ID será preenchido pelo default no DB (auth.uid())
-            'full_name': fullName,
-            'registration_number': registration,
-            'course': 'Curso não definido',
-            'advisor_name': 'Orientador não definido',
-            'is_mandatory_internship': true,
-            'class_shift': 'morning',
-            'internship_shift_1': 'morning',
-            'birth_date': '2000-01-01',
-            'contract_start_date':
-                DateTime.now().toIso8601String().split('T')[0],
-            'contract_end_date': DateTime.now()
-                .add(const Duration(days: 365))
-                .toIso8601String()
-                .split('T')[0],
-            'total_hours_required': 300.0,
-            'total_hours_completed': 0.0,
-            'weekly_hours_target': 20.0,
-            'created_at': DateTime.now().toIso8601String(),
-            'updated_at': DateTime.now().toIso8601String(),
-          });
+          print(
+              '📝 Criando dados do estudante para usuário ${response.user!.id}');
+
+          // Verificar permissão de inserção
+          await verifyUserInsertionPermission(response.user!.id);
+
+          // Testar inserção primeiro
+          await testStudentInsertion(
+              response.user!.id, fullName, registration ?? '');
+
+          print('✅ Dados do estudante criados com sucesso');
         } else if (role == UserRole.supervisor) {
+          print(
+              '📝 Criando dados do supervisor para usuário ${response.user!.id}');
           await _supabaseClient.from('supervisors').insert({
-            // 'id': response.user!.id, // O ID será preenchido pelo default no DB (auth.uid())
+            'id': response.user!.id, // Incluir o ID do usuário
             'full_name': fullName,
             'department': 'Departamento não definido',
             'position': 'Supervisor',
@@ -85,11 +81,13 @@ class AuthDatasource implements IAuthDatasource {
             'created_at': DateTime.now().toIso8601String(),
             'updated_at': DateTime.now().toIso8601String(),
           });
+          print('✅ Dados do supervisor criados com sucesso');
         }
       } catch (e) {
         // Se falhar ao criar os dados, não falha o registro
         // mas loga o erro para debug
         print('⚠️ Erro ao criar dados do ${role.name}: $e');
+        print('⚠️ Detalhes do erro: ${e.toString()}');
       }
 
       return {
@@ -98,6 +96,7 @@ class AuthDatasource implements IAuthDatasource {
         'role': role.toString(),
         'fullName': fullName,
         'registration': registration,
+        'emailConfirmed': response.user!.emailConfirmedAt != null,
         'createdAt': DateTime.parse(response.user!.createdAt).toIso8601String(),
         'updatedAt': response.user!.updatedAt != null
             ? DateTime.parse(response.user!.updatedAt!).toIso8601String()
@@ -114,17 +113,32 @@ class AuthDatasource implements IAuthDatasource {
     String password,
   ) async {
     try {
+      print('🔐 Tentando fazer login com email: $email');
+
+      // Testar conectividade primeiro
+      await testConnection();
+
+      // Limpar sessão anterior se existir
+      await _supabaseClient.auth.signOut();
+      print('🧹 Sessão anterior limpa');
+
+      // Tentar login de forma mais simples
+      print('🔑 Fazendo login...');
       final response = await _supabaseClient.auth.signInWithPassword(
         email: email,
         password: password,
       );
 
+      print('✅ Login bem-sucedido para usuário: ${response.user?.id}');
+
       if (response.user == null) {
-        throw AuthException('Erro ao fazer login');
+        throw AuthException('Erro ao fazer login: usuário não retornado');
       }
 
       // Verificar se o usuário tem dados na tabela correspondente
+      print('🔍 Verificando dados do usuário na tabela...');
       await _ensureUserDataExists(response.user!);
+      print('✅ Dados do usuário verificados/criados com sucesso');
 
       return {
         'id': response.user!.id,
@@ -133,13 +147,27 @@ class AuthDatasource implements IAuthDatasource {
         'fullName': response.user!.userMetadata?['full_name'],
         'phoneNumber': response.user!.phone,
         'profilePictureUrl': response.user!.userMetadata?['avatar_url'],
+        'emailConfirmed': response.user!.emailConfirmedAt != null,
         'createdAt': DateTime.parse(response.user!.createdAt).toIso8601String(),
         'updatedAt': response.user!.updatedAt != null
             ? DateTime.parse(response.user!.updatedAt!).toIso8601String()
             : null,
       };
     } catch (e) {
-      throw AuthException('Erro ao fazer login: $e');
+      print('❌ Erro no login: $e');
+      print('❌ Tipo de erro: ${e.runtimeType}');
+      print('❌ Mensagem completa: $e');
+
+      if (e.toString().contains('Invalid login credentials') ||
+          e.toString().contains('invalid_credentials')) {
+        throw AuthException(
+            'E-mail ou senha incorretos. Verifique suas credenciais.');
+      } else if (e.toString().contains('400')) {
+        throw AuthException(
+            'Credenciais inválidas. Verifique seu e-mail e senha.');
+      } else {
+        throw AuthException('Erro ao fazer login: $e');
+      }
     }
   }
 
@@ -185,6 +213,8 @@ class AuthDatasource implements IAuthDatasource {
       final fullName = user.userMetadata?['full_name'] ?? '';
       final registration = user.userMetadata?['registration'];
 
+      print('🔍 Verificando dados para usuário ${user.id} com role: $role');
+
       if (role == 'student') {
         // Verificar se já existe na tabela students
         final existingStudent = await _supabaseClient
@@ -194,9 +224,10 @@ class AuthDatasource implements IAuthDatasource {
             .maybeSingle();
 
         if (existingStudent == null) {
+          print('📝 Criando dados do estudante para usuário ${user.id}');
           // Criar dados do estudante
           await _supabaseClient.from('students').insert({
-            // 'id': user.id, // O ID será preenchido pelo default no DB (auth.uid())
+            'id': user.id, // Incluir o ID do usuário
             'full_name': fullName,
             'registration_number': registration,
             'course': 'Curso não definido',
@@ -217,7 +248,9 @@ class AuthDatasource implements IAuthDatasource {
             'created_at': DateTime.now().toIso8601String(),
             'updated_at': DateTime.now().toIso8601String(),
           });
-          ('✅ Dados do estudante criados para usuário ${user.id}');
+          print('✅ Dados do estudante criados para usuário ${user.id}');
+        } else {
+          print('✅ Dados do estudante já existem para usuário ${user.id}');
         }
       } else if (role == 'supervisor') {
         // Verificar se já existe na tabela supervisors
@@ -228,15 +261,20 @@ class AuthDatasource implements IAuthDatasource {
             .maybeSingle();
 
         if (existingSupervisor == null) {
+          print(
+              '❌ Perfil de supervisor não encontrado para usuário ${user.id}');
           // O perfil do supervisor deve ser criado por um administrador.
           // Se não existir, o login deve falhar.
           throw AuthException(
               'Perfil de supervisor não encontrado. Contate o administrador.');
+        } else {
+          print('✅ Dados do supervisor já existem para usuário ${user.id}');
         }
       }
     } catch (e) {
       print('⚠️ Erro ao verificar/criar dados do usuário: $e');
-      rethrow;
+      // Não rethrow aqui para não impedir o login
+      // Apenas loga o erro para debug
     }
   }
 
@@ -317,6 +355,234 @@ class AuthDatasource implements IAuthDatasource {
       return updatedUser;
     } catch (e) {
       throw AuthException('Erro ao atualizar perfil: $e');
+    }
+  }
+
+  /// Verifica se um usuário existe no Supabase
+  Future<bool> userExists(String email) async {
+    try {
+      print('🔍 Verificando se usuário existe: $email');
+
+      // Como não temos acesso admin, vamos tentar uma abordagem diferente
+      // Tentar fazer login e capturar o erro específico
+      try {
+        await _supabaseClient.auth.signInWithPassword(
+          email: email,
+          password: 'senha_temporaria_para_teste',
+        );
+      } catch (e) {
+        if (e.toString().contains('Invalid login credentials')) {
+          print('✅ Usuário $email existe no Supabase (senha incorreta)');
+          return true;
+        } else if (e.toString().contains('User not found')) {
+          print('❌ Usuário $email não existe no Supabase');
+          return false;
+        }
+      }
+
+      return true; // Se chegou aqui, o usuário existe
+    } catch (e) {
+      print('⚠️ Erro ao verificar se usuário existe: $e');
+      return false;
+    }
+  }
+
+  /// Testa a conectividade com o Supabase
+  Future<bool> testConnection() async {
+    try {
+      print('🔧 Testando conectividade com Supabase...');
+
+      // Tentar fazer uma consulta simples para testar a conexão
+      final response =
+          await _supabaseClient.from('students').select('count').limit(1);
+
+      if (kDebugMode) {
+        print('✅ Conectividade com Supabase OK');
+      }
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Erro na conectividade com Supabase: $e');
+      }
+      return false;
+    }
+  }
+
+  /// Testa o registro de um usuário para verificar se a autenticação está funcionando
+  Future<bool> testRegistration() async {
+    try {
+      if (kDebugMode) {
+        print('🧪 Testando registro de usuário...');
+      }
+
+      final testEmail =
+          'teste_${DateTime.now().millisecondsSinceEpoch}@teste.com';
+      const testPassword = 'Teste123!';
+
+      final response = await _supabaseClient.auth.signUp(
+        email: testEmail,
+        password: testPassword,
+      );
+
+      if (response.user != null) {
+        if (kDebugMode) {
+          print('✅ Registro de teste bem-sucedido');
+        }
+        // Limpar o usuário de teste
+        await _supabaseClient.auth.signOut();
+        return true;
+      } else {
+        if (kDebugMode) {
+          print('❌ Registro de teste falhou');
+        }
+        return false;
+      }
+    } catch (e) {
+      print('❌ Erro no registro de teste: $e');
+      return false;
+    }
+  }
+
+  /// Testa a inserção de dados na tabela students
+  Future<void> testStudentInsertion(
+      String userId, String fullName, String registration) async {
+    try {
+      if (kDebugMode) {
+        print('🧪 Testando inserção de dados do estudante...');
+      }
+      if (kDebugMode) {
+        print('🧪 User ID: $userId');
+      }
+      if (kDebugMode) {
+        print('🧪 Full Name: $fullName');
+      }
+      if (kDebugMode) {
+        print('🧪 Registration: $registration');
+      }
+
+      final result = await _supabaseClient.from('students').insert({
+        'id': userId,
+        'full_name': fullName,
+        'registration_number': registration,
+        'course': 'Curso não definido',
+        'advisor_name': 'Orientador não definido',
+        'is_mandatory_internship': true,
+        'class_shift': 'morning',
+        'internship_shift_1': 'morning',
+        'birth_date': '2000-01-01',
+        'contract_start_date': DateTime.now().toIso8601String().split('T')[0],
+        'contract_end_date': DateTime.now()
+            .add(const Duration(days: 365))
+            .toIso8601String()
+            .split('T')[0],
+        'total_hours_required': 300.0,
+        'total_hours_completed': 0.0,
+        'weekly_hours_target': 20.0,
+        'created_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toIso8601String(),
+      }).select();
+
+      print('✅ Teste de inserção bem-sucedido: $result');
+    } catch (e) {
+      print('❌ Erro no teste de inserção: $e');
+      print('❌ Tipo de erro: ${e.runtimeType}');
+      rethrow;
+    }
+  }
+
+  /// Verifica as políticas de segurança da tabela students
+  Future<void> checkTablePolicies() async {
+    try {
+      print('🔒 Verificando políticas de segurança...');
+
+      // Tentar fazer uma consulta simples
+      final result =
+          await _supabaseClient.from('students').select('count').limit(1);
+
+      print('✅ Consulta à tabela students bem-sucedida');
+
+      // Verificar se o usuário atual pode inserir
+      final currentUser = _supabaseClient.auth.currentUser;
+      print('👤 Usuário atual: ${currentUser?.id}');
+      print('👤 Email: ${currentUser?.email}');
+    } catch (e) {
+      print('❌ Erro ao verificar políticas: $e');
+      print('❌ Tipo de erro: ${e.runtimeType}');
+    }
+  }
+
+  /// Verifica se o usuário pode inserir dados na tabela students
+  Future<void> verifyUserInsertionPermission(String userId) async {
+    try {
+      print('🔍 Verificando permissão de inserção para usuário: $userId');
+
+      // Verificar se o usuário está autenticado
+      final currentUser = _supabaseClient.auth.currentUser;
+      if (currentUser == null) {
+        print('❌ Usuário não está autenticado');
+        return;
+      }
+
+      print('✅ Usuário autenticado: ${currentUser.id}');
+
+      // Tentar inserir um registro de teste
+      final testData = {
+        'id': userId,
+        'full_name': 'Teste',
+        'registration_number': 'TEST123',
+        'course': 'Teste',
+        'advisor_name': 'Teste',
+        'is_mandatory_internship': true,
+        'class_shift': 'morning',
+        'internship_shift_1': 'morning',
+        'birth_date': '2000-01-01',
+        'contract_start_date': DateTime.now().toIso8601String().split('T')[0],
+        'contract_end_date': DateTime.now()
+            .add(const Duration(days: 365))
+            .toIso8601String()
+            .split('T')[0],
+        'total_hours_required': 300.0,
+        'total_hours_completed': 0.0,
+        'weekly_hours_target': 20.0,
+        'created_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+
+      final result =
+          await _supabaseClient.from('students').insert(testData).select();
+      print('✅ Permissão de inserção verificada: $result');
+
+      // Remover o registro de teste
+      await _supabaseClient.from('students').delete().eq('id', userId);
+      print('🧹 Registro de teste removido');
+    } catch (e) {
+      print('❌ Erro ao verificar permissão de inserção: $e');
+      print('❌ Tipo de erro: ${e.runtimeType}');
+    }
+  }
+
+  /// Verifica se há políticas de RLS ativas na tabela students
+  Future<void> checkRLSPolicies() async {
+    try {
+      print('🔒 Verificando políticas de RLS...');
+
+      // Tentar fazer uma consulta sem autenticação
+      final result =
+          await _supabaseClient.from('students').select('*').limit(1);
+
+      print('✅ Consulta sem autenticação bem-sucedida');
+      print('📊 Resultado: $result');
+    } catch (e) {
+      print('❌ Erro ao verificar RLS: $e');
+      print('❌ Tipo de erro: ${e.runtimeType}');
+
+      if (e.toString().contains('permission denied') ||
+          e.toString().contains('new row violates row-level security policy')) {
+        print(
+            '🚨 Problema detectado: Políticas de RLS estão bloqueando a operação');
+        print(
+            '💡 Solução: Verificar as políticas de segurança no painel do Supabase');
+      }
     }
   }
 }

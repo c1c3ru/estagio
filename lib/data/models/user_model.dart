@@ -10,6 +10,7 @@ class UserModel extends UserEntity {
     super.profilePictureUrl,
     required super.role,
     super.isActive = true,
+    super.emailConfirmed = false,
     required super.createdAt,
     super.updatedAt,
   });
@@ -24,6 +25,7 @@ class UserModel extends UserEntity {
           json['profile_picture_url'] ?? json['avatar_url'] as String?,
       role: UserRole.fromString(json['role'] as String),
       isActive: json['is_active'] as bool? ?? true,
+      emailConfirmed: json['email_confirmed'] as bool? ?? false,
       createdAt:
           DateTime.parse(json['created_at'] ?? json['createdAt'] as String),
       updatedAt: json['updated_at'] != null || json['updatedAt'] != null
@@ -41,6 +43,7 @@ class UserModel extends UserEntity {
       'profile_picture_url': profilePictureUrl,
       'role': role.toString(),
       'is_active': isActive,
+      'email_confirmed': emailConfirmed,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
@@ -55,6 +58,7 @@ class UserModel extends UserEntity {
       profilePictureUrl: profilePictureUrl,
       role: role,
       isActive: isActive,
+      emailConfirmed: emailConfirmed,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
@@ -69,6 +73,7 @@ class UserModel extends UserEntity {
       profilePictureUrl: entity.profilePictureUrl,
       role: entity.role,
       isActive: entity.isActive,
+      emailConfirmed: entity.emailConfirmed,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     );
@@ -82,6 +87,7 @@ class UserModel extends UserEntity {
     String? profilePictureUrl,
     UserRole? role,
     bool? isActive,
+    bool? emailConfirmed,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -93,6 +99,7 @@ class UserModel extends UserEntity {
       profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
       role: role ?? this.role,
       isActive: isActive ?? this.isActive,
+      emailConfirmed: emailConfirmed ?? this.emailConfirmed,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -109,6 +116,7 @@ class UserModel extends UserEntity {
         other.profilePictureUrl == profilePictureUrl &&
         other.role == role &&
         other.isActive == isActive &&
+        other.emailConfirmed == emailConfirmed &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
   }
@@ -122,12 +130,13 @@ class UserModel extends UserEntity {
         profilePictureUrl.hashCode ^
         role.hashCode ^
         isActive.hashCode ^
+        emailConfirmed.hashCode ^
         createdAt.hashCode ^
         updatedAt.hashCode;
   }
 
   @override
   String toString() {
-    return 'UserModel(id: $id, email: $email, fullName: $fullName, phoneNumber: $phoneNumber, profilePictureUrl: $profilePictureUrl, role: $role, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'UserModel(id: $id, email: $email, fullName: $fullName, phoneNumber: $phoneNumber, profilePictureUrl: $profilePictureUrl, role: $role, isActive: $isActive, emailConfirmed: $emailConfirmed, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 }

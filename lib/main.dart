@@ -13,11 +13,39 @@ Future<void> main() async {
   // Carregar variáveis de ambiente
   await dotenv.load(fileName: ".env");
 
+  // Verificar se as credenciais foram carregadas
+  final supabaseUrl = dotenv.env['SUPABASE_URL'];
+  final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'];
+
+  print('🔧 Configuração Supabase:');
+  print('URL: ${supabaseUrl != null ? '✅ Carregada' : '❌ Não encontrada'}');
+  print(
+      'AnonKey: ${supabaseAnonKey != null ? '✅ Carregada' : '❌ Não encontrada'}');
+
+  // Mostrar parte da URL para verificar se está correta
+  if (supabaseUrl != null) {
+    print(
+        'URL (primeiros 30 chars): ${supabaseUrl.substring(0, supabaseUrl.length > 30 ? 30 : supabaseUrl.length)}...');
+  }
+  if (supabaseAnonKey != null) {
+    print(
+        'AnonKey (primeiros 20 chars): ${supabaseAnonKey.substring(0, supabaseAnonKey.length > 20 ? 20 : supabaseAnonKey.length)}...');
+  }
+
+  if (supabaseUrl == null || supabaseAnonKey == null) {
+    print('❌ ERRO: Credenciais do Supabase não encontradas no arquivo .env');
+    print('Certifique-se de que o arquivo .env existe e contém:');
+    print('SUPABASE_URL=sua_url_aqui');
+    print('SUPABASE_ANON_KEY=sua_chave_aqui');
+  }
+
   // Inicializar Supabase
   await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+    url: supabaseUrl!,
+    anonKey: supabaseAnonKey!,
   );
+
+  print('✅ Supabase inicializado com sucesso');
 
   SharedPreferences? sharedPreferences;
   if (!kIsWeb) {

@@ -40,6 +40,20 @@ class AuthRegistrationSuccess extends AuthState {
   List<Object> get props => [message];
 }
 
+/// Estado quando o registro foi bem-sucedido mas requer confirmação de email.
+class AuthEmailConfirmationRequired extends AuthState {
+  final String email;
+  final String message;
+
+  const AuthEmailConfirmationRequired({
+    required this.email,
+    this.message = 'Verifique seu e-mail para confirmar o cadastro',
+  });
+
+  @override
+  List<Object> get props => [email, message];
+}
+
 /// Estado de sucesso no envio de email de redefinição de senha.
 class AuthPasswordResetEmailSent extends AuthState {
   final String message;

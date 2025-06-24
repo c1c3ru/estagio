@@ -73,7 +73,7 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   const SizedBox(height: 64),
                   AppLottieAnimation(
-                    assetPath: 'assets/animations/Loading_animations.json',
+                    assetPath: 'assets/animations/intership_animations.json',
                     height: 120,
                   ),
                   const SizedBox(height: 32),
@@ -93,12 +93,6 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 32),
                   const LoginForm(),
                   const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () =>
-                        Modular.to.pushNamed('/auth/forgot-password'),
-                    child: const Text(AppStrings.forgotPassword),
-                  ),
-                  const SizedBox(height: 32),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
