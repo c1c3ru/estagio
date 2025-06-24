@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:gestao_de_estagio/features/auth/bloc/auth_bloc.dart';
+import 'package:gestao_de_estagio/features/auth/bloc/auth_event.dart';
 
 // É uma boa prática gerir as suas rotas num ficheiro dedicado.
 // Exemplo: lib/core/routes/app_routes.dart
@@ -87,10 +89,8 @@ class SupervisorAppDrawer extends StatelessWidget {
             title: 'Sair',
             isSelected: false,
             onTap: () {
-              // 1. Chame a sua lógica de logout do seu Auth BLoC ou serviço
-              // Modular.get<AuthBloc>().add(LogoutRequested());
-
-              // 2. Navegue para o ecrã de login, removendo todas as rotas anteriores.
+              // Dispara o logout corretamente
+              Modular.get<AuthBloc>().add(LogoutRequested());
               Modular.to.navigate(SupervisorRoutes.login);
             },
           ),

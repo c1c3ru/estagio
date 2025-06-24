@@ -273,6 +273,7 @@ class _ContractPageState extends State<ContractPage> {
     } else if (studentState is StudentDetailsLoaded) {
       supervisorId = studentState.student.supervisorId;
     }
+    final contractBloc = context.read<ContractBloc>();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -281,7 +282,7 @@ class _ContractPageState extends State<ContractPage> {
       ),
       builder: (modalContext) {
         return BlocProvider.value(
-          value: context.read<ContractBloc>(),
+          value: contractBloc,
           child: Padding(
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom,

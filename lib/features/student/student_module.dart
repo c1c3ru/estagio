@@ -187,7 +187,7 @@ class StudentModule extends Module {
       child: (_) => MultiBlocProvider(
         providers: [
           BlocProvider.value(value: Modular.get<StudentBloc>()),
-          BlocProvider(create: (_) => Modular.get<ContractBloc>()),
+          BlocProvider.value(value: Modular.get<ContractBloc>()),
         ],
         child: ContractPage(
           studentId: (r.args.data is Map &&
