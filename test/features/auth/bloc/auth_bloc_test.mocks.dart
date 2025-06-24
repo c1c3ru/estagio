@@ -6,12 +6,13 @@
 import 'dart:async' as _i4;
 
 import 'package:dartz/dartz.dart' as _i2;
+import 'package:gestao_de_estagio/core/enums/user_role.dart' as _i9;
 import 'package:gestao_de_estagio/core/errors/app_exceptions.dart' as _i5;
 import 'package:gestao_de_estagio/domain/entities/user_entity.dart' as _i6;
 import 'package:gestao_de_estagio/domain/usecases/auth/get_auth_state_changes_usecase.dart'
-    as _i10;
+    as _i11;
 import 'package:gestao_de_estagio/domain/usecases/auth/get_current_user_usecase.dart'
-    as _i9;
+    as _i10;
 import 'package:gestao_de_estagio/domain/usecases/auth/login_usecase.dart'
     as _i3;
 import 'package:gestao_de_estagio/domain/usecases/auth/logout_usecase.dart'
@@ -19,9 +20,9 @@ import 'package:gestao_de_estagio/domain/usecases/auth/logout_usecase.dart'
 import 'package:gestao_de_estagio/domain/usecases/auth/register_usecase.dart'
     as _i8;
 import 'package:gestao_de_estagio/domain/usecases/auth/reset_password_usecase.dart'
-    as _i12;
+    as _i13;
 import 'package:gestao_de_estagio/domain/usecases/auth/update_profile_usecase.dart'
-    as _i11;
+    as _i12;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -121,16 +122,22 @@ class MockRegisterUsecase extends _i1.Mock implements _i8.RegisterUsecase {
 
   @override
   _i4.Future<_i2.Either<_i5.AppFailure, _i6.UserEntity>> call({
+    required String? fullName,
     required String? email,
     required String? password,
+    required _i9.UserRole? role,
+    String? registration,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
           #call,
           [],
           {
+            #fullName: fullName,
             #email: email,
             #password: password,
+            #role: role,
+            #registration: registration,
           },
         ),
         returnValue:
@@ -141,8 +148,11 @@ class MockRegisterUsecase extends _i1.Mock implements _i8.RegisterUsecase {
             #call,
             [],
             {
+              #fullName: fullName,
               #email: email,
               #password: password,
+              #role: role,
+              #registration: registration,
             },
           ),
         )),
@@ -153,7 +163,7 @@ class MockRegisterUsecase extends _i1.Mock implements _i8.RegisterUsecase {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockGetCurrentUserUsecase extends _i1.Mock
-    implements _i9.GetCurrentUserUsecase {
+    implements _i10.GetCurrentUserUsecase {
   MockGetCurrentUserUsecase() {
     _i1.throwOnMissingStub(this);
   }
@@ -181,7 +191,7 @@ class MockGetCurrentUserUsecase extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockGetAuthStateChangesUsecase extends _i1.Mock
-    implements _i10.GetAuthStateChangesUsecase {
+    implements _i11.GetAuthStateChangesUsecase {
   MockGetAuthStateChangesUsecase() {
     _i1.throwOnMissingStub(this);
   }
@@ -200,14 +210,14 @@ class MockGetAuthStateChangesUsecase extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockUpdateProfileUsecase extends _i1.Mock
-    implements _i11.UpdateProfileUsecase {
+    implements _i12.UpdateProfileUsecase {
   MockUpdateProfileUsecase() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
   _i4.Future<_i2.Either<_i5.AppFailure, _i6.UserEntity>> call(
-          {required _i11.UpdateProfileParams? params}) =>
+          {required _i12.UpdateProfileParams? params}) =>
       (super.noSuchMethod(
         Invocation.method(
           #call,
@@ -231,7 +241,7 @@ class MockUpdateProfileUsecase extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockResetPasswordUsecase extends _i1.Mock
-    implements _i12.ResetPasswordUsecase {
+    implements _i13.ResetPasswordUsecase {
   MockResetPasswordUsecase() {
     _i1.throwOnMissingStub(this);
   }

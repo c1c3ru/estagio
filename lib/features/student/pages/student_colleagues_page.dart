@@ -43,11 +43,13 @@ class _StudentColleaguesPageState extends State<StudentColleaguesPage> {
                       children: [
                         const Icon(Icons.people, color: AppColors.primary),
                         const SizedBox(width: 8),
-                        Text(
-                          'Comunidade de Estagiários',
-                          style: AppTextStyles.h4.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Text(
+                            'Comunidade de Estagiários',
+                            style: AppTextStyles.h4.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],

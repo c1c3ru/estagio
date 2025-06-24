@@ -2,6 +2,7 @@
 import 'package:equatable/equatable.dart';
 import '../../../domain/entities/user_entity.dart';
 import '../../../domain/usecases/auth/update_profile_usecase.dart';
+import '../../../core/enums/user_role.dart';
 
 abstract class AuthEvent extends Equatable {
   const AuthEvent();
@@ -26,16 +27,22 @@ class LoginRequested extends AuthEvent {
 class LogoutRequested extends AuthEvent {}
 
 class RegisterRequested extends AuthEvent {
+  final String fullName;
   final String email;
   final String password;
+  final UserRole role;
+  final String? registration;
 
   const RegisterRequested({
+    required this.fullName,
     required this.email,
     required this.password,
+    required this.role,
+    this.registration,
   });
 
   @override
-  List<Object> get props => [email, password];
+  List<Object?> get props => [fullName, email, password, role, registration];
 }
 
 class GetCurrentUserRequested extends AuthEvent {}

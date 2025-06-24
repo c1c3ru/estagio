@@ -118,14 +118,12 @@ class AppModule extends Module {
       i.addInstance<SharedPreferences>(sharedPreferences!);
       i.addLazySingleton<PreferencesManager>(() => PreferencesManager(i()));
     } else {
+      // Fallback para quando SharedPreferences não está disponível (ex: desktop sem setup, alguns testes)
       i.addLazySingleton<InMemoryPreferencesManager>(
           () => InMemoryPreferencesManager());
       i.addLazySingleton<PreferencesManager>(() => PreferencesManagerMock(i()));
     }
 
-    // =====================================================================
-    // Camada de Dados (DataSources e Repositories)
-    // =====================================================================
     i.addLazySingleton<IAuthDatasource>(() => AuthDatasource(i()));
     i.addLazySingleton<StudentDatasource>(() => StudentDatasource(i()));
     i.addLazySingleton<SupervisorDatasource>(() => SupervisorDatasource(i()));
@@ -134,15 +132,15 @@ class AppModule extends Module {
     i.addLazySingleton<NotificationDatasource>(
         () => NotificationDatasource(i()));
 
-    i.addLazySingleton<IAuthRepository>(
-        () => AuthRepository(authDatasource: i(), preferencesManager: i()));
+    i.addLazySingleton<INotificationRepository>(
+        () => NotificationRepository(i()));
+
+    i.addLazySingleton<IAuthRepository>(() => AuthRepository(i(), i()));
     i.addLazySingleton<IStudentRepository>(() => StudentRepository(i(), i()));
     i.addLazySingleton<ISupervisorRepository>(
         () => SupervisorRepository(i(), i(), i()));
     i.addLazySingleton<ITimeLogRepository>(() => TimeLogRepository(i()));
     i.addLazySingleton<IContractRepository>(() => ContractRepository(i()));
-    i.addLazySingleton<INotificationRepository>(
-        () => NotificationRepository(i()));
 
     // =====================================================================
     // Camada de Domínio (UseCases)

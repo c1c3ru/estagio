@@ -308,8 +308,11 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
     emit(const SupervisorLoading(loadingMessage: 'A criar estudante...'));
 
     final authResult = await _registerAuthUserUsecase.call(
+      fullName: event.studentData.fullName,
       email: event.initialEmail,
       password: event.initialPassword,
+      role: event.studentData.role,
+      registration: event.studentData.registrationNumber,
     );
 
     await authResult.fold(

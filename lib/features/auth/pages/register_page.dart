@@ -45,8 +45,13 @@ class _RegisterPageState extends State<RegisterPage> {
     if (_formKey.currentState?.validate() ?? false) {
       Modular.get<AuthBloc>().add(
         RegisterRequested(
+          fullName: _nameController.text.trim(),
           email: _emailController.text.trim(),
           password: _passwordController.text,
+          role: _selectedRole,
+          registration: _selectedRole == UserRole.student
+              ? _registrationController.text.trim()
+              : null,
         ),
       );
     }

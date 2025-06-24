@@ -26,6 +26,7 @@ class _RegisterFormState extends State<RegisterForm> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _registrationController = TextEditingController();
   UserRole _selectedRole = UserRole.student;
 
   late AuthBloc _authBloc;
@@ -42,14 +43,20 @@ class _RegisterFormState extends State<RegisterForm> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _registrationController.dispose();
     super.dispose();
   }
 
   void _submitRegister() {
     if (_formKey.currentState?.validate() ?? false) {
       _authBloc.add(RegisterRequested(
+        fullName: _fullNameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
+        role: _selectedRole,
+        registration: _selectedRole == UserRole.student
+            ? _registrationController.text.trim()
+            : null,
       ));
     }
   }
@@ -61,14 +68,9 @@ class _RegisterFormState extends State<RegisterForm> {
       bloc: _authBloc,
       listener: (context, state) {
         if (state is AuthFailure) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: theme.colorScheme.error,
-              ),
-            );
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
         } else if (state is AuthRegistrationSuccess) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
@@ -105,7 +107,7 @@ class _RegisterFormState extends State<RegisterForm> {
             ),
             const SizedBox(height: 16),
             AppTextField(
-              controller: TextEditingController(),
+              controller: _registrationController,
               labelText: 'Matrícula de aluno',
               hintText: 'Digite sua matrícula (12 dígitos)',
               prefixIcon: Icons.badge_outlined,

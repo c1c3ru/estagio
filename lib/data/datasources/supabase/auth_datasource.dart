@@ -240,7 +240,8 @@ class AuthDatasource implements IAuthDatasource {
   Future<void> _ensureUserDataExists(User user) async {
     try {
       final role = user.userMetadata?['role'] ?? 'student';
-      final fullName = user.userMetadata?['full_name'] ?? '';
+      final fullName =
+          user.userMetadata?['full_name'] ?? user.email ?? 'Nome não informado';
       final registration = user.userMetadata?['registration'];
 
       if (kDebugMode) {
@@ -248,46 +249,25 @@ class AuthDatasource implements IAuthDatasource {
       }
 
       if (role == 'student') {
-        // Verificar se já existe na tabela students
-        final existingStudent = await _supabaseClient
+        final studentResponse = await _supabaseClient
             .from('students')
-            .select()
+            .select('id')
             .eq('id', user.id)
             .maybeSingle();
 
-        if (existingStudent == null) {
+        if (studentResponse == null) {
           if (kDebugMode) {
-            print('📝 Criando dados do estudante para usuário ${user.id}');
+            print(
+                '📝 Nenhum dado de estudante encontrado para ${user.id}, criando agora...');
           }
-          // Criar dados do estudante
           await _supabaseClient.from('students').insert({
-            'id': user.id, // Incluir o ID do usuário
+            'id': user.id,
             'full_name': fullName,
-            'registration_number': registration,
-            'course': 'Curso não definido',
-            'advisor_name': 'Orientador não definido',
-            'is_mandatory_internship': true,
-            'class_shift': 'morning',
-            'internship_shift_1': 'morning',
-            'birth_date': '2000-01-01',
-            'contract_start_date':
-                DateTime.now().toIso8601String().split('T')[0],
-            'contract_end_date': DateTime.now()
-                .add(const Duration(days: 365))
-                .toIso8601String()
-                .split('T')[0],
-            'total_hours_required': 300.0,
-            'total_hours_completed': 0.0,
-            'weekly_hours_target': 20.0,
-            'created_at': DateTime.now().toIso8601String(),
-            'updated_at': DateTime.now().toIso8601String(),
+            'registration_number': registration ?? 'PENDENTE',
+            'status': 'active',
           });
           if (kDebugMode) {
-            print('✅ Dados do estudante criados para usuário ${user.id}');
-          }
-        } else {
-          if (kDebugMode) {
-            print('✅ Dados do estudante já existem para usuário ${user.id}');
+            print('✅ Dados de estudante criados para ${user.id}');
           }
         }
       } else if (role == 'supervisor') {

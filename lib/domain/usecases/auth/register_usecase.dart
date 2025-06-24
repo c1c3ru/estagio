@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import '../../repositories/i_auth_repository.dart';
 import '../../entities/user_entity.dart';
 import '../../../core/errors/app_exceptions.dart';
+import '../../../core/enums/user_role.dart';
 
 class RegisterUsecase {
   final IAuthRepository _repository;
@@ -9,9 +10,15 @@ class RegisterUsecase {
   const RegisterUsecase(this._repository);
 
   Future<Either<AppFailure, UserEntity>> call({
+    required String fullName,
     required String email,
     required String password,
+    required UserRole role,
+    String? registration,
   }) async {
+    if (fullName.isEmpty) {
+      return const Left(ValidationFailure('Nome completo é obrigatório'));
+    }
     if (email.isEmpty) {
       return const Left(ValidationFailure('E-mail é obrigatório'));
     }
@@ -29,7 +36,19 @@ class RegisterUsecase {
           'A senha deve ter no mínimo 8 caracteres, uma letra maiúscula, uma minúscula e um número'));
     }
 
-    return _repository.register(email: email, password: password);
+    if (role == UserRole.student &&
+        (registration == null || registration.isEmpty)) {
+      return const Left(
+          ValidationFailure('Matrícula é obrigatória para estudantes'));
+    }
+
+    return _repository.register(
+      fullName: fullName,
+      email: email,
+      password: password,
+      role: role,
+      registration: registration,
+    );
   }
 
   bool _isValidEmail(String email) {

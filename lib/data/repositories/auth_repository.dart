@@ -1,29 +1,19 @@
-// MUDANÇA AQUI: Importamos a INTERFACE do datasource, não a implementação.
+import 'package:dartz/dartz.dart';
+
+import '../../core/enums/user_role.dart';
+import '../../core/errors/app_exceptions.dart';
+import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/i_auth_datasource.dart';
 import '../../domain/repositories/i_auth_repository.dart';
-import '../../domain/entities/user_entity.dart';
-// MUDANÇA AQUI: Removido o import da classe concreta 'AuthDatasource'.
+import '../../domain/usecases/auth/update_profile_usecase.dart';
 import '../datasources/local/preferences_manager.dart';
 import '../models/user_model.dart';
-import 'package:dartz/dartz.dart';
-import '../../core/errors/app_exceptions.dart';
-import '../../core/enums/user_role.dart';
-import '../../domain/usecases/auth/update_profile_usecase.dart'; // Import que estava faltando
 
 class AuthRepository implements IAuthRepository {
-  // MUDANÇA AQUI: A dependência agora é da interface.
   final IAuthDatasource _authDatasource;
   final PreferencesManager _preferencesManager;
 
-  AuthRepository({
-    // MUDANÇA AQUI: O construtor agora pede a interface.
-    required IAuthDatasource authDatasource,
-    required PreferencesManager preferencesManager,
-  })  : _authDatasource = authDatasource,
-        _preferencesManager = preferencesManager;
-
-  // O resto do código permanece exatamente o mesmo, pois ele já usa
-  // os métodos definidos na interface.
+  AuthRepository(this._authDatasource, this._preferencesManager);
 
   @override
   Stream<UserEntity?> authStateChanges() =>
@@ -35,23 +25,21 @@ class AuthRepository implements IAuthRepository {
     try {
       final userData = await _authDatasource.getCurrentUser();
       if (userData != null) {
-        final userModel = UserModel.fromJson(userData);
-        await _preferencesManager.saveUserData(userModel.toJson());
-        return Right(userModel.toEntity());
+        final user = UserModel.fromJson(userData).toEntity();
+        await _preferencesManager.saveUserData(userData);
+        return Right(user);
       }
 
-      final cachedUserData = _preferencesManager.getUserData();
+      final cachedUserData = await _preferencesManager.getUserData();
       if (cachedUserData != null) {
-        final userModel = UserModel.fromJson(cachedUserData);
-        return Right(userModel.toEntity());
+        return Right(UserModel.fromJson(cachedUserData).toEntity());
       }
 
       return const Left(AuthFailure('Usuário não encontrado'));
     } catch (e) {
-      final cachedUserData = _preferencesManager.getUserData();
+      final cachedUserData = await _preferencesManager.getUserData();
       if (cachedUserData != null) {
-        final userModel = UserModel.fromJson(cachedUserData);
-        return Right(userModel.toEntity());
+        return Right(UserModel.fromJson(cachedUserData).toEntity());
       }
       return Left(AuthFailure(e.toString()));
     }
@@ -65,13 +53,15 @@ class AuthRepository implements IAuthRepository {
     try {
       final userData =
           await _authDatasource.signInWithEmailAndPassword(email, password);
+
       if (userData == null) {
         return const Left(
-            AuthFailure('Dados de usuário não retornados pelo login.'));
+            AuthFailure('Credenciais inválidas ou usuário não encontrado.'));
       }
-      final userModel = UserModel.fromJson(userData);
-      await _preferencesManager.saveUserData(userModel.toJson());
-      return Right(userModel.toEntity());
+
+      final user = UserModel.fromJson(userData);
+      await _preferencesManager.saveUserData(userData);
+      return Right(user.toEntity());
     } catch (e) {
       return Left(AuthFailure('Erro no login: $e'));
     }
@@ -79,20 +69,21 @@ class AuthRepository implements IAuthRepository {
 
   @override
   Future<Either<AppFailure, UserEntity>> register({
+    required String fullName,
     required String email,
     required String password,
+    required UserRole role,
+    String? registration,
   }) async {
     try {
       final userData = await _authDatasource.signUpWithEmailAndPassword(
+        fullName: fullName,
         email: email,
         password: password,
-        fullName: '', // Valor padrão vazio
-        role: UserRole.student, // Valor padrão student
-        registration: null, // Valor padrão null
+        role: role,
+        registration: registration,
       );
-      final userModel = UserModel.fromJson(userData);
-      await _preferencesManager.saveUserData(userModel.toJson());
-      return Right(userModel.toEntity());
+      return Right(UserModel.fromJson(userData).toEntity());
     } catch (e) {
       return Left(AuthFailure('Erro no registro: $e'));
     }
@@ -155,7 +146,7 @@ class AuthRepository implements IAuthRepository {
       final userData = await _authDatasource.getCurrentUser();
       return userData != null;
     } catch (e) {
-      final cachedUserData = _preferencesManager.getUserData();
+      final cachedUserData = await _preferencesManager.getUserData();
       return cachedUserData != null;
     }
   }

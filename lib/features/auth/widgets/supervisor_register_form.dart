@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/enums/user_role.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
@@ -55,8 +56,11 @@ class _SupervisorRegisterFormState extends State<SupervisorRegisterForm> {
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthBloc>().add(
             RegisterRequested(
+              fullName: _fullNameController.text.trim(),
               email: _emailController.text.trim(),
               password: _passwordController.text,
+              role: UserRole.supervisor,
+              registration: _siapeRegistrationController.text.trim(),
             ),
           );
       // Nota: Os dados específicos do supervisor (SIAPE, etc.) precisarão ser salvos

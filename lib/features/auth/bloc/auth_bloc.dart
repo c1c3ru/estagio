@@ -40,19 +40,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         _resetPasswordUseCase = resetPasswordUseCase,
         super(AuthInitial()) {
     // Registrar handlers de eventos
+    on<AuthInitializeRequested>(_onAuthInitializeRequested);
     on<LoginRequested>(_onLoginRequested);
-    on<LogoutRequested>(_onLogoutRequested);
     on<RegisterRequested>(_onRegisterRequested);
+    on<LogoutRequested>(_onLogoutRequested);
     on<GetCurrentUserRequested>(_onGetCurrentUserRequested);
     on<AuthStateChanged>(_onAuthStateChanged);
     on<UpdateProfileRequested>(_onUpdateProfileRequested);
-    on<AuthResetPasswordRequested>(_onResetPasswordRequested);
-    on<AuthInitializeRequested>((event, emit) async {
-      // emit(AuthLoading());
-      // final user = await getCurrentUserUseCase();
-      // if (user != null) emit(AuthAuthenticated(user));
-      // else emit(AuthUnauthenticated());
-    });
+    on<AuthCheckRequested>(_onAuthCheckRequested);
+    on<AuthResetPasswordRequested>(_onAuthResetPasswordRequested);
 
     // Inicia a escuta das mudanças de estado de autenticação
     _authStateSubscription = _getAuthStateChangesUseCase().listen(
@@ -99,25 +95,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(AuthLoading());
     final result = await _registerUseCase(
+      fullName: event.fullName,
       email: event.email,
       password: event.password,
+      role: event.role,
+      registration: event.registration,
     );
     result.fold(
       (failure) => emit(AuthFailure(failure.message)),
-      (user) {
-        // Verificar se o usuário precisa confirmar email
-        if (user.emailConfirmed == false) {
-          emit(AuthEmailConfirmationRequired(
-            email: user.email,
-            message:
-                'Cadastro realizado com sucesso! Verifique seu e-mail para confirmar a conta.',
-          ));
-        } else {
-          emit(
-              const AuthRegistrationSuccess('Cadastro realizado com sucesso!'));
-          emit(AuthSuccess(user));
-        }
-      },
+      (user) => emit(AuthSuccess(user)),
     );
   }
 
@@ -165,7 +151,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
-  Future<void> _onResetPasswordRequested(
+  Future<void> _onAuthResetPasswordRequested(
     AuthResetPasswordRequested event,
     Emitter<AuthState> emit,
   ) async {
@@ -175,6 +161,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       (failure) => emit(AuthFailure(failure.message)),
       (_) => emit(const AuthPasswordResetEmailSent(
           message: 'E-mail de redefinição enviado!')),
+    );
+  }
+
+  Future<void> _onAuthInitializeRequested(
+    AuthInitializeRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    final result = await _getCurrentUserUseCase();
+    result.fold(
+      (failure) => emit(AuthInitial()),
+      (user) => emit(user != null ? AuthSuccess(user) : AuthInitial()),
+    );
+  }
+
+  Future<void> _onAuthCheckRequested(
+    AuthCheckRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    final result = await _getCurrentUserUseCase();
+    result.fold(
+      (failure) => emit(AuthInitial()),
+      (user) => emit(user != null ? AuthSuccess(user) : AuthInitial()),
     );
   }
 }
