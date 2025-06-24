@@ -208,6 +208,7 @@ class AppModule extends Module {
           getCurrentUserUseCase: i(),
           getAuthStateChangesUseCase: i(),
           updateProfileUseCase: i(),
+          resetPasswordUseCase: i(),
         ));
     i.addLazySingleton(() => StudentBloc(
           getStudentDashboardUsecase: i(),
