@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/supervisor_entity.dart';
+import 'package:gestao_de_estagio/features/shared/animations/lottie_animations.dart';
 
 class SupervisorFormDialog extends StatefulWidget {
   final SupervisorEntity? initialSupervisor;
@@ -61,6 +62,13 @@ class _SupervisorFormDialogState extends State<SupervisorFormDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const Center(
+                child: AppLottieAnimation(
+                  assetPath: 'assets/animations/Formulario_animation.json',
+                  height: 140,
+                ),
+              ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _departmentController,
                 decoration: const InputDecoration(labelText: 'Departamento'),

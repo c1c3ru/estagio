@@ -5,6 +5,7 @@ import '../../../../core/enums/class_shift.dart';
 import '../../../../core/enums/internship_shift.dart';
 import '../../../../core/enums/user_role.dart';
 import '../../../../core/enums/student_status.dart';
+import 'package:gestao_de_estagio/features/shared/animations/lottie_animations.dart';
 
 class StudentFormDialog extends StatefulWidget {
   final StudentEntity? initialStudent;
@@ -116,6 +117,13 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const Center(
+                child: AppLottieAnimation(
+                  assetPath: 'assets/animations/Formulario_animation.json',
+                  height: 140,
+                ),
+              ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Nome completo'),

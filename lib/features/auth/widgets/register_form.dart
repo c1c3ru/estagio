@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:gestao_de_estagio/core/enums/user_role.dart';
+import 'package:gestao_de_estagio/features/shared/animations/lottie_animations.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/validators.dart';
@@ -85,6 +86,13 @@ class _RegisterFormState extends State<RegisterForm> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
+            const Center(
+              child: AppLottieAnimation(
+                assetPath: 'assets/animations/Formulario_animation.json',
+                height: 140,
+              ),
+            ),
+            const SizedBox(height: 16),
             AppTextField(
               controller: _fullNameController,
               labelText: AppStrings.fullName,

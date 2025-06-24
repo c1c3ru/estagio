@@ -184,12 +184,18 @@ class StudentModule extends Module {
     // Rota para a página de contratos
     r.child(
       '/contracts',
-      child: (_) => BlocProvider(
-        create: (_) => Modular.get<ContractBloc>(),
+      child: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: Modular.get<StudentBloc>()),
+          BlocProvider(create: (_) => Modular.get<ContractBloc>()),
+        ],
         child: ContractPage(
-          studentId: (r.args.data is Map && r.args.data != null)
-              ? (r.args.data["studentId"] ?? "")
-              : "",
+          studentId: (r.args.data is Map &&
+                  r.args.data != null &&
+                  r.args.data["studentId"] != null &&
+                  (r.args.data["studentId"] as String).isNotEmpty)
+              ? r.args.data["studentId"] as String
+              : null,
         ),
       ),
       transition: TransitionType.fadeIn,

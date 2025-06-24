@@ -7,13 +7,14 @@ import 'package:gestao_de_estagio/domain/entities/contract_entity.dart';
 import 'package:gestao_de_estagio/core/enums/contract_status.dart';
 import 'package:gestao_de_estagio/features/student/bloc/student_bloc.dart';
 import 'package:gestao_de_estagio/features/student/bloc/student_state.dart';
+import 'package:gestao_de_estagio/features/shared/animations/lottie_animations.dart';
 
 class ContractPage extends StatefulWidget {
-  final String studentId;
+  final String? studentId;
 
   const ContractPage({
     super.key,
-    required this.studentId,
+    this.studentId,
   });
 
   @override
@@ -29,19 +30,36 @@ class _ContractPageState extends State<ContractPage> {
   }
 
   void _loadContracts() {
-    context.read<ContractBloc>().add(
-          ContractLoadByStudentRequested(studentId: widget.studentId),
-        );
+    if (widget.studentId != null) {
+      context.read<ContractBloc>().add(
+            ContractLoadByStudentRequested(studentId: widget.studentId!),
+          );
+    }
   }
 
   void _loadActiveContract() {
-    context.read<ContractBloc>().add(
-          ContractGetActiveByStudentRequested(studentId: widget.studentId),
-        );
+    if (widget.studentId != null) {
+      context.read<ContractBloc>().add(
+            ContractGetActiveByStudentRequested(studentId: widget.studentId!),
+          );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (widget.studentId == null || widget.studentId!.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Contratos')),
+        body: const Center(
+          child: Text(
+            'ID do estudante não informado. Não é possível exibir contratos.',
+            style: TextStyle(color: Colors.red, fontSize: 18),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Contratos'),
@@ -261,18 +279,21 @@ class _ContractPageState extends State<ContractPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 16,
-            right: 16,
-            top: 24,
-          ),
-          child: _ContractEditForm(
-            studentId: widget.studentId,
-            contract: contract,
-            supervisorId: supervisorId,
+      builder: (modalContext) {
+        return BlocProvider.value(
+          value: context.read<ContractBloc>(),
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              left: 16,
+              right: 16,
+              top: 24,
+            ),
+            child: _ContractEditForm(
+              studentId: widget.studentId!,
+              contract: contract,
+              supervisorId: supervisorId,
+            ),
           ),
         );
       },
@@ -625,6 +646,13 @@ class _ContractEditFormState extends State<_ContractEditForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const Center(
+                child: AppLottieAnimation(
+                  assetPath: 'assets/animations/Formulario_animation.json',
+                  height: 140,
+                ),
+              ),
+              const SizedBox(height: 16),
               Text(
                 widget.contract == null
                     ? 'Adicionar Contrato'
