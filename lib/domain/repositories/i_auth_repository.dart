@@ -18,6 +18,8 @@ abstract class IAuthRepository {
     required String password,
     required UserRole role,
     String? registration,
+    bool? isMandatoryInternship,
+    String? supervisorId,
   });
 
   Future<Either<AppFailure, UserEntity?>> getCurrentUser();

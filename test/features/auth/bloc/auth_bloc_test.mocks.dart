@@ -127,6 +127,8 @@ class MockRegisterUsecase extends _i1.Mock implements _i8.RegisterUsecase {
     required String? password,
     required _i9.UserRole? role,
     String? registration,
+    bool? isMandatoryInternship,
+    String? supervisorId,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -138,6 +140,8 @@ class MockRegisterUsecase extends _i1.Mock implements _i8.RegisterUsecase {
             #password: password,
             #role: role,
             #registration: registration,
+            #isMandatoryInternship: isMandatoryInternship,
+            #supervisorId: supervisorId,
           },
         ),
         returnValue:
@@ -153,6 +157,8 @@ class MockRegisterUsecase extends _i1.Mock implements _i8.RegisterUsecase {
               #password: password,
               #role: role,
               #registration: registration,
+              #isMandatoryInternship: isMandatoryInternship,
+              #supervisorId: supervisorId,
             },
           ),
         )),

@@ -9,9 +9,10 @@ import '../../../core/enums/user_role.dart';
 import '../../../core/utils/validators.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
-import '../bloc/auth_state.dart';
+import '../bloc/auth_state.dart' as custom_auth;
 import '../widgets/auth_text_field.dart';
 import '../widgets/auth_button.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -31,6 +32,40 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _obscureConfirmPassword = true;
   UserRole _selectedRole = UserRole.student;
 
+  // Novos campos para estágio obrigatório e supervisor
+  bool? _isMandatoryInternship;
+  String? _selectedSupervisorId;
+  List<Map<String, dynamic>> _supervisors = [];
+  bool _loadingSupervisors = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_selectedRole == UserRole.student) {
+      _fetchSupervisors();
+    }
+  }
+
+  Future<void> _fetchSupervisors() async {
+    setState(() => _loadingSupervisors = true);
+    try {
+      final supabase = Modular.get<SupabaseClient>();
+      final response = await supabase
+          .from('supervisors')
+          .select('id, full_name')
+          .order('full_name');
+      setState(() {
+        _supervisors = List<Map<String, dynamic>>.from(response);
+        _loadingSupervisors = false;
+      });
+    } catch (e) {
+      setState(() => _loadingSupervisors = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao buscar supervisores: $e')),
+      );
+    }
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -43,6 +78,21 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _onRegisterPressed() {
     if (_formKey.currentState?.validate() ?? false) {
+      if (_selectedRole == UserRole.student) {
+        if (_isMandatoryInternship == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Informe se o estágio é obrigatório.')),
+          );
+          return;
+        }
+        if (_selectedSupervisorId == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Selecione um supervisor.')),
+          );
+          return;
+        }
+      }
       Modular.get<AuthBloc>().add(
         RegisterRequested(
           fullName: _nameController.text.trim(),
@@ -52,6 +102,10 @@ class _RegisterPageState extends State<RegisterPage> {
           registration: _selectedRole == UserRole.student
               ? _registrationController.text.trim()
               : null,
+          isMandatoryInternship:
+              _selectedRole == UserRole.student ? _isMandatoryInternship : null,
+          supervisorId:
+              _selectedRole == UserRole.student ? _selectedSupervisorId : null,
         ),
       );
     }
@@ -73,13 +127,13 @@ class _RegisterPageState extends State<RegisterPage> {
           onPressed: () => Modular.to.pop(),
         ),
       ),
-      body: BlocConsumer<AuthBloc, AuthState>(
+      body: BlocConsumer<AuthBloc, custom_auth.AuthState>(
         listener: (context, state) {
-          if (state is AuthFailure) {
+          if (state is custom_auth.AuthFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
             );
-          } else if (state is AuthEmailConfirmationRequired) {
+          } else if (state is custom_auth.AuthEmailConfirmationRequired) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
@@ -90,7 +144,7 @@ class _RegisterPageState extends State<RegisterPage> {
             // Navegar para a página de confirmação de email
             Modular.to
                 .pushNamed('/auth/email-confirmation', arguments: state.email);
-          } else if (state is AuthSuccess) {
+          } else if (state is custom_auth.AuthSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Cadastro realizado com sucesso!')),
             );
@@ -271,15 +325,67 @@ class _RegisterPageState extends State<RegisterPage> {
                           return null;
                         },
                       ),
+                      const SizedBox(height: 16),
+                      if (_selectedRole == UserRole.student) ...[
+                        // Campo Estágio obrigatório
+                        Row(
+                          children: [
+                            const Text('Estágio obrigatório?'),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: DropdownButtonFormField<bool>(
+                                value: _isMandatoryInternship,
+                                items: const [
+                                  DropdownMenuItem(
+                                      value: true, child: Text('Sim')),
+                                  DropdownMenuItem(
+                                      value: false, child: Text('Não')),
+                                ],
+                                onChanged: (v) =>
+                                    setState(() => _isMandatoryInternship = v),
+                                decoration: const InputDecoration(
+                                  labelText: 'Estágio obrigatório?',
+                                  border: OutlineInputBorder(),
+                                ),
+                                validator: (v) =>
+                                    v == null ? 'Obrigatório' : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        // Campo Supervisor
+                        _loadingSupervisors
+                            ? const Center(child: CircularProgressIndicator())
+                            : DropdownButtonFormField<String>(
+                                value: _selectedSupervisorId,
+                                items: _supervisors
+                                    .map((s) => DropdownMenuItem<String>(
+                                          value: s['id'] as String?,
+                                          child:
+                                              Text(s['full_name'] ?? s['id']),
+                                        ))
+                                    .toList(),
+                                onChanged: (v) =>
+                                    setState(() => _selectedSupervisorId = v),
+                                decoration: const InputDecoration(
+                                  labelText: 'Supervisor',
+                                  border: OutlineInputBorder(),
+                                ),
+                                validator: (v) =>
+                                    v == null ? 'Obrigatório' : null,
+                              ),
+                        const SizedBox(height: 16),
+                      ],
                       const SizedBox(height: 24),
-                      BlocBuilder<AuthBloc, AuthState>(
+                      BlocBuilder<AuthBloc, custom_auth.AuthState>(
                         builder: (context, state) {
                           return AuthButton(
                             text: AppStrings.register,
-                            onPressed: state is AuthLoading
+                            onPressed: state is custom_auth.AuthLoading
                                 ? null
                                 : _onRegisterPressed,
-                            isLoading: state is AuthLoading,
+                            isLoading: state is custom_auth.AuthLoading,
                           );
                         },
                       ),

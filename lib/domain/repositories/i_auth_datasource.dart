@@ -10,6 +10,8 @@ abstract class IAuthDatasource {
     required String fullName,
     required UserRole role,
     String? registration,
+    bool? isMandatoryInternship,
+    String? supervisorId,
   });
 
   Future<void> signOut();

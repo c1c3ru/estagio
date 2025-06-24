@@ -35,6 +35,8 @@ class AuthDatasource implements IAuthDatasource {
     required String fullName,
     required UserRole role,
     String? registration,
+    bool? isMandatoryInternship,
+    String? supervisorId,
   }) async {
     try {
       final response = await _supabaseClient.auth.signUp(
@@ -66,9 +68,19 @@ class AuthDatasource implements IAuthDatasource {
           // Verificar permissão de inserção
           await verifyUserInsertionPermission(response.user!.id);
 
-          // Testar inserção primeiro
-          await testStudentInsertion(
-              response.user!.id, fullName, registration ?? '');
+          // Inserir estudante com os campos obrigatórios
+          await _supabaseClient.from('students').insert({
+            'id': response.user!.id,
+            'full_name': fullName,
+            'registration_number': registration ?? 'PENDENTE',
+            'course': 'PENDENTE',
+            'advisor_name': 'PENDENTE',
+            'is_mandatory_internship': isMandatoryInternship ?? false,
+            'supervisor_id': supervisorId,
+            'status': 'active',
+            'created_at': DateTime.now().toIso8601String(),
+            'updated_at': DateTime.now().toIso8601String(),
+          });
 
           if (kDebugMode) {
             print('✅ Dados do estudante criados com sucesso');

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_strings.dart';
 import '../../features/shared/animations/loading_animation.dart';
+import '../../features/shared/animations/lottie_animations.dart';
 
 class FeedbackService {
   static const _defaultSuccessDuration = Duration(seconds: 3);
@@ -93,11 +94,7 @@ class FeedbackService {
     return showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => Center(
-        child: LottieLoadingIndicator(
-          message: message ?? AppStrings.loading,
-        ),
-      ),
+      builder: (context) => LoadingAnimation(message: message),
     );
   }
 
@@ -113,10 +110,24 @@ class FeedbackService {
   }) {
     return showDialog(
       context: context,
-      builder: (context) => ErrorDialog(
-        title: title,
-        message: message,
-        onRetry: onRetry,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const AppLottieAnimation(
+                assetPath: LottieAssetPaths.errorCross, height: 100),
+            const SizedBox(height: 16),
+            Text(message, textAlign: TextAlign.center),
+          ],
+        ),
+        actions: [
+          if (onRetry != null)
+            TextButton(
+              onPressed: onRetry,
+              child: const Text('Tentar novamente'),
+            ),
+        ],
       ),
     );
   }
@@ -134,6 +145,28 @@ class FeedbackService {
         title: title,
         progress: progress,
         message: message,
+      ),
+    );
+  }
+
+  static Future<void> showSuccessDialog(
+    BuildContext context, {
+    String? message,
+  }) {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const AppLottieAnimation(
+                assetPath: LottieAssetPaths.successCheck, height: 120),
+            if (message != null) ...[
+              const SizedBox(height: 16),
+              Text(message, textAlign: TextAlign.center),
+            ],
+          ],
+        ),
       ),
     );
   }

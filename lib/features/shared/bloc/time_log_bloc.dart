@@ -246,8 +246,10 @@ class TimeLogBloc extends Bloc<TimeLogEvent, TimeLogState> {
   ) async {
     emit(TimeLogClockingIn());
     try {
-      final timeLog = await _clockInUsecase(event.studentId, notes: event.notes);
+      final timeLog =
+          await _clockInUsecase(event.studentId, notes: event.notes);
       emit(TimeLogClockInSuccess(timeLog: timeLog));
+      add(TimeLogLoadByStudentRequested(studentId: event.studentId));
     } catch (e) {
       emit(TimeLogClockInError(message: e.toString()));
     }
@@ -259,8 +261,10 @@ class TimeLogBloc extends Bloc<TimeLogEvent, TimeLogState> {
   ) async {
     emit(TimeLogClockingOut());
     try {
-      final timeLog = await _clockOutUsecase(event.studentId, notes: event.notes);
+      final timeLog =
+          await _clockOutUsecase(event.studentId, notes: event.notes);
       emit(TimeLogClockOutSuccess(timeLog: timeLog));
+      add(TimeLogLoadByStudentRequested(studentId: event.studentId));
     } catch (e) {
       emit(TimeLogClockOutError(message: e.toString()));
     }
@@ -296,4 +300,3 @@ class TimeLogBloc extends Bloc<TimeLogEvent, TimeLogState> {
     }
   }
 }
-

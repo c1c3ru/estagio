@@ -7,6 +7,7 @@ import '../../../core/widgets/loading_indicator.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_state.dart';
 import '../widgets/supervisor_register_form.dart';
+import '../../shared/animations/loading_animation.dart';
 
 class SupervisorRegisterPage extends StatelessWidget {
   const SupervisorRegisterPage({super.key});
@@ -43,7 +44,7 @@ class SupervisorRegisterPage extends StatelessWidget {
         child: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             if (state is AuthLoading) {
-              return const Center(child: LoadingIndicator());
+              return const Center(child: LoadingAnimation());
             }
 
             return SafeArea(

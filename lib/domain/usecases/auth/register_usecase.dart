@@ -15,6 +15,8 @@ class RegisterUsecase {
     required String password,
     required UserRole role,
     String? registration,
+    bool? isMandatoryInternship,
+    String? supervisorId,
   }) async {
     if (fullName.isEmpty) {
       return const Left(ValidationFailure('Nome completo é obrigatório'));
@@ -48,6 +50,8 @@ class RegisterUsecase {
       password: password,
       role: role,
       registration: registration,
+      isMandatoryInternship: isMandatoryInternship,
+      supervisorId: supervisorId,
     );
   }
 

@@ -74,6 +74,8 @@ class AuthRepository implements IAuthRepository {
     required String password,
     required UserRole role,
     String? registration,
+    bool? isMandatoryInternship,
+    String? supervisorId,
   }) async {
     try {
       final userData = await _authDatasource.signUpWithEmailAndPassword(
@@ -82,6 +84,8 @@ class AuthRepository implements IAuthRepository {
         password: password,
         role: role,
         registration: registration,
+        isMandatoryInternship: isMandatoryInternship,
+        supervisorId: supervisorId,
       );
       return Right(UserModel.fromJson(userData).toEntity());
     } catch (e) {

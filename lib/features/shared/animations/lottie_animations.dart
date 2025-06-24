@@ -16,6 +16,9 @@ class LottieAssetPaths {
   static const String confetti = 'assets/animations/confetti_animation.json';
   static const String pageNotFound =
       'assets/animations/404_not_found_animation.json';
+  static const String timeAnimation = 'assets/animations/time_nimation.json';
+  static const String passwordReset =
+      'assets/animations/Formulario_animation.json';
   // Adicione mais conforme necessário
 
   // Previne instanciação

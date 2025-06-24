@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../shared/bloc/time_log_bloc.dart';
 import '../../../domain/entities/time_log_entity.dart';
+import '../../shared/animations/lottie_animations.dart';
 
 class TimeLogPage extends StatefulWidget {
   final String studentId;
@@ -87,37 +88,21 @@ class _TimeLogPageState extends State<TimeLogPage> {
       body: BlocListener<TimeLogBloc, TimeLogState>(
         listener: (context, state) {
           if (state is TimeLogClockInSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Entrada registrada com sucesso!'),
-                backgroundColor: AppColors.success,
-              ),
-            );
+            _showLottieFeedback(context, LottieAssetPaths.successCheck,
+                'Entrada registrada com sucesso!');
             _loadTimeLogs();
             _loadActiveTimeLog();
           } else if (state is TimeLogClockOutSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Saída registrada com sucesso!'),
-                backgroundColor: AppColors.success,
-              ),
-            );
+            _showLottieFeedback(context, LottieAssetPaths.successCheck,
+                'Saída registrada com sucesso!');
             _loadTimeLogs();
             _loadActiveTimeLog();
           } else if (state is TimeLogClockInError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.error,
-              ),
-            );
+            _showLottieFeedback(context, LottieAssetPaths.errorCross,
+                'Erro ao registrar entrada!');
           } else if (state is TimeLogClockOutError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.error,
-              ),
-            );
+            _showLottieFeedback(context, LottieAssetPaths.errorCross,
+                'Erro ao registrar saída!');
           }
         },
         child: RefreshIndicator(
@@ -131,6 +116,23 @@ class _TimeLogPageState extends State<TimeLogPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Animação de registro de tempo
+                Center(
+                  child: AppLottieAnimation(
+                    assetPath: LottieAssetPaths.timeAnimation,
+                    height: 120,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Título mais amigável
+                Center(
+                  child: Text(
+                    'Bata seu ponto de entrada e saída',
+                    style: AppTextStyles.h5,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 16),
                 _buildClockInOutCard(),
                 const SizedBox(height: 24),
                 _buildTimeLogsSection(),
@@ -539,6 +541,40 @@ class _TimeLogPageState extends State<TimeLogPage> {
 
   String _formatDateTime(DateTime dateTime) {
     return '${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.year} às ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+  }
+
+  void _showLottieFeedback(
+      BuildContext context, String assetPath, String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppLottieAnimation(
+              assetPath: assetPath,
+              height: 120,
+              repeat: false,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: AppTextStyles.bodyLarge
+                  .copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+    Future.delayed(const Duration(seconds: 2), () {
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+    });
   }
 }
 

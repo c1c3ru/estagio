@@ -32,6 +32,8 @@ class RegisterRequested extends AuthEvent {
   final String password;
   final UserRole role;
   final String? registration;
+  final bool? isMandatoryInternship;
+  final String? supervisorId;
 
   const RegisterRequested({
     required this.fullName,
@@ -39,10 +41,20 @@ class RegisterRequested extends AuthEvent {
     required this.password,
     required this.role,
     this.registration,
+    this.isMandatoryInternship,
+    this.supervisorId,
   });
 
   @override
-  List<Object?> get props => [fullName, email, password, role, registration];
+  List<Object?> get props => [
+        fullName,
+        email,
+        password,
+        role,
+        registration,
+        isMandatoryInternship,
+        supervisorId
+      ];
 }
 
 class GetCurrentUserRequested extends AuthEvent {}

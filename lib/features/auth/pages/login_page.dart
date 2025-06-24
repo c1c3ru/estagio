@@ -10,6 +10,7 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_state.dart';
 import '../widgets/login_form.dart';
 import '../../shared/animations/lottie_animations.dart';
+import '../../shared/animations/loading_animation.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -69,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
         },
         builder: (context, state) {
           if (state is AuthLoading) {
-            return const Center(child: LoadingIndicator());
+            return const Center(child: LoadingAnimation());
           }
 
           return SingleChildScrollView(

@@ -1,17 +1,11 @@
 // lib/features/shared/animations/loading_animation.dart
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
-import '../../../core/constants/app_strings.dart';
+import 'lottie_animations.dart';
 
-class LottieLoadingIndicator extends StatelessWidget {
-  final String? message;
+class LoadingAnimation extends StatelessWidget {
   final double size;
-
-  const LottieLoadingIndicator({
-    super.key,
-    this.message,
-    this.size = 200,
-  });
+  final String? message;
+  const LoadingAnimation({super.key, this.size = 120, this.message});
 
   @override
   Widget build(BuildContext context) {
@@ -19,11 +13,10 @@ class LottieLoadingIndicator extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Lottie.asset(
-            'assets/animations/Loading_animations.json',
+          AppLottieAnimation(
+            assetPath: LottieAssetPaths.loadingDots,
             width: size,
             height: size,
-            fit: BoxFit.contain,
           ),
           if (message != null) ...[
             const SizedBox(height: 16),
@@ -59,8 +52,8 @@ class LoadingOverlay extends StatelessWidget {
         if (isLoading)
           Container(
             color: Colors.black54,
-            child: LottieLoadingIndicator(
-              message: message ?? AppStrings.loading,
+            child: LoadingAnimation(
+              message: message,
             ),
           ),
       ],
