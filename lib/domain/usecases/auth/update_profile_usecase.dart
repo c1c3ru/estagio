@@ -29,11 +29,11 @@ class UpdateProfileUsecase {
     required UpdateProfileParams params,
   }) async {
     if (params.email != null && !_isValidEmail(params.email!)) {
-      return Left(const ValidationFailure('E-mail inválido'));
+      return const Left(ValidationFailure('E-mail inválido'));
     }
 
     if (params.password != null && !_isValidPassword(params.password!)) {
-      return Left(const ValidationFailure(
+      return const Left(ValidationFailure(
           'A senha deve ter no mínimo 8 caracteres, uma letra maiúscula, uma minúscula e um número'));
     }
 

@@ -150,11 +150,11 @@ class _TimeLogPageState extends State<TimeLogPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            const Row(
               children: [
-                const Icon(Icons.access_time, color: AppColors.primary),
-                const SizedBox(width: 8),
-                const Text(
+                Icon(Icons.access_time, color: AppColors.primary),
+                SizedBox(width: 8),
+                Text(
                   'Registro de Ponto',
                   style: AppTextStyles.h6,
                 ),
@@ -300,11 +300,11 @@ class _TimeLogPageState extends State<TimeLogPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        const Row(
           children: [
-            const Icon(Icons.history, color: AppColors.primary),
-            const SizedBox(width: 8),
-            const Text(
+            Icon(Icons.history, color: AppColors.primary),
+            SizedBox(width: 8),
+            Text(
               'Histórico de Registros',
               style: AppTextStyles.h6,
             ),
@@ -421,11 +421,11 @@ class _TimeLogPageState extends State<TimeLogPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  const Row(
                     children: [
-                      const Icon(Icons.analytics, color: AppColors.primary),
-                      const SizedBox(width: 8),
-                      const Text(
+                      Icon(Icons.analytics, color: AppColors.primary),
+                      SizedBox(width: 8),
+                      Text(
                         'Estatísticas',
                         style: AppTextStyles.h6,
                       ),

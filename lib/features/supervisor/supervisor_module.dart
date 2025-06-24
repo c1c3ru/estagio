@@ -10,19 +10,16 @@ import 'package:gestao_de_estagio/features/supervisor/pages/supervisor_profile_p
 // Para SupabaseClient
 
 // Datasources
-import '../../data/datasources/local/preferences_manager.dart';
 import '../../data/datasources/supabase/supervisor_datasource.dart';
 import '../../data/datasources/supabase/student_datasource.dart';
 import '../../data/datasources/supabase/time_log_datasource.dart';
 import '../../data/datasources/supabase/contract_datasource.dart';
-import '../../data/datasources/supabase/auth_datasource.dart'; // Para o RegisterUsecase
 
 // Repositories (Implementações)
 import '../../data/repositories/supervisor_repository.dart';
 import '../../data/repositories/student_repository.dart';
 import '../../data/repositories/time_log_repository.dart';
 import '../../data/repositories/contract_repository.dart';
-import '../../data/repositories/auth_repository.dart';
 
 // Repository Interfaces (do Domínio)
 import '../../domain/repositories/i_supervisor_repository.dart';

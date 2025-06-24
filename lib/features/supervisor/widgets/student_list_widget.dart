@@ -167,9 +167,7 @@ class StudentListWidget extends StatelessWidget {
                     const Text('  •  ', style: TextStyle(color: Colors.grey)),
                     Expanded(
                       child: Text(
-                        student.contractEndDate != null
-                            ? _getDaysRemainingText(student.contractEndDate)
-                            : 'Sem data de término',
+                        _getDaysRemainingText(student.contractEndDate),
                         style: theme.textTheme.bodySmall
                             ?.copyWith(color: theme.hintColor),
                         overflow: TextOverflow.ellipsis,

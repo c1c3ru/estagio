@@ -110,7 +110,7 @@ class _SupervisorListPageState extends State<SupervisorListPage> {
                                 context: context,
                                 builder: (context) => AlertDialog(
                                   title: const Text('Remover supervisor'),
-                                  content: Text(
+                                  content: const Text(
                                       'Tem certeza que deseja remover o supervisor?'),
                                   actions: [
                                     TextButton(

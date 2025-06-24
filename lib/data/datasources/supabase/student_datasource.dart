@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class StudentDatasource {
@@ -102,8 +103,10 @@ class StudentDatasource {
 
   Future<Map<String, dynamic>> getStudentDashboard(String studentId) async {
     try {
-      print(
-          '🟢 StudentDatasource: Buscando dashboard para studentId: $studentId');
+      if (kDebugMode) {
+        print(
+            '🟢 StudentDatasource: Buscando dashboard para studentId: $studentId');
+      }
 
       // Buscar dados do estudante
       final studentResponse = await _supabaseClient
@@ -113,14 +116,18 @@ class StudentDatasource {
           .maybeSingle();
 
       if (studentResponse == null) {
-        print(
-            '🟡 StudentDatasource: Estudante não encontrado no banco, usando dados mock');
+        if (kDebugMode) {
+          print(
+              '🟡 StudentDatasource: Estudante não encontrado no banco, usando dados mock');
+        }
         // Retornar dados mock para permitir testes
         return _getMockDashboardData(studentId);
       }
 
-      print(
-          '🟢 StudentDatasource: Dados do estudante encontrados: ${studentResponse['full_name']}');
+      if (kDebugMode) {
+        print(
+            '🟢 StudentDatasource: Dados do estudante encontrados: ${studentResponse['full_name']}');
+      }
 
       // Buscar logs de tempo do estudante (últimos 30 dias)
       final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30));
@@ -131,8 +138,10 @@ class StudentDatasource {
           .gte('log_date', thirtyDaysAgo.toIso8601String().split('T')[0])
           .order('log_date', ascending: false);
 
-      print(
-          '🟢 StudentDatasource: ${timeLogsResponse.length} logs de tempo encontrados');
+      if (kDebugMode) {
+        print(
+            '🟢 StudentDatasource: ${timeLogsResponse.length} logs de tempo encontrados');
+      }
 
       // Buscar contratos ativos do estudante
       final contractsResponse = await _supabaseClient
@@ -142,8 +151,10 @@ class StudentDatasource {
           .eq('status', 'active')
           .order('created_at', ascending: false);
 
-      print(
-          '🟢 StudentDatasource: ${contractsResponse.length} contratos ativos encontrados');
+      if (kDebugMode) {
+        print(
+            '🟢 StudentDatasource: ${contractsResponse.length} contratos ativos encontrados');
+      }
 
       // Calcular estatísticas de tempo
       double totalHoursThisWeek = 0.0;
@@ -170,11 +181,15 @@ class StudentDatasource {
         activeTimeLog = timeLogsResponse.firstWhere(
           (log) => log['check_out_time'] == null,
         );
-        print('🟢 StudentDatasource: Log ativo encontrado');
+        if (kDebugMode) {
+          print('🟢 StudentDatasource: Log ativo encontrado');
+        }
       } catch (e) {
         // Nenhum log ativo encontrado
         activeTimeLog = null;
-        print('🟢 StudentDatasource: Nenhum log ativo encontrado');
+        if (kDebugMode) {
+          print('🟢 StudentDatasource: Nenhum log ativo encontrado');
+        }
       }
 
       final dashboardData = {
@@ -188,11 +203,17 @@ class StudentDatasource {
         'contracts': contractsResponse,
       };
 
-      print('🟢 StudentDatasource: Dashboard montado com sucesso');
+      if (kDebugMode) {
+        print('🟢 StudentDatasource: Dashboard montado com sucesso');
+      }
       return dashboardData;
     } catch (e) {
-      print('🔴 StudentDatasource: Erro ao buscar dashboard: $e');
-      print('🟡 StudentDatasource: Usando dados mock devido ao erro');
+      if (kDebugMode) {
+        print('🔴 StudentDatasource: Erro ao buscar dashboard: $e');
+      }
+      if (kDebugMode) {
+        print('🟡 StudentDatasource: Usando dados mock devido ao erro');
+      }
       return _getMockDashboardData(studentId);
     }
   }

@@ -348,9 +348,7 @@ class _SupervisorTimeApprovalPageState
                 bloc: _supervisorBloc, // Usa o BLoC da página
                 builder: (context, state) {
                   bool isLoadingAction =
-                      state is supervisor_state.SupervisorLoading &&
-                          state.loadingMessage ==
-                              null; // Loading genérico para ações
+                      state is supervisor_state.SupervisorLoading;
 
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.end,

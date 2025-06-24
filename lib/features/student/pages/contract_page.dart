@@ -624,7 +624,7 @@ class _ContractEditFormState extends State<_ContractEditForm> {
         if (state is ContractCreateSuccess || state is ContractUpdateSuccess) {
           Navigator.of(context).pop();
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Contrato salvo com sucesso!'),
               backgroundColor: AppColors.success,
             ),

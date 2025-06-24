@@ -58,8 +58,10 @@ class AuthDatasource implements IAuthDatasource {
         await checkRLSPolicies();
 
         if (role == UserRole.student) {
-          print(
-              '📝 Criando dados do estudante para usuário ${response.user!.id}');
+          if (kDebugMode) {
+            print(
+                '📝 Criando dados do estudante para usuário ${response.user!.id}');
+          }
 
           // Verificar permissão de inserção
           await verifyUserInsertionPermission(response.user!.id);
@@ -68,10 +70,14 @@ class AuthDatasource implements IAuthDatasource {
           await testStudentInsertion(
               response.user!.id, fullName, registration ?? '');
 
-          print('✅ Dados do estudante criados com sucesso');
+          if (kDebugMode) {
+            print('✅ Dados do estudante criados com sucesso');
+          }
         } else if (role == UserRole.supervisor) {
-          print(
-              '📝 Criando dados do supervisor para usuário ${response.user!.id}');
+          if (kDebugMode) {
+            print(
+                '📝 Criando dados do supervisor para usuário ${response.user!.id}');
+          }
           await _supabaseClient.from('supervisors').insert({
             'id': response.user!.id, // Incluir o ID do usuário
             'full_name': fullName,
@@ -81,13 +87,19 @@ class AuthDatasource implements IAuthDatasource {
             'created_at': DateTime.now().toIso8601String(),
             'updated_at': DateTime.now().toIso8601String(),
           });
-          print('✅ Dados do supervisor criados com sucesso');
+          if (kDebugMode) {
+            print('✅ Dados do supervisor criados com sucesso');
+          }
         }
       } catch (e) {
         // Se falhar ao criar os dados, não falha o registro
         // mas loga o erro para debug
-        print('⚠️ Erro ao criar dados do ${role.name}: $e');
-        print('⚠️ Detalhes do erro: ${e.toString()}');
+        if (kDebugMode) {
+          print('⚠️ Erro ao criar dados do ${role.name}: $e');
+        }
+        if (kDebugMode) {
+          print('⚠️ Detalhes do erro: ${e.toString()}');
+        }
       }
 
       return {
@@ -113,32 +125,44 @@ class AuthDatasource implements IAuthDatasource {
     String password,
   ) async {
     try {
-      print('🔐 Tentando fazer login com email: $email');
+      if (kDebugMode) {
+        print('🔐 Tentando fazer login com email: $email');
+      }
 
       // Testar conectividade primeiro
       await testConnection();
 
       // Limpar sessão anterior se existir
       await _supabaseClient.auth.signOut();
-      print('🧹 Sessão anterior limpa');
+      if (kDebugMode) {
+        print('🧹 Sessão anterior limpa');
+      }
 
       // Tentar login de forma mais simples
-      print('🔑 Fazendo login...');
+      if (kDebugMode) {
+        print('🔑 Fazendo login...');
+      }
       final response = await _supabaseClient.auth.signInWithPassword(
         email: email,
         password: password,
       );
 
-      print('✅ Login bem-sucedido para usuário: ${response.user?.id}');
+      if (kDebugMode) {
+        print('✅ Login bem-sucedido para usuário: ${response.user?.id}');
+      }
 
       if (response.user == null) {
         throw AuthException('Erro ao fazer login: usuário não retornado');
       }
 
       // Verificar se o usuário tem dados na tabela correspondente
-      print('🔍 Verificando dados do usuário na tabela...');
+      if (kDebugMode) {
+        print('🔍 Verificando dados do usuário na tabela...');
+      }
       await _ensureUserDataExists(response.user!);
-      print('✅ Dados do usuário verificados/criados com sucesso');
+      if (kDebugMode) {
+        print('✅ Dados do usuário verificados/criados com sucesso');
+      }
 
       return {
         'id': response.user!.id,
@@ -154,9 +178,15 @@ class AuthDatasource implements IAuthDatasource {
             : null,
       };
     } catch (e) {
-      print('❌ Erro no login: $e');
-      print('❌ Tipo de erro: ${e.runtimeType}');
-      print('❌ Mensagem completa: $e');
+      if (kDebugMode) {
+        print('❌ Erro no login: $e');
+      }
+      if (kDebugMode) {
+        print('❌ Tipo de erro: ${e.runtimeType}');
+      }
+      if (kDebugMode) {
+        print('❌ Mensagem completa: $e');
+      }
 
       if (e.toString().contains('Invalid login credentials') ||
           e.toString().contains('invalid_credentials')) {
@@ -213,7 +243,9 @@ class AuthDatasource implements IAuthDatasource {
       final fullName = user.userMetadata?['full_name'] ?? '';
       final registration = user.userMetadata?['registration'];
 
-      print('🔍 Verificando dados para usuário ${user.id} com role: $role');
+      if (kDebugMode) {
+        print('🔍 Verificando dados para usuário ${user.id} com role: $role');
+      }
 
       if (role == 'student') {
         // Verificar se já existe na tabela students
@@ -224,7 +256,9 @@ class AuthDatasource implements IAuthDatasource {
             .maybeSingle();
 
         if (existingStudent == null) {
-          print('📝 Criando dados do estudante para usuário ${user.id}');
+          if (kDebugMode) {
+            print('📝 Criando dados do estudante para usuário ${user.id}');
+          }
           // Criar dados do estudante
           await _supabaseClient.from('students').insert({
             'id': user.id, // Incluir o ID do usuário
@@ -248,9 +282,13 @@ class AuthDatasource implements IAuthDatasource {
             'created_at': DateTime.now().toIso8601String(),
             'updated_at': DateTime.now().toIso8601String(),
           });
-          print('✅ Dados do estudante criados para usuário ${user.id}');
+          if (kDebugMode) {
+            print('✅ Dados do estudante criados para usuário ${user.id}');
+          }
         } else {
-          print('✅ Dados do estudante já existem para usuário ${user.id}');
+          if (kDebugMode) {
+            print('✅ Dados do estudante já existem para usuário ${user.id}');
+          }
         }
       } else if (role == 'supervisor') {
         // Verificar se já existe na tabela supervisors
@@ -261,18 +299,24 @@ class AuthDatasource implements IAuthDatasource {
             .maybeSingle();
 
         if (existingSupervisor == null) {
-          print(
-              '❌ Perfil de supervisor não encontrado para usuário ${user.id}');
+          if (kDebugMode) {
+            print(
+                '❌ Perfil de supervisor não encontrado para usuário ${user.id}');
+          }
           // O perfil do supervisor deve ser criado por um administrador.
           // Se não existir, o login deve falhar.
           throw AuthException(
               'Perfil de supervisor não encontrado. Contate o administrador.');
         } else {
-          print('✅ Dados do supervisor já existem para usuário ${user.id}');
+          if (kDebugMode) {
+            print('✅ Dados do supervisor já existem para usuário ${user.id}');
+          }
         }
       }
     } catch (e) {
-      print('⚠️ Erro ao verificar/criar dados do usuário: $e');
+      if (kDebugMode) {
+        print('⚠️ Erro ao verificar/criar dados do usuário: $e');
+      }
       // Não rethrow aqui para não impedir o login
       // Apenas loga o erro para debug
     }
@@ -361,7 +405,9 @@ class AuthDatasource implements IAuthDatasource {
   /// Verifica se um usuário existe no Supabase
   Future<bool> userExists(String email) async {
     try {
-      print('🔍 Verificando se usuário existe: $email');
+      if (kDebugMode) {
+        print('🔍 Verificando se usuário existe: $email');
+      }
 
       // Como não temos acesso admin, vamos tentar uma abordagem diferente
       // Tentar fazer login e capturar o erro específico
@@ -372,17 +418,23 @@ class AuthDatasource implements IAuthDatasource {
         );
       } catch (e) {
         if (e.toString().contains('Invalid login credentials')) {
-          print('✅ Usuário $email existe no Supabase (senha incorreta)');
+          if (kDebugMode) {
+            print('✅ Usuário $email existe no Supabase (senha incorreta)');
+          }
           return true;
         } else if (e.toString().contains('User not found')) {
-          print('❌ Usuário $email não existe no Supabase');
+          if (kDebugMode) {
+            print('❌ Usuário $email não existe no Supabase');
+          }
           return false;
         }
       }
 
       return true; // Se chegou aqui, o usuário existe
     } catch (e) {
-      print('⚠️ Erro ao verificar se usuário existe: $e');
+      if (kDebugMode) {
+        print('⚠️ Erro ao verificar se usuário existe: $e');
+      }
       return false;
     }
   }
@@ -390,7 +442,9 @@ class AuthDatasource implements IAuthDatasource {
   /// Testa a conectividade com o Supabase
   Future<bool> testConnection() async {
     try {
-      print('🔧 Testando conectividade com Supabase...');
+      if (kDebugMode) {
+        print('🔧 Testando conectividade com Supabase...');
+      }
 
       // Tentar fazer uma consulta simples para testar a conexão
       final response =
@@ -438,7 +492,9 @@ class AuthDatasource implements IAuthDatasource {
         return false;
       }
     } catch (e) {
-      print('❌ Erro no registro de teste: $e');
+      if (kDebugMode) {
+        print('❌ Erro no registro de teste: $e');
+      }
       return false;
     }
   }
@@ -499,37 +555,55 @@ class AuthDatasource implements IAuthDatasource {
   /// Verifica as políticas de segurança da tabela students
   Future<void> checkTablePolicies() async {
     try {
-      print('🔒 Verificando políticas de segurança...');
+      if (kDebugMode) {
+        print('🔒 Verificando políticas de segurança...');
+      }
 
       // Tentar fazer uma consulta simples
       final result =
           await _supabaseClient.from('students').select('count').limit(1);
 
-      print('✅ Consulta à tabela students bem-sucedida');
+      if (kDebugMode) {
+        print('✅ Consulta à tabela students bem-sucedida');
+      }
 
       // Verificar se o usuário atual pode inserir
       final currentUser = _supabaseClient.auth.currentUser;
-      print('👤 Usuário atual: ${currentUser?.id}');
-      print('👤 Email: ${currentUser?.email}');
+      if (kDebugMode) {
+        print('👤 Usuário atual: ${currentUser?.id}');
+      }
+      if (kDebugMode) {
+        print('👤 Email: ${currentUser?.email}');
+      }
     } catch (e) {
-      print('❌ Erro ao verificar políticas: $e');
-      print('❌ Tipo de erro: ${e.runtimeType}');
+      if (kDebugMode) {
+        print('❌ Erro ao verificar políticas: $e');
+      }
+      if (kDebugMode) {
+        print('❌ Tipo de erro: ${e.runtimeType}');
+      }
     }
   }
 
   /// Verifica se o usuário pode inserir dados na tabela students
   Future<void> verifyUserInsertionPermission(String userId) async {
     try {
-      print('🔍 Verificando permissão de inserção para usuário: $userId');
+      if (kDebugMode) {
+        print('🔍 Verificando permissão de inserção para usuário: $userId');
+      }
 
       // Verificar se o usuário está autenticado
       final currentUser = _supabaseClient.auth.currentUser;
       if (currentUser == null) {
-        print('❌ Usuário não está autenticado');
+        if (kDebugMode) {
+          print('❌ Usuário não está autenticado');
+        }
         return;
       }
 
-      print('✅ Usuário autenticado: ${currentUser.id}');
+      if (kDebugMode) {
+        print('✅ Usuário autenticado: ${currentUser.id}');
+      }
 
       // Tentar inserir um registro de teste
       final testData = {
@@ -556,38 +630,60 @@ class AuthDatasource implements IAuthDatasource {
 
       final result =
           await _supabaseClient.from('students').insert(testData).select();
-      print('✅ Permissão de inserção verificada: $result');
+      if (kDebugMode) {
+        print('✅ Permissão de inserção verificada: $result');
+      }
 
       // Remover o registro de teste
       await _supabaseClient.from('students').delete().eq('id', userId);
-      print('🧹 Registro de teste removido');
+      if (kDebugMode) {
+        print('🧹 Registro de teste removido');
+      }
     } catch (e) {
-      print('❌ Erro ao verificar permissão de inserção: $e');
-      print('❌ Tipo de erro: ${e.runtimeType}');
+      if (kDebugMode) {
+        print('❌ Erro ao verificar permissão de inserção: $e');
+      }
+      if (kDebugMode) {
+        print('❌ Tipo de erro: ${e.runtimeType}');
+      }
     }
   }
 
   /// Verifica se há políticas de RLS ativas na tabela students
   Future<void> checkRLSPolicies() async {
     try {
-      print('🔒 Verificando políticas de RLS...');
+      if (kDebugMode) {
+        print('🔒 Verificando políticas de RLS...');
+      }
 
       // Tentar fazer uma consulta sem autenticação
       final result =
           await _supabaseClient.from('students').select('*').limit(1);
 
-      print('✅ Consulta sem autenticação bem-sucedida');
-      print('📊 Resultado: $result');
+      if (kDebugMode) {
+        print('✅ Consulta sem autenticação bem-sucedida');
+      }
+      if (kDebugMode) {
+        print('📊 Resultado: $result');
+      }
     } catch (e) {
-      print('❌ Erro ao verificar RLS: $e');
-      print('❌ Tipo de erro: ${e.runtimeType}');
+      if (kDebugMode) {
+        print('❌ Erro ao verificar RLS: $e');
+      }
+      if (kDebugMode) {
+        print('❌ Tipo de erro: ${e.runtimeType}');
+      }
 
       if (e.toString().contains('permission denied') ||
           e.toString().contains('new row violates row-level security policy')) {
-        print(
-            '🚨 Problema detectado: Políticas de RLS estão bloqueando a operação');
-        print(
-            '💡 Solução: Verificar as políticas de segurança no painel do Supabase');
+        if (kDebugMode) {
+          print(
+              '🚨 Problema detectado: Políticas de RLS estão bloqueando a operação');
+        }
+        if (kDebugMode) {
+          print(
+              '💡 Solução: Verificar as políticas de segurança no painel do Supabase');
+        }
       }
     }
   }

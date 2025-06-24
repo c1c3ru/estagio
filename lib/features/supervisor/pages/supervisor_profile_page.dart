@@ -142,7 +142,7 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
           CircleAvatar(
             radius: 50,
             backgroundColor: AppColors.primary.withOpacity(0.1),
-            child: Icon(Icons.person, size: 50, color: AppColors.primary),
+            child: const Icon(Icons.person, size: 50, color: AppColors.primary),
           ),
           const SizedBox(height: 16),
           Text(

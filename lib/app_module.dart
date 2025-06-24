@@ -92,8 +92,7 @@ import 'features/shared/bloc/notification_bloc.dart';
 import 'core/guards/auth_guard.dart';
 // Pages
 import 'features/auth/pages/login_page.dart';
-import 'features/auth/pages/register_page.dart';
-import 'features/auth/pages/forgot_password_page.dart';
+
 // Módulos
 import 'features/auth/auth_module.dart';
 import 'features/supervisor/supervisor_module.dart';

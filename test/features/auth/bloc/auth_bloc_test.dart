@@ -1,7 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gestao_de_estagio/core/errors/app_exceptions.dart' as errors;
 import 'package:gestao_de_estagio/domain/entities/user_entity.dart';
 import 'package:gestao_de_estagio/domain/usecases/auth/get_auth_state_changes_usecase.dart';
 import 'package:gestao_de_estagio/domain/usecases/auth/get_current_user_usecase.dart';
@@ -47,7 +46,7 @@ void main() {
     mockResetPasswordUseCase = MockResetPasswordUsecase();
 
     when(mockGetAuthStateChangesUseCase.call())
-        .thenAnswer((_) => Stream.empty());
+        .thenAnswer((_) => const Stream.empty());
 
     authBloc = AuthBloc(
       loginUseCase: mockLoginUseCase,
@@ -80,8 +79,8 @@ void main() {
         )).thenAnswer((_) async => Right(mockUser));
         return authBloc;
       },
-      act: (bloc) => bloc
-          .add(LoginRequested(email: 'test@test.com', password: 'password')),
+      act: (bloc) => bloc.add(
+          const LoginRequested(email: 'test@test.com', password: 'password')),
       expect: () => <AuthState>[
         AuthLoading(),
         AuthSuccess(mockUser),

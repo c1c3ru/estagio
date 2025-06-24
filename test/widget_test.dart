@@ -11,7 +11,6 @@ import 'package:gestao_de_estagio/app_module.dart';
 import 'package:gestao_de_estagio/app_widget.dart';
 import 'package:gestao_de_estagio/core/guards/auth_guard.dart';
 import 'package:gestao_de_estagio/domain/usecases/auth/get_auth_state_changes_usecase.dart';
-import 'package:gestao_de_estagio/features/auth/bloc/auth_state.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/usecases/auth/login_usecase.dart';
 import '../../../domain/usecases/auth/register_usecase.dart';
@@ -114,7 +113,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
                 'Cadastro realizado com sucesso! Verifique seu e-mail para confirmar a conta.',
           ));
         } else {
-          emit(AuthRegistrationSuccess('Cadastro realizado com sucesso!'));
+          emit(
+              const AuthRegistrationSuccess('Cadastro realizado com sucesso!'));
           emit(AuthSuccess(user));
         }
       },
@@ -159,7 +159,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     result.fold(
       (failure) => emit(AuthFailure(failure.message)),
       (user) {
-        emit(AuthProfileUpdateSuccess('Perfil atualizado com sucesso!'));
+        emit(const AuthProfileUpdateSuccess('Perfil atualizado com sucesso!'));
         emit(AuthSuccess(user));
       },
     );

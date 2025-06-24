@@ -72,7 +72,7 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 64),
-                  AppLottieAnimation(
+                  const AppLottieAnimation(
                     assetPath: 'assets/animations/intership_animations.json',
                     height: 120,
                   ),

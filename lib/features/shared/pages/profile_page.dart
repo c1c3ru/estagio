@@ -6,10 +6,8 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/enums/user_role.dart';
 import '../../../core/enums/class_shift.dart';
 import '../../../core/enums/internship_shift.dart';
-import '../../../core/enums/student_status.dart';
 import '../../../domain/entities/user_entity.dart';
-import '../../../domain/entities/student_entity.dart';
-import '../../../domain/entities/supervisor_entity.dart';
+
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_state.dart';
 import '../../shared/widgets/user_avatar.dart';

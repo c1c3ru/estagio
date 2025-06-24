@@ -13,19 +13,19 @@ class RegisterUsecase {
     required String password,
   }) async {
     if (email.isEmpty) {
-      return Left(const ValidationFailure('E-mail é obrigatório'));
+      return const Left(ValidationFailure('E-mail é obrigatório'));
     }
 
     if (password.isEmpty) {
-      return Left(const ValidationFailure('Senha é obrigatória'));
+      return const Left(ValidationFailure('Senha é obrigatória'));
     }
 
     if (!_isValidEmail(email)) {
-      return Left(const ValidationFailure('E-mail inválido'));
+      return const Left(ValidationFailure('E-mail inválido'));
     }
 
     if (!_isValidPassword(password)) {
-      return Left(const ValidationFailure(
+      return const Left(ValidationFailure(
           'A senha deve ter no mínimo 8 caracteres, uma letra maiúscula, uma minúscula e um número'));
     }
 

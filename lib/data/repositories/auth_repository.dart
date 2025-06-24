@@ -66,7 +66,8 @@ class AuthRepository implements IAuthRepository {
       final userData =
           await _authDatasource.signInWithEmailAndPassword(email, password);
       if (userData == null) {
-        return Left(AuthFailure('Dados de usuário não retornados pelo login.'));
+        return const Left(
+            AuthFailure('Dados de usuário não retornados pelo login.'));
       }
       final userModel = UserModel.fromJson(userData);
       await _preferencesManager.saveUserData(userModel.toJson());
@@ -131,7 +132,7 @@ class AuthRepository implements IAuthRepository {
       final currentUserData = await _authDatasource.getCurrentUser();
       final userId = currentUserData?['id'] as String?;
       if (userId == null) {
-        return Left(AuthFailure('Usuário não autenticado.'));
+        return const Left(AuthFailure('Usuário não autenticado.'));
       }
 
       final userData = await _authDatasource.updateProfile(
