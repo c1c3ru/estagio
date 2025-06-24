@@ -482,10 +482,16 @@ class AuthDatasource implements IAuthDatasource {
         'updated_at': DateTime.now().toIso8601String(),
       }).select();
 
-      print('✅ Teste de inserção bem-sucedido: $result');
+      if (kDebugMode) {
+        print('✅ Teste de inserção bem-sucedido: $result');
+      }
     } catch (e) {
-      print('❌ Erro no teste de inserção: $e');
-      print('❌ Tipo de erro: ${e.runtimeType}');
+      if (kDebugMode) {
+        print('❌ Erro no teste de inserção: $e');
+      }
+      if (kDebugMode) {
+        print('❌ Tipo de erro: ${e.runtimeType}');
+      }
       rethrow;
     }
   }
