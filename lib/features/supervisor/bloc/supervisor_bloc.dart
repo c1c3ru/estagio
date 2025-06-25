@@ -160,10 +160,12 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
 
       final now = DateTime.now();
       final activeStudents = students
-          .where((s) => s.status == student_status_enum.StudentStatus.active)
+          .where(
+              (s) => s.status == student_status_enum.StudentStatus.active.name)
           .length;
       final inactiveStudents = students
-          .where((s) => s.status == student_status_enum.StudentStatus.inactive)
+          .where((s) =>
+              s.status == student_status_enum.StudentStatus.inactive.name)
           .length;
       final expiringContractsSoon = contracts
           .where((c) =>

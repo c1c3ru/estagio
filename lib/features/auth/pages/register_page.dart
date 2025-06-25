@@ -60,6 +60,7 @@ class _RegisterPageState extends State<RegisterPage> {
       });
     } catch (e) {
       setState(() => _loadingSupervisors = false);
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao buscar supervisores: $e')),
       );

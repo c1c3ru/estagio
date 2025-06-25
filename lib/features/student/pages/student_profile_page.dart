@@ -93,9 +93,8 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     _profilePictureUrlController.text = student.profilePictureUrl ?? '';
 
     _selectedBirthDate = student.birthDate;
-    _birthDateController.text = student.birthDate != null
-        ? DateFormat('dd/MM/yyyy').format(student.birthDate)
-        : '';
+    _birthDateController.text =
+        DateFormat('dd/MM/yyyy').format(student.birthDate);
 
     _selectedClassShift = ClassShift.values.firstWhere(
       (e) => e.name == student.classShift,
@@ -357,12 +356,8 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
         if (student.phoneNumber != null)
           _buildReadOnlyInfo(context, 'Telefone', student.phoneNumber!,
               icon: Icons.phone_outlined),
-        _buildReadOnlyInfo(
-            context,
-            'Data de Nascimento',
-            student.birthDate != null
-                ? DateFormat('dd/MM/yyyy').format(student.birthDate)
-                : 'Não informada',
+        _buildReadOnlyInfo(context, 'Data de Nascimento',
+            DateFormat('dd/MM/yyyy').format(student.birthDate),
             icon: Icons.cake_outlined),
         _buildReadOnlyInfo(context, 'Turno das Aulas', student.classShift,
             icon: Icons.schedule_outlined),

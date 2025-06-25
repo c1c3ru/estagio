@@ -213,6 +213,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                 builder: (context) => _NovoContratoDialog(
                                     studentId: state.student.id),
                               );
+                              if (!mounted) return;
                               // Após fechar o modal, recarrega os dados
                               BlocProvider.of<StudentBloc>(context).add(
                                 LoadStudentDashboardDataEvent(

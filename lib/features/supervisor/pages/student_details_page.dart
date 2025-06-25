@@ -272,13 +272,8 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
                     .id), // Assumindo que o ID do estudante é o email ou o user.email está no StudentEntity
             _buildInfoRow(context, Icons.phone_outlined, 'Telefone',
                 student.phoneNumber ?? 'Não informado'),
-            _buildInfoRow(
-                context,
-                Icons.cake_outlined,
-                'Nascimento',
-                student.birthDate != null
-                    ? DateFormat('dd/MM/yyyy').format(student.birthDate)
-                    : 'Não informado'),
+            _buildInfoRow(context, Icons.cake_outlined, 'Nascimento',
+                DateFormat('dd/MM/yyyy').format(student.birthDate)),
             _buildInfoRow(context, Icons.supervisor_account_outlined,
                 'Orientador(a)', student.advisorName),
           ],
@@ -424,9 +419,9 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
                 '${student.weeklyHoursTarget.toStringAsFixed(1)}h'),
             _buildInfoRow(
               context,
-              false ? Icons.thumb_up_outlined : Icons.warning_amber_outlined,
+              Icons.warning_amber_outlined,
               'Em Dia?',
-              false ? 'Sim' : 'Atenção',
+              'Atenção',
             ),
           ],
         ),
