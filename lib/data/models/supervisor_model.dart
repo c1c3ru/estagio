@@ -2,54 +2,66 @@ import '../../domain/entities/supervisor_entity.dart';
 
 class SupervisorModel {
   final String id;
-  final String userId;
-  final String department;
-  final String position;
-  final String specialization;
+  final String fullName;
+  final String? department;
+  final String? position;
+  final String? jobCode;
+  final String? profilePictureUrl;
+  final String? phoneNumber;
   final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   SupervisorModel({
     required this.id,
-    required this.userId,
-    required this.department,
-    required this.position,
-    required this.specialization,
+    required this.fullName,
+    this.department,
+    this.position,
+    this.jobCode,
+    this.profilePictureUrl,
+    this.phoneNumber,
     required this.createdAt,
-    required this.updatedAt,
+    this.updatedAt,
   });
 
   factory SupervisorModel.fromJson(Map<String, dynamic> json) {
     return SupervisorModel(
       id: json['id'] as String,
-      userId: json['user_id'] as String,
-      department: json['department'] as String,
-      specialization: json["specialization"] as String,
-      position: json["position"] as String,
+      fullName: json['full_name'] as String,
+      department: json['department'] as String?,
+      position: json['position'] as String?,
+      jobCode: json['job_code'] as String?,
+      profilePictureUrl: json['profile_picture_url'] as String?,
+      phoneNumber: json['phone_number'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'user_id': userId,
+      'full_name': fullName,
       'department': department,
       'position': position,
-      'specialization': specialization,
+      'job_code': jobCode,
+      'profile_picture_url': profilePictureUrl,
+      'phone_number': phoneNumber,
       'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
     };
   }
 
   SupervisorEntity toEntity() {
     return SupervisorEntity(
       id: id,
-      userId: userId,
+      fullName: fullName,
       department: department,
-      specialization: specialization,
       position: position,
+      jobCode: jobCode,
+      profilePictureUrl: profilePictureUrl,
+      phoneNumber: phoneNumber,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
@@ -58,10 +70,12 @@ class SupervisorModel {
   factory SupervisorModel.fromEntity(SupervisorEntity entity) {
     return SupervisorModel(
       id: entity.id,
-      userId: entity.userId,
+      fullName: entity.fullName,
       department: entity.department,
       position: entity.position,
-      specialization: entity.specialization,
+      jobCode: entity.jobCode,
+      profilePictureUrl: entity.profilePictureUrl,
+      phoneNumber: entity.phoneNumber,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     );
@@ -69,20 +83,25 @@ class SupervisorModel {
 
   SupervisorModel copyWith({
     String? id,
-    String? userId,
+    String? fullName,
     String? department,
-    String? specialization,
+    String? position,
+    String? jobCode,
+    String? profilePictureUrl,
+    String? phoneNumber,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
     return SupervisorModel(
       id: id ?? this.id,
-      userId: userId ?? this.userId,
+      fullName: fullName ?? this.fullName,
       department: department ?? this.department,
-      specialization: specialization ?? this.specialization,
+      position: position ?? this.position,
+      jobCode: jobCode ?? this.jobCode,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      position: 'Função',
     );
   }
 
@@ -91,9 +110,12 @@ class SupervisorModel {
     if (identical(this, other)) return true;
     return other is SupervisorModel &&
         other.id == id &&
-        other.userId == userId &&
+        other.fullName == fullName &&
         other.department == department &&
-        other.specialization == specialization &&
+        other.position == position &&
+        other.jobCode == jobCode &&
+        other.profilePictureUrl == profilePictureUrl &&
+        other.phoneNumber == phoneNumber &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
   }
@@ -101,15 +123,18 @@ class SupervisorModel {
   @override
   int get hashCode {
     return id.hashCode ^
-        userId.hashCode ^
+        fullName.hashCode ^
         department.hashCode ^
-        specialization.hashCode ^
+        position.hashCode ^
+        jobCode.hashCode ^
+        profilePictureUrl.hashCode ^
+        phoneNumber.hashCode ^
         createdAt.hashCode ^
         updatedAt.hashCode;
   }
 
   @override
   String toString() {
-    return 'SupervisorModel(id: $id, userId: $userId, department: $department, specialization: $specialization, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'SupervisorModel(id: $id, fullName: $fullName, department: $department, position: $position, jobCode: $jobCode, profilePictureUrl: $profilePictureUrl, phoneNumber: $phoneNumber, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 }

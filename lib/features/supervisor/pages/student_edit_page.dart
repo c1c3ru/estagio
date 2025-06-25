@@ -4,9 +4,6 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:intl/intl.dart';
 import 'package:gestao_de_estagio/core/enums/class_shift.dart';
 import 'package:gestao_de_estagio/core/enums/internship_shift.dart';
-import 'package:gestao_de_estagio/core/enums/user_role.dart';
-import 'package:gestao_de_estagio/core/enums/student_status.dart'
-    as student_status_enum;
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/validators.dart';
@@ -74,7 +71,6 @@ class _StudentEditPageState extends State<StudentEditPage> {
   void _populateFormFields(StudentEntity student) {
     _studentToEdit = student;
     _fullNameController.text = student.fullName;
-    _emailController.text = student.email;
     _registrationNumberController.text = student.registrationNumber;
     _courseController.text = student.course;
     _advisorNameController.text = student.advisorName;
@@ -83,7 +79,7 @@ class _StudentEditPageState extends State<StudentEditPage> {
 
     _selectedBirthDate = student.birthDate;
     _birthDateController.text = student.birthDate != null
-        ? DateFormat('dd/MM/yyyy').format(student.birthDate!)
+        ? DateFormat('dd/MM/yyyy').format(student.birthDate)
         : '';
 
     _selectedContractStartDate = student.contractStartDate;
@@ -96,12 +92,19 @@ class _StudentEditPageState extends State<StudentEditPage> {
 
     _totalHoursRequiredController.text =
         student.totalHoursRequired.toStringAsFixed(1);
+
+    _selectedClassShift = ClassShift.values.firstWhere(
+      (e) => e.name == student.classShift,
+      orElse: () => ClassShift.morning,
+    );
+    _selectedInternshipShift = InternshipShift.values.firstWhere(
+      (e) => e.name == student.internshipShift1,
+      orElse: () => InternshipShift.morning,
+    );
+    _selectedIsMandatoryInternship = student.isMandatoryInternship;
+
     _weeklyHoursTargetController.text =
         student.weeklyHoursTarget.toStringAsFixed(1);
-
-    _selectedClassShift = student.classShift;
-    _selectedInternshipShift = student.internshipShift;
-    _selectedIsMandatoryInternship = student.isMandatoryInternship;
 
     setState(() {
       _isLoadingData = false;
@@ -138,21 +141,15 @@ class _StudentEditPageState extends State<StudentEditPage> {
 
     final studentEntityData = StudentEntity(
       id: _isEditMode ? _studentToEdit!.id : '',
-      email: _isEditMode ? _studentToEdit!.email : _emailController.text.trim(),
       fullName: _fullNameController.text.trim(),
-      role: UserRole.student,
-      isActive: true,
-      createdAt: _isEditMode ? _studentToEdit!.createdAt : DateTime.now(),
-      userId:
-          _isEditMode ? _studentToEdit!.userId : _emailController.text.trim(),
-      supervisorId: _isEditMode ? _studentToEdit!.supervisorId : null,
       registrationNumber: _registrationNumberController.text.trim(),
       course: _courseController.text.trim(),
       advisorName: _advisorNameController.text.trim(),
       isMandatoryInternship: _selectedIsMandatoryInternship,
-      classShift: _selectedClassShift,
-      internshipShift: _selectedInternshipShift,
-      birthDate: _selectedBirthDate,
+      classShift: _selectedClassShift.name,
+      internshipShift1: _selectedInternshipShift.name,
+      internshipShift2: null,
+      birthDate: _selectedBirthDate!,
       contractStartDate: _selectedContractStartDate ?? DateTime.now(),
       contractEndDate: _selectedContractEndDate ??
           DateTime.now().add(const Duration(days: 1)),
@@ -160,18 +157,17 @@ class _StudentEditPageState extends State<StudentEditPage> {
           double.tryParse(_totalHoursRequiredController.text) ?? 0.0,
       totalHoursCompleted:
           _isEditMode ? _studentToEdit!.totalHoursCompleted : 0.0,
-      weeklyHoursTarget:
-          double.tryParse(_weeklyHoursTargetController.text) ?? 0.0,
       profilePictureUrl: _profilePictureUrlController.text.trim().isNotEmpty
           ? _profilePictureUrlController.text.trim()
           : null,
       phoneNumber: _phoneNumberController.text.trim().isNotEmpty
           ? _phoneNumberController.text.trim()
           : null,
-      isOnTrack: _isEditMode ? _studentToEdit!.isOnTrack : true,
-      status: _isEditMode
-          ? _studentToEdit!.status
-          : student_status_enum.StudentStatus.pending,
+      createdAt: _isEditMode ? _studentToEdit!.createdAt : DateTime.now(),
+      updatedAt: _isEditMode ? _studentToEdit!.updatedAt : null,
+      status: _isEditMode ? _studentToEdit!.status : null,
+      weeklyHoursTarget:
+          double.tryParse(_weeklyHoursTargetController.text) ?? 0.0,
     );
 
     if (_isEditMode) {
@@ -291,8 +287,9 @@ class _StudentEditPageState extends State<StudentEditPage> {
             hintText: 'Digite a matrícula',
             validator: (value) {
               if (value == null || value.isEmpty) return 'Informe a matrícula';
-              if (!RegExp(r'^\d{7}\$').hasMatch(value))
+              if (!RegExp(r'^\d{7}\$').hasMatch(value)) {
                 return 'A matrícula deve ter exatamente 7 dígitos';
+              }
               return null;
             },
           ),
@@ -381,8 +378,8 @@ class _StudentEditPageState extends State<StudentEditPage> {
           const SizedBox(height: 16),
           AppTextField(
             controller: _weeklyHoursTargetController,
-            labelText: 'Meta de Horas Semanais',
-            hintText: 'Digite a meta de horas semanais',
+            labelText: 'Horas Semanais (meta)',
+            hintText: 'Digite a meta semanal de horas',
             keyboardType: TextInputType.number,
             validator: Validators.required,
           ),

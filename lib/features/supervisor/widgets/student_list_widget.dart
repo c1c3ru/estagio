@@ -82,21 +82,10 @@ class StudentListWidget extends StatelessWidget {
           true, // Se estiver dentro de uma Column/ListView que não define altura
       itemBuilder: (context, index) {
         final student = students[index];
-        _getStatusColor(
-            student.role == UserRole.student
-                ? StudentStatus.active
-                : StudentStatus.inactive,
-            context); // Exemplo simplificado de status
-        // A StudentEntity não tem um campo 'status' direto como o enum StudentStatus.
-        // A lógica de status do estudante (ativo, inativo, etc.) pode depender da data do contrato
-        // ou de um campo 'is_active' na tabela 'users' ou 'students'.
-        // Para este exemplo, vou usar a data do contrato para um status visual simples.
-        final bool isActiveBasedOnContract =
-            student.contractEndDate.isAfter(DateTime.now()) &&
-                student.contractStartDate.isBefore(DateTime.now());
-        final displayStatus = isActiveBasedOnContract
+        final displayStatus = student.contractEndDate.isAfter(DateTime.now()) &&
+                student.contractStartDate.isBefore(DateTime.now())
             ? StudentStatus.active
-            : StudentStatus.inactive; // Simplificação
+            : StudentStatus.inactive;
         final displayStatusColor = _getStatusColor(displayStatus, context);
 
         return Card(

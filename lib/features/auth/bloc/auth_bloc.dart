@@ -93,7 +93,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await _logoutUseCase();
     result.fold(
       (failure) => emit(AuthFailure(failure.message)),
-      (_) => emit(AuthUnauthenticated()),
+      (_) => emit(const AuthUnauthenticated()),
     );
   }
 
@@ -213,9 +213,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   // Função auxiliar para checar perfil incompleto
   bool _isProfileIncomplete(UserEntity user) {
     if (user.role.name == 'student' && user is StudentEntity) {
-      final course = user.course;
-      final advisor = user.advisorName;
-      if (user.fullName.isEmpty ||
+      final student = user as StudentEntity;
+      final course = student.course;
+      final advisor = student.advisorName;
+      if (student.fullName.isEmpty ||
           course.isEmpty ||
           course == 'PENDENTE' ||
           advisor.isEmpty ||
@@ -227,13 +228,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final supervisor = user as SupervisorEntity;
       final department = supervisor.department;
       final position = supervisor.position;
-      final specialization = supervisor.specialization;
-      if (department.isEmpty ||
+      if ((department?.isEmpty ?? true) ||
           department == 'PENDENTE' ||
-          position.isEmpty ||
-          position == 'PENDENTE' ||
-          specialization.isEmpty ||
-          specialization == 'PENDENTE') {
+          (position?.isEmpty ?? true) ||
+          position == 'PENDENTE') {
         return true;
       }
     }

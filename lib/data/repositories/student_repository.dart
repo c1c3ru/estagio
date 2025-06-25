@@ -55,7 +55,7 @@ class StudentRepository implements IStudentRepository {
   @override
   Future<StudentEntity> createStudent(StudentEntity student) async {
     try {
-      final studentModel = StudentModel.fromEntity(student);
+      final studentModel = student as StudentModel;
       final createdData =
           await _studentDatasource.createStudent(studentModel.toJson());
       return StudentModel.fromJson(createdData).toEntity();
@@ -67,7 +67,7 @@ class StudentRepository implements IStudentRepository {
   @override
   Future<StudentEntity> updateStudent(StudentEntity student) async {
     try {
-      final studentModel = StudentModel.fromEntity(student);
+      final studentModel = student as StudentModel;
       final updatedData = await _studentDatasource.updateStudent(
         student.id,
         studentModel.toJson(),

@@ -30,14 +30,14 @@ class AuthRepository implements IAuthRepository {
         return Right(user);
       }
 
-      final cachedUserData = await _preferencesManager.getUserData();
+      final cachedUserData = _preferencesManager.getUserData();
       if (cachedUserData != null) {
         return Right(UserModel.fromJson(cachedUserData).toEntity());
       }
 
       return const Left(AuthFailure('Usuário não encontrado'));
     } catch (e) {
-      final cachedUserData = await _preferencesManager.getUserData();
+      final cachedUserData = _preferencesManager.getUserData();
       if (cachedUserData != null) {
         return Right(UserModel.fromJson(cachedUserData).toEntity());
       }
@@ -150,7 +150,7 @@ class AuthRepository implements IAuthRepository {
       final userData = await _authDatasource.getCurrentUser();
       return userData != null;
     } catch (e) {
-      final cachedUserData = await _preferencesManager.getUserData();
+      final cachedUserData = _preferencesManager.getUserData();
       return cachedUserData != null;
     }
   }

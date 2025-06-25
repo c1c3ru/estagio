@@ -246,7 +246,7 @@ class ProgressDialog extends StatelessWidget {
               ],
             )
           else
-            const LottieLoadingIndicator(),
+            const LoadingAnimation(),
           if (message != null) ...[
             const SizedBox(height: 16),
             Text(

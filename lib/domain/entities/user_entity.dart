@@ -12,6 +12,7 @@ class UserEntity extends Equatable {
   final bool emailConfirmed;
   final DateTime createdAt;
   final DateTime? updatedAt;
+  final String? matricula;
 
   const UserEntity({
     required this.id,
@@ -24,6 +25,7 @@ class UserEntity extends Equatable {
     this.emailConfirmed = false,
     required this.createdAt,
     this.updatedAt,
+    this.matricula,
   });
 
   static final UserEntity empty = UserEntity(
@@ -34,6 +36,7 @@ class UserEntity extends Equatable {
     createdAt: DateTime.fromMicrosecondsSinceEpoch(0),
     emailConfirmed: false,
     isActive: false,
+    matricula: '',
   );
 
   @override
@@ -48,7 +51,36 @@ class UserEntity extends Equatable {
         emailConfirmed,
         createdAt,
         updatedAt,
+        matricula,
       ];
+
+  UserEntity copyWith({
+    String? id,
+    String? email,
+    String? fullName,
+    String? phoneNumber,
+    String? profilePictureUrl,
+    UserRole? role,
+    bool? isActive,
+    bool? emailConfirmed,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? matricula,
+  }) {
+    return UserEntity(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      fullName: fullName ?? this.fullName,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
+      role: role ?? this.role,
+      isActive: isActive ?? this.isActive,
+      emailConfirmed: emailConfirmed ?? this.emailConfirmed,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      matricula: matricula ?? this.matricula,
+    );
+  }
 
   @override
   bool operator ==(Object other) {
@@ -63,7 +95,8 @@ class UserEntity extends Equatable {
         other.isActive == isActive &&
         other.emailConfirmed == emailConfirmed &&
         other.createdAt == createdAt &&
-        other.updatedAt == updatedAt;
+        other.updatedAt == updatedAt &&
+        other.matricula == matricula;
   }
 
   @override
@@ -77,11 +110,12 @@ class UserEntity extends Equatable {
         isActive.hashCode ^
         emailConfirmed.hashCode ^
         createdAt.hashCode ^
-        updatedAt.hashCode;
+        updatedAt.hashCode ^
+        matricula.hashCode;
   }
 
   @override
   String toString() {
-    return 'UserEntity(id: $id, email: $email, fullName: $fullName, phoneNumber: $phoneNumber, profilePictureUrl: $profilePictureUrl, role: $role, isActive: $isActive, emailConfirmed: $emailConfirmed, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'UserEntity(id: $id, email: $email, fullName: $fullName, phoneNumber: $phoneNumber, profilePictureUrl: $profilePictureUrl, role: $role, isActive: $isActive, emailConfirmed: $emailConfirmed, createdAt: $createdAt, updatedAt: $updatedAt, matricula: $matricula)';
   }
 }

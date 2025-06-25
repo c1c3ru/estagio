@@ -42,7 +42,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
       listener: (context, state) {
         if (state is AuthUnauthenticated) {
           // Garante que a navegação seja feita fora do build
-          Future.microtask(() => Modular.to.navigate('/login/'));
+          Future.microtask(() => Modular.to.navigate('/login'));
         }
       },
       child: Scaffold(
@@ -152,106 +152,12 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                 Text(
                                     'Orientador: ${state.student.advisorName}'),
                                 Text(
-                                    'Turno das Aulas: ${state.student.classShift.displayName}'),
-                                Text(
-                                    'Turno do Estágio: ${state.student.internshipShift.displayName}'),
+                                    'Turno das Aulas: ${state.student.classShift}'),
                               ],
                             ),
                           ),
                         ),
                         const SizedBox(height: 16),
-
-                        // Card com progresso do estágio
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Progresso do Estágio',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                    'Horas Concluídas: ${state.student.totalHoursCompleted}'),
-                                Text(
-                                    'Horas Necessárias: ${state.student.totalHoursRequired}'),
-                                Text(
-                                    'Meta Semanal: ${state.student.weeklyHoursTarget} horas'),
-                                const SizedBox(height: 8),
-                                LinearProgressIndicator(
-                                  value: state.student.progressPercentage / 100,
-                                  backgroundColor: Colors.grey[300],
-                                  valueColor:
-                                      const AlwaysStoppedAnimation<Color>(
-                                          AppColors.primary),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '${state.student.progressPercentage.toStringAsFixed(1)}% concluído',
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Após o card de progresso do estágio
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Card(
-                                color: AppColors.primary.withOpacity(0.08),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Column(
-                                    children: [
-                                      const Icon(Icons.calendar_view_week,
-                                          color: AppColors.primary),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                          '${state.timeStats.hoursThisWeek.toStringAsFixed(1)} h',
-                                          style: const TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold)),
-                                      const SizedBox(height: 2),
-                                      const Text('Esta semana',
-                                          style: TextStyle(fontSize: 12)),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Card(
-                                color: AppColors.success.withOpacity(0.08),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Column(
-                                    children: [
-                                      const Icon(Icons.calendar_month,
-                                          color: AppColors.success),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                          '${state.timeStats.hoursThisMonth.toStringAsFixed(1)} h',
-                                          style: const TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold)),
-                                      const SizedBox(height: 2),
-                                      const Text('Este mês',
-                                          style: TextStyle(fontSize: 12)),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
 
                         // Card com estatísticas de tempo
                         Card(
@@ -520,20 +426,19 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
     if (!_formKey.currentState!.validate() ||
         _startDate == null ||
         _endDate == null ||
-        _supervisorSelecionado == null) return;
+        _supervisorSelecionado == null) {
+      return;
+    }
     setState(() => _loading = true);
     try {
       final contract = ContractEntity(
         id: '',
         studentId: widget.studentId,
         supervisorId: _supervisorSelecionado!.id,
-        company: _companyController.text.trim(),
-        position: _positionController.text.trim(),
+        contractType: 'estagio', // ou outro valor conforme sua lógica
+        status: ContractStatus.pending.name,
         startDate: _startDate!,
         endDate: _endDate!,
-        totalHoursRequired: double.tryParse(_totalHoursController.text) ?? 0,
-        weeklyHoursTarget: double.tryParse(_weeklyHoursController.text) ?? 0,
-        status: ContractStatus.pending,
         createdAt: DateTime.now(),
         updatedAt: null,
       );

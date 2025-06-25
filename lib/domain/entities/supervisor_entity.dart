@@ -1,22 +1,24 @@
 class SupervisorEntity {
   final String id;
-  final String userId;
-  final String department;
-  final String position;
-  final String specialization;
-  final String? phone;
+  final String fullName;
+  final String? department;
+  final String? position;
+  final String? jobCode;
+  final String? profilePictureUrl;
+  final String? phoneNumber;
   final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   const SupervisorEntity({
     required this.id,
-    required this.userId,
-    required this.department,
-    required this.position,
-    required this.specialization,
-    this.phone,
+    required this.fullName,
+    this.department,
+    this.position,
+    this.jobCode,
+    this.profilePictureUrl,
+    this.phoneNumber,
     required this.createdAt,
-    required this.updatedAt,
+    this.updatedAt,
   });
 
   @override
@@ -24,10 +26,12 @@ class SupervisorEntity {
     if (identical(this, other)) return true;
     return other is SupervisorEntity &&
         other.id == id &&
-        other.userId == userId &&
+        other.fullName == fullName &&
         other.department == department &&
         other.position == position &&
-        other.phone == phone &&
+        other.jobCode == jobCode &&
+        other.profilePictureUrl == profilePictureUrl &&
+        other.phoneNumber == phoneNumber &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
   }
@@ -35,36 +39,40 @@ class SupervisorEntity {
   @override
   int get hashCode {
     return id.hashCode ^
-        userId.hashCode ^
+        fullName.hashCode ^
         department.hashCode ^
         position.hashCode ^
-        phone.hashCode ^
+        jobCode.hashCode ^
+        profilePictureUrl.hashCode ^
+        phoneNumber.hashCode ^
         createdAt.hashCode ^
         updatedAt.hashCode;
   }
 
   @override
   String toString() {
-    return 'SupervisorEntity(id: $id, userId: $userId, department: $department, position: $position, phone: $phone, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'SupervisorEntity(id: $id, fullName: $fullName, department: $department, position: $position, jobCode: $jobCode, profilePictureUrl: $profilePictureUrl, phoneNumber: $phoneNumber, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   SupervisorEntity copyWith({
     String? id,
-    String? userId,
+    String? fullName,
     String? department,
     String? position,
-    String? specialization,
-    String? phone,
+    String? jobCode,
+    String? profilePictureUrl,
+    String? phoneNumber,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
     return SupervisorEntity(
       id: id ?? this.id,
-      userId: userId ?? this.userId,
+      fullName: fullName ?? this.fullName,
       department: department ?? this.department,
       position: position ?? this.position,
-      specialization: specialization ?? this.specialization,
-      phone: phone ?? this.phone,
+      jobCode: jobCode ?? this.jobCode,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

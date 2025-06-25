@@ -27,7 +27,6 @@ class StudentFormDialog extends StatefulWidget {
 class _StudentFormDialogState extends State<StudentFormDialog> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
-  late TextEditingController _emailController;
   late TextEditingController _registrationController;
   late TextEditingController _courseController;
   late TextEditingController _advisorController;
@@ -47,7 +46,6 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
   void initState() {
     final s = widget.initialStudent;
     _nameController = TextEditingController(text: s?.fullName ?? '');
-    _emailController = TextEditingController(text: s?.email ?? '');
     _registrationController =
         TextEditingController(text: s?.registrationNumber ?? '');
     _courseController = TextEditingController(text: s?.course ?? '');
@@ -68,8 +66,11 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
     _weeklyHoursController =
         TextEditingController(text: s?.weeklyHoursTarget.toString() ?? '');
     _isMandatoryInternship = s?.isMandatoryInternship ?? false;
-    _classShift = s?.classShift ?? ClassShift.morning;
-    _internshipShift = s?.internshipShift ?? InternshipShift.morning;
+    _classShift = s != null
+        ? ClassShift.values.firstWhere((e) => e.name == s.classShift,
+            orElse: () => ClassShift.morning)
+        : ClassShift.morning;
+    _internshipShift = InternshipShift.morning;
     _passwordController = TextEditingController();
     super.initState();
   }
@@ -77,7 +78,6 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
   @override
   void dispose() {
     _nameController.dispose();
-    _emailController.dispose();
     _registrationController.dispose();
     _courseController.dispose();
     _advisorController.dispose();
@@ -130,21 +130,6 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
                 validator: (v) =>
                     v == null || v.isEmpty ? 'Informe o nome' : null,
               ),
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'E-mail'),
-                keyboardType: TextInputType.emailAddress,
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'Informe o e-mail' : null,
-              ),
-              if (!widget.isEdit)
-                TextFormField(
-                  controller: _passwordController,
-                  decoration: const InputDecoration(labelText: 'Senha inicial'),
-                  obscureText: true,
-                  validator: (v) =>
-                      v == null || v.length < 6 ? 'Mínimo 6 caracteres' : null,
-                ),
               TextFormField(
                 controller: _registrationController,
                 decoration: const InputDecoration(labelText: 'Matrícula'),
@@ -277,56 +262,33 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
         ElevatedButton(
           onPressed: () {
             if (_formKey.currentState!.validate()) {
-              final student = (widget.initialStudent ??
-                      StudentEntity(
-                        id: '',
-                        email: _emailController.text.trim(),
-                        fullName: _nameController.text.trim(),
-                        phoneNumber: _phoneController.text.trim(),
-                        profilePictureUrl: null,
-                        role: UserRole.student,
-                        isActive: true,
-                        createdAt: DateTime.now(),
-                        updatedAt: null,
-                        userId: '',
-                        birthDate: null,
-                        course: _courseController.text.trim(),
-                        advisorName: _advisorController.text.trim(),
-                        registrationNumber: _registrationController.text.trim(),
-                        isMandatoryInternship: _isMandatoryInternship,
-                        classShift: _classShift,
-                        internshipShift: _internshipShift,
-                        supervisorId: null,
-                        totalHoursCompleted: 0.0,
-                        totalHoursRequired:
-                            double.tryParse(_totalHoursController.text) ?? 0.0,
-                        weeklyHoursTarget:
-                            double.tryParse(_weeklyHoursController.text) ?? 0.0,
-                        contractStartDate: _startDate!,
-                        contractEndDate: _endDate!,
-                        isOnTrack: true,
-                        status: StudentStatus.pending,
-                      ))
-                  .copyWith(
+              final student = StudentEntity(
+                id: '',
                 fullName: _nameController.text.trim(),
-                email: _emailController.text.trim(),
                 registrationNumber: _registrationController.text.trim(),
                 course: _courseController.text.trim(),
                 advisorName: _advisorController.text.trim(),
-                phoneNumber: _phoneController.text.trim(),
+                isMandatoryInternship: _isMandatoryInternship,
+                classShift: _classShift.name,
+                internshipShift1: _internshipShift.name,
+                internshipShift2: null,
+                birthDate: DateTime(2000, 1, 1),
                 contractStartDate: _startDate!,
                 contractEndDate: _endDate!,
                 totalHoursRequired:
                     double.tryParse(_totalHoursController.text) ?? 0.0,
+                totalHoursCompleted: 0.0,
                 weeklyHoursTarget:
                     double.tryParse(_weeklyHoursController.text) ?? 0.0,
-                isMandatoryInternship: _isMandatoryInternship,
-                classShift: _classShift,
-                internshipShift: _internshipShift,
+                profilePictureUrl: null,
+                phoneNumber: _phoneController.text.trim(),
+                createdAt: DateTime.now(),
+                updatedAt: null,
+                status: StudentStatus.pending.name,
               );
               widget.onSubmit(
                 student,
-                _emailController.text.trim(),
+                '',
                 widget.isEdit ? null : _passwordController.text.trim(),
               );
               Navigator.of(context).pop();

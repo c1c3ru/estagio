@@ -54,6 +54,16 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
     return DateFormat('HH:mm').format(dt);
   }
 
+  TimeOfDay? _parseTimeOfDay(String? time) {
+    if (time == null || time.isEmpty) return null;
+    final parts = time.split(':');
+    if (parts.length < 2) return null;
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null || minute == null) return null;
+    return TimeOfDay(hour: hour, minute: minute);
+  }
+
   Color _getStatusColor(
       student_status_enum.StudentStatus status, BuildContext context) {
     switch (status) {
@@ -267,7 +277,7 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
                 Icons.cake_outlined,
                 'Nascimento',
                 student.birthDate != null
-                    ? DateFormat('dd/MM/yyyy').format(student.birthDate!)
+                    ? DateFormat('dd/MM/yyyy').format(student.birthDate)
                     : 'Não informado'),
             _buildInfoRow(context, Icons.supervisor_account_outlined,
                 'Orientador(a)', student.advisorName),
@@ -312,7 +322,10 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
 
   Widget _buildContractInfoCard(BuildContext context, ContractEntity contract) {
     final theme = Theme.of(context);
-    final statusColor = _getContractStatusColor(contract.status, context);
+    final statusColor = _getContractStatusColor(
+      ContractStatus.fromString(contract.status),
+      context,
+    );
     return Card(
       elevation: 1.5,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -334,7 +347,7 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    contract.status.displayName,
+                    ContractStatus.fromString(contract.status).displayName,
                     style: theme.textTheme.bodySmall?.copyWith(
                         color: statusColor, fontWeight: FontWeight.bold),
                   ),
@@ -394,7 +407,7 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: LinearProgressIndicator(
-                  value: student.progressPercentage / 100,
+                  value: 0.0,
                   minHeight: 12,
                   backgroundColor:
                       theme.colorScheme.primaryContainer.withAlpha(100),
@@ -405,20 +418,15 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
             else
               const Text('Meta de horas não definida.'),
             const SizedBox(height: 12),
-            _buildInfoRow(
-                context,
-                Icons.hourglass_empty_outlined,
-                'Horas Restantes',
-                '${student.remainingHours.toStringAsFixed(1)}h'),
+            _buildInfoRow(context, Icons.hourglass_empty_outlined,
+                'Horas Restantes', '${0.0.toStringAsFixed(1)}h'),
             _buildInfoRow(context, Icons.track_changes_outlined, 'Meta Semanal',
                 '${student.weeklyHoursTarget.toStringAsFixed(1)}h'),
             _buildInfoRow(
               context,
-              student.isOnTrack
-                  ? Icons.thumb_up_outlined
-                  : Icons.warning_amber_outlined,
+              false ? Icons.thumb_up_outlined : Icons.warning_amber_outlined,
               'Em Dia?',
-              student.isOnTrack ? 'Sim' : 'Atenção',
+              false ? 'Sim' : 'Atenção',
             ),
           ],
         ),
@@ -446,21 +454,23 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
                     borderRadius: BorderRadius.circular(8)),
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: log.approved
+                    backgroundColor: log.approved == true
                         ? AppColors.success.withAlpha(40)
                         : theme.colorScheme.secondaryContainer,
                     child: Icon(
-                      log.approved
+                      log.approved == true
                           ? Icons.check_circle_outline
                           : Icons.hourglass_top_outlined,
-                      color: log.approved
+                      color: log.approved == true
                           ? AppColors.success
                           : theme.colorScheme.onSecondaryContainer,
                       size: 20,
                     ),
                   ),
                   title: Text(
-                    '${DateFormat('dd/MM/yy').format(log.logDate)}: ${_formatTimeOfDay(log.checkInTime)} - ${_formatTimeOfDay(log.checkOutTime)}',
+                    '${DateFormat('dd/MM/yy').format(log.logDate)}: '
+                    '${_formatTimeOfDay(_parseTimeOfDay(log.checkInTime))} - '
+                    '${_formatTimeOfDay(_parseTimeOfDay(log.checkOutTime))}',
                     style: theme.textTheme.bodyMedium
                         ?.copyWith(fontWeight: FontWeight.w500),
                   ),

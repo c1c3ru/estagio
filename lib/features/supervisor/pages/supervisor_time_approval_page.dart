@@ -76,6 +76,12 @@ class _SupervisorTimeApprovalPageState
     return DateFormat('HH:mm').format(dt);
   }
 
+  TimeOfDay? _parseTime(String? time) {
+    if (time == null || time.isEmpty) return null;
+    final parts = time.split(':');
+    return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+  }
+
   // Função para buscar o nome do estudante se não estiver no cache
   // Na prática, a lista de logs do BLoC/Usecase poderia já vir com os nomes dos estudantes (via join).
   // Esta é uma solução alternativa se a TimeLogEntity só tiver studentId.
@@ -293,8 +299,8 @@ class _SupervisorTimeApprovalPageState
   Widget _buildTimeLogApprovalCard(
       BuildContext context, TimeLogEntity log, String studentName) {
     final theme = Theme.of(context);
-    final String checkInStr = _formatTimeOfDay(log.checkInTime);
-    final String checkOutStr = _formatTimeOfDay(log.checkOutTime);
+    final String checkInStr = _formatTimeOfDay(_parseTime(log.checkInTime));
+    final String checkOutStr = _formatTimeOfDay(_parseTime(log.checkOutTime));
     final String hoursStr = log.hoursLogged != null
         ? '${log.hoursLogged!.toStringAsFixed(1)}h'
         : '-';
@@ -329,7 +335,7 @@ class _SupervisorTimeApprovalPageState
             const Divider(height: 16),
             _buildDetailRow(
                 context, Icons.login_outlined, 'Entrada:', checkInStr),
-            if (log.checkOutTime != null)
+            if (checkOutStr != 'N/A')
               _buildDetailRow(
                   context, Icons.logout_outlined, 'Saída:', checkOutStr),
             _buildDetailRow(context, Icons.hourglass_full_outlined,
@@ -340,9 +346,9 @@ class _SupervisorTimeApprovalPageState
 
             const SizedBox(height: 12),
             // Botões de Ação
-            if (!log.approved &&
-                _supervisorId !=
-                    null) // Mostra botões apenas se não aprovado e supervisorId estiver disponível
+            if (log.approved == false &&
+                _supervisorId != null &&
+                _supervisorId!.isNotEmpty)
               BlocBuilder<bloc.SupervisorBloc,
                   supervisor_state.SupervisorState>(
                 bloc: _supervisorBloc, // Usa o BLoC da página
@@ -370,12 +376,14 @@ class _SupervisorTimeApprovalPageState
                         onPressed: isLoadingAction
                             ? null
                             : () {
-                                if (_supervisorId != null) {
+                                final supervisorId = _supervisorId;
+                                if (supervisorId != null &&
+                                    supervisorId.isNotEmpty) {
                                   _supervisorBloc
                                       .add(event.ApproveOrRejectTimeLogEvent(
                                     timeLogId: log.id,
                                     approved: true,
-                                    supervisorId: _supervisorId!,
+                                    supervisorId: supervisorId,
                                   ));
                                 }
                               },
@@ -387,7 +395,7 @@ class _SupervisorTimeApprovalPageState
                   );
                 },
               )
-            else if (log.approved)
+            else if (log.approved == true)
               const Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [

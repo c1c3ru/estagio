@@ -176,7 +176,7 @@ class ContractGanttChart extends StatelessWidget {
                               child: Tooltip(
                                 message: '$studentName\n'
                                     'Contrato: ${contract.contractType}\n'
-                                    'Status: ${contract.status.displayName}\n'
+                                    'Status: ${ContractStatus.values.firstWhere((e) => e.name == contract.status, orElse: () => ContractStatus.unknown).displayName}\n'
                                     'Início: ${DateFormat('dd/MM/yyyy').format(contract.startDate)}\n'
                                     'Término: ${DateFormat('dd/MM/yyyy').format(contract.endDate)}',
                                 child: Container(
@@ -185,7 +185,11 @@ class ContractGanttChart extends StatelessWidget {
                                       : 4.0, // Mínimo de 4px de largura
                                   decoration: BoxDecoration(
                                       color: _getContractStatusColor(
-                                          contract.status, context),
+                                          ContractStatus.values.firstWhere(
+                                              (e) => e.name == contract.status,
+                                              orElse: () =>
+                                                  ContractStatus.unknown),
+                                          context),
                                       borderRadius: BorderRadius.circular(4),
                                       border: Border.all(
                                           color:

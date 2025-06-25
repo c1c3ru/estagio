@@ -379,9 +379,9 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
               ),
             );
           },
-          child: const Icon(Icons.add),
           backgroundColor: AppColors.primary,
           tooltip: 'Adicionar Estudante',
+          child: const Icon(Icons.add),
         ),
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,

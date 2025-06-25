@@ -136,7 +136,7 @@ class SupervisorRepository implements ISupervisorRepository {
   Future<Either<AppFailure, StudentEntity>> updateStudentBySupervisor(
       StudentEntity student) async {
     try {
-      final studentModel = StudentModel.fromEntity(student);
+      final studentModel = student as StudentModel;
       final updatedData = await _supervisorDatasource.updateStudent(
         student.id,
         studentModel.toJson(),
@@ -170,7 +170,7 @@ class SupervisorRepository implements ISupervisorRepository {
   Future<Either<AppFailure, StudentEntity>> createStudent(
       StudentEntity student) async {
     try {
-      final studentModel = StudentModel.fromEntity(student);
+      final studentModel = student as StudentModel;
       final createdStudent =
           await _supervisorDatasource.createStudent(studentModel.toJson());
       return Right(StudentModel.fromJson(createdStudent).toEntity());

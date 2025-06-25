@@ -1,144 +1,82 @@
 import 'package:equatable/equatable.dart';
-import '../../core/enums/contract_status.dart';
 
 class ContractEntity extends Equatable {
   final String id;
   final String studentId;
-  final String supervisorId;
-  final String company;
-  final String position;
-  final String? description;
-  final double? salary;
+  final String? supervisorId;
+  final String contractType;
+  final String status;
   final DateTime startDate;
   final DateTime endDate;
-  final double totalHoursRequired;
-  final double weeklyHoursTarget;
-  final ContractStatus status;
+  final String? description;
+  final String? documentUrl;
+  final String? createdBy;
   final DateTime createdAt;
   final DateTime? updatedAt;
-  final String? _contractType;
-  final String? _documentUrl;
 
   const ContractEntity({
     required this.id,
     required this.studentId,
-    required this.supervisorId,
-    required this.company,
-    required this.position,
-    this.description,
-    this.salary,
+    this.supervisorId,
+    required this.contractType,
+    required this.status,
     required this.startDate,
     required this.endDate,
-    required this.totalHoursRequired,
-    required this.weeklyHoursTarget,
-    required this.status,
+    this.description,
+    this.documentUrl,
+    this.createdBy,
     required this.createdAt,
     this.updatedAt,
-    String? contractType,
-    String? documentUrl,
-  })  : _contractType = contractType,
-        _documentUrl = documentUrl;
-
-  String? get contractType => _contractType;
-  String? get documentUrl => _documentUrl;
+  });
 
   @override
   List<Object?> get props => [
         id,
         studentId,
         supervisorId,
-        company,
-        position,
-        description,
-        salary,
+        contractType,
+        status,
         startDate,
         endDate,
-        totalHoursRequired,
-        weeklyHoursTarget,
-        status,
+        description,
+        documentUrl,
+        createdBy,
         createdAt,
         updatedAt,
-        _contractType,
-        _documentUrl,
       ];
 
   ContractEntity copyWith({
     String? id,
     String? studentId,
     String? supervisorId,
-    String? company,
-    String? position,
-    String? description,
-    double? salary,
+    String? contractType,
+    String? status,
     DateTime? startDate,
     DateTime? endDate,
-    double? totalHoursRequired,
-    double? weeklyHoursTarget,
-    ContractStatus? status,
+    String? description,
+    String? documentUrl,
+    String? createdBy,
     DateTime? createdAt,
     DateTime? updatedAt,
-    String? contractType,
-    String? documentUrl,
   }) {
     return ContractEntity(
       id: id ?? this.id,
       studentId: studentId ?? this.studentId,
       supervisorId: supervisorId ?? this.supervisorId,
-      company: company ?? this.company,
-      position: position ?? this.position,
+      contractType: contractType ?? this.contractType,
+      status: status ?? this.status,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
-      totalHoursRequired: totalHoursRequired ?? this.totalHoursRequired,
-      weeklyHoursTarget: weeklyHoursTarget ?? this.weeklyHoursTarget,
-      status: status ?? this.status,
+      description: description ?? this.description,
+      documentUrl: documentUrl ?? this.documentUrl,
+      createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      contractType: contractType ?? _contractType,
-      documentUrl: documentUrl ?? _documentUrl,
     );
-  }
-
-  bool get isActive => status == ContractStatus.active;
-
-  Duration get totalDuration => endDate.difference(startDate);
-
-  int get totalExpectedHours {
-    final weeks = totalDuration.inDays / 7;
-    return (weeks * weeklyHoursTarget).round();
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is ContractEntity &&
-        other.id == id &&
-        other.studentId == studentId &&
-        other.supervisorId == supervisorId &&
-        other.startDate == startDate &&
-        other.endDate == endDate &&
-        other.status == status &&
-        other.createdAt == createdAt &&
-        other.updatedAt == updatedAt &&
-        other._contractType == _contractType &&
-        other._documentUrl == _documentUrl;
-  }
-
-  @override
-  int get hashCode {
-    return id.hashCode ^
-        studentId.hashCode ^
-        supervisorId.hashCode ^
-        startDate.hashCode ^
-        endDate.hashCode ^
-        status.hashCode ^
-        createdAt.hashCode ^
-        updatedAt.hashCode ^
-        _contractType.hashCode ^
-        _documentUrl.hashCode;
   }
 
   @override
   String toString() {
-    return 'ContractEntity(id: $id, studentId: $studentId, supervisorId: $supervisorId, company: $company, position: $position, startDate: $startDate, endDate: $endDate, status: $status, createdAt: $createdAt, updatedAt: $updatedAt, contractType: $_contractType, documentUrl: $_documentUrl)';
+    return 'ContractEntity(id: $id, studentId: $studentId, supervisorId: $supervisorId, contractType: $contractType, status: $status, startDate: $startDate, endDate: $endDate, description: $description, documentUrl: $documentUrl, createdBy: $createdBy, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 }

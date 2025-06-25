@@ -14,26 +14,8 @@ class UpdateContractUsecase {
       return const Left(ValidationFailure('ID do estudante é obrigatório'));
     }
 
-    if (contract.supervisorId.isEmpty) {
+    if (contract.supervisorId == null || contract.supervisorId!.isEmpty) {
       return const Left(ValidationFailure('ID do supervisor é obrigatório'));
-    }
-
-    if (contract.company.isEmpty) {
-      return const Left(ValidationFailure('Nome da empresa é obrigatório'));
-    }
-
-    if (contract.position.isEmpty) {
-      return const Left(ValidationFailure('Cargo é obrigatório'));
-    }
-
-    if (contract.weeklyHoursTarget <= 0) {
-      return const Left(
-          ValidationFailure('Carga horária semanal deve ser maior que zero'));
-    }
-
-    if (contract.totalHoursRequired <= 0) {
-      return const Left(
-          ValidationFailure('Carga horária total deve ser maior que zero'));
     }
 
     if (contract.startDate.isAfter(contract.endDate)) {

@@ -165,23 +165,13 @@ class ContractRepository implements IContractRepository {
 
       final totalContracts = contracts.length;
       final activeContracts =
-          contracts.where((c) => c.status == ContractStatus.active).length;
+          contracts.where((c) => c.status == 'active').length;
       final pendingContracts =
-          contracts.where((c) => c.status == ContractStatus.pending).length;
+          contracts.where((c) => c.status == 'pending_approval').length;
       final completedContracts =
-          contracts.where((c) => c.status == ContractStatus.completed).length;
+          contracts.where((c) => c.status == 'completed').length;
       final terminatedContracts =
-          contracts.where((c) => c.status == ContractStatus.terminated).length;
-
-      final averageHoursRequired = contracts.isEmpty
-          ? 0.0
-          : contracts.map((c) => c.totalHoursRequired).reduce((a, b) => a + b) /
-              totalContracts;
-
-      final averageWeeklyHoursTarget = contracts.isEmpty
-          ? 0.0
-          : contracts.map((c) => c.weeklyHoursTarget).reduce((a, b) => a + b) /
-              totalContracts;
+          contracts.where((c) => c.status == 'terminated').length;
 
       final averageContractDuration = contracts.isEmpty
           ? 0.0
@@ -196,13 +186,10 @@ class ContractRepository implements IContractRepository {
         'pendingContracts': pendingContracts,
         'completedContracts': completedContracts,
         'terminatedContracts': terminatedContracts,
-        'averageHoursRequired': averageHoursRequired,
-        'averageWeeklyHoursTarget': averageWeeklyHoursTarget,
-        'averageContractDurationInDays': averageContractDuration,
+        'averageContractDuration': averageContractDuration,
       });
     } catch (e) {
-      return Left(ServerFailure(
-          message: 'Erro ao obter estatísticas dos contratos: $e'));
+      return Left(ServerFailure(message: 'Erro ao calcular estatísticas: $e'));
     }
   }
 }

@@ -94,11 +94,13 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
 
     _selectedBirthDate = student.birthDate;
     _birthDateController.text = student.birthDate != null
-        ? DateFormat('dd/MM/yyyy').format(student.birthDate!)
+        ? DateFormat('dd/MM/yyyy').format(student.birthDate)
         : '';
 
-    _selectedClassShift = student.classShift;
-    _selectedInternshipShift = student.internshipShift;
+    _selectedClassShift = ClassShift.values.firstWhere(
+      (e) => e.name == student.classShift,
+      orElse: () => ClassShift.morning,
+    );
     _selectedIsMandatoryInternship = student.isMandatoryInternship;
   }
 
@@ -359,11 +361,10 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
             context,
             'Data de Nascimento',
             student.birthDate != null
-                ? DateFormat('dd/MM/yyyy').format(student.birthDate!)
+                ? DateFormat('dd/MM/yyyy').format(student.birthDate)
                 : 'Não informada',
             icon: Icons.cake_outlined),
-        _buildReadOnlyInfo(
-            context, 'Turno das Aulas', student.classShift.displayName,
+        _buildReadOnlyInfo(context, 'Turno das Aulas', student.classShift,
             icon: Icons.schedule_outlined),
         _buildReadOnlyInfo(context, 'Estágio Obrigatório',
             student.isMandatoryInternship ? 'Sim' : 'Não',
@@ -382,7 +383,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
               );
             }
             final contract = snapshot.data;
-            if (contract == null || contract.supervisorId.isEmpty) {
+            if (contract == null || (contract.supervisorId ?? '').isEmpty) {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Text(
@@ -393,7 +394,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
               );
             }
             return FutureBuilder<SupervisorEntity?>(
-              future: _getSupervisorById(contract.supervisorId),
+              future: _getSupervisorById(contract.supervisorId ?? ''),
               builder: (context, supSnapshot) {
                 if (supSnapshot.connectionState == ConnectionState.waiting) {
                   return const Padding(
@@ -561,7 +562,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
           items: ClassShift.values.map((ClassShift shift) {
             return DropdownMenuItem<ClassShift>(
               value: shift,
-              child: Text(shift.displayName),
+              child: Text(shift.name),
             );
           }).toList(),
           onChanged: (ClassShift? newValue) {

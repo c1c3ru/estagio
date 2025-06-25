@@ -90,6 +90,11 @@ class _TimeTrackerWidgetState extends State<TimeTrackerWidget> {
     return DateFormat('HH:mm').format(dt);
   }
 
+  TimeOfDay _parseTimeOfDay(String time) {
+    final parts = time.split(':');
+    return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -124,7 +129,7 @@ class _TimeTrackerWidgetState extends State<TimeTrackerWidget> {
               const SizedBox(height: 16),
               if (_activeTimeLog != null) ...[
                 Text(
-                  'Check-in: ${_formatTimeOfDay(_activeTimeLog!.checkInTime)}',
+                  'Check-in: ${_formatTimeOfDay(_parseTimeOfDay(_activeTimeLog!.checkInTime))}',
                   style: theme.textTheme.bodyLarge,
                 ),
                 const SizedBox(height: 8),

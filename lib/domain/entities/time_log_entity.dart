@@ -3,12 +3,13 @@ import 'package:equatable/equatable.dart';
 class TimeLogEntity extends Equatable {
   final String id;
   final String studentId;
-  final DateTime clockIn;
-  final DateTime? clockOut;
+  final DateTime logDate;
+  final String checkInTime;
+  final String? checkOutTime;
+  final double? hoursLogged;
   final String? description;
-  final bool isApproved;
-  final String? rejectionReason;
-  final String? approvedBy; // Supervisor ID
+  final bool? approved;
+  final String? supervisorId;
   final DateTime? approvedAt;
   final DateTime createdAt;
   final DateTime? updatedAt;
@@ -16,12 +17,13 @@ class TimeLogEntity extends Equatable {
   const TimeLogEntity({
     required this.id,
     required this.studentId,
-    required this.clockIn,
-    this.clockOut,
+    required this.logDate,
+    required this.checkInTime,
+    this.checkOutTime,
+    this.hoursLogged,
     this.description,
-    this.isApproved = false,
-    this.rejectionReason,
-    this.approvedBy,
+    this.approved,
+    this.supervisorId,
     this.approvedAt,
     required this.createdAt,
     this.updatedAt,
@@ -31,14 +33,14 @@ class TimeLogEntity extends Equatable {
     return TimeLogEntity(
       id: json['id'] as String,
       studentId: json['student_id'] as String,
-      clockIn: DateTime.parse(json['clock_in'] as String),
-      clockOut: json['clock_out'] != null
-          ? DateTime.parse(json['clock_out'] as String)
-          : null,
+      logDate: DateTime.parse(json['log_date'] as String),
+      checkInTime: json['check_in_time'] as String,
+      checkOutTime: json['check_out_time'] as String?,
+      hoursLogged:
+          json['hours_logged'] != null ? json['hours_logged'] as double? : null,
       description: json['description'] as String?,
-      isApproved: json['is_approved'] as bool,
-      rejectionReason: json['rejection_reason'] as String?,
-      approvedBy: json['approved_by'] as String?,
+      approved: json['approved'] as bool?,
+      supervisorId: json['supervisor_id'] as String?,
       approvedAt: json['approved_at'] != null
           ? DateTime.parse(json['approved_at'] as String)
           : null,
@@ -53,12 +55,13 @@ class TimeLogEntity extends Equatable {
   List<Object?> get props => [
         id,
         studentId,
-        clockIn,
-        clockOut,
+        logDate,
+        checkInTime,
+        checkOutTime,
+        hoursLogged,
         description,
-        isApproved,
-        rejectionReason,
-        approvedBy,
+        approved,
+        supervisorId,
         approvedAt,
         createdAt,
         updatedAt,
@@ -67,12 +70,13 @@ class TimeLogEntity extends Equatable {
   TimeLogEntity copyWith({
     String? id,
     String? studentId,
-    DateTime? clockIn,
-    DateTime? clockOut,
+    DateTime? logDate,
+    String? checkInTime,
+    String? checkOutTime,
+    double? hoursLogged,
     String? description,
-    bool? isApproved,
-    String? rejectionReason,
-    String? approvedBy,
+    bool? approved,
+    String? supervisorId,
     DateTime? approvedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -80,71 +84,21 @@ class TimeLogEntity extends Equatable {
     return TimeLogEntity(
       id: id ?? this.id,
       studentId: studentId ?? this.studentId,
-      clockIn: clockIn ?? this.clockIn,
-      clockOut: clockOut ?? this.clockOut,
+      logDate: logDate ?? this.logDate,
+      checkInTime: checkInTime ?? this.checkInTime,
+      checkOutTime: checkOutTime ?? this.checkOutTime,
+      hoursLogged: hoursLogged ?? this.hoursLogged,
       description: description ?? this.description,
-      isApproved: isApproved ?? this.isApproved,
-      rejectionReason: rejectionReason ?? this.rejectionReason,
-      approvedBy: approvedBy ?? this.approvedBy,
+      approved: approved ?? this.approved,
+      supervisorId: supervisorId ?? this.supervisorId,
       approvedAt: approvedAt ?? this.approvedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
-  bool get isClockedIn => clockOut == null;
-
-  Duration get duration {
-    if (clockOut == null) {
-      return Duration.zero;
-    }
-    return clockOut!.difference(clockIn);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is TimeLogEntity &&
-        other.id == id &&
-        other.studentId == studentId &&
-        other.clockIn == clockIn &&
-        other.clockOut == clockOut &&
-        other.description == description &&
-        other.isApproved == isApproved &&
-        other.rejectionReason == rejectionReason &&
-        other.approvedBy == approvedBy &&
-        other.approvedAt == approvedAt &&
-        other.createdAt == createdAt &&
-        other.updatedAt == updatedAt;
-  }
-
-  @override
-  int get hashCode {
-    return id.hashCode ^
-        studentId.hashCode ^
-        clockIn.hashCode ^
-        clockOut.hashCode ^
-        description.hashCode ^
-        isApproved.hashCode ^
-        rejectionReason.hashCode ^
-        approvedBy.hashCode ^
-        approvedAt.hashCode ^
-        createdAt.hashCode ^
-        updatedAt.hashCode;
-  }
-
-  get checkOutTime => clockOut;
-
-  get logDate => clockIn;
-
-  get checkInTime => clockIn;
-
-  bool get approved => isApproved;
-
-  get hoursLogged => duration.inHours.toDouble();
-
   @override
   String toString() {
-    return 'TimeLogEntity(id: $id, studentId: $studentId, clockIn: $clockIn, clockOut: $clockOut, description: $description, isApproved: $isApproved, rejectionReason: $rejectionReason, approvedBy: $approvedBy, approvedAt: $approvedAt, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'TimeLogEntity(id: $id, studentId: $studentId, logDate: $logDate, checkInTime: $checkInTime, checkOutTime: $checkOutTime, hoursLogged: $hoursLogged, description: $description, approved: $approved, supervisorId: $supervisorId, approvedAt: $approvedAt, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 }

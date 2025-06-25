@@ -8,25 +8,19 @@ import '../../repositories/i_contract_repository.dart';
 class UpsertContractParams extends Equatable {
   final String? id;
   final String studentId;
-  final String supervisorId;
-  final String company;
-  final String position;
+  final String? supervisorId;
+  final String contractType;
   final DateTime startDate;
   final DateTime endDate;
-  final double totalHoursRequired;
-  final double weeklyHoursTarget;
-  final ContractStatus status;
+  final String status;
 
   const UpsertContractParams({
     this.id,
     required this.studentId,
     required this.supervisorId,
-    required this.company,
-    required this.position,
+    required this.contractType,
     required this.startDate,
     required this.endDate,
-    required this.totalHoursRequired,
-    required this.weeklyHoursTarget,
     required this.status,
   });
 
@@ -35,12 +29,9 @@ class UpsertContractParams extends Equatable {
         id,
         studentId,
         supervisorId,
-        company,
-        position,
+        contractType,
         startDate,
         endDate,
-        totalHoursRequired,
-        weeklyHoursTarget,
         status,
       ];
 
@@ -48,24 +39,18 @@ class UpsertContractParams extends Equatable {
     String? id,
     String? studentId,
     String? supervisorId,
-    String? company,
-    String? position,
+    String? contractType,
     DateTime? startDate,
     DateTime? endDate,
-    double? totalHoursRequired,
-    double? weeklyHoursTarget,
-    ContractStatus? status,
+    String? status,
   }) {
     return UpsertContractParams(
       id: id ?? this.id,
       studentId: studentId ?? this.studentId,
       supervisorId: supervisorId ?? this.supervisorId,
-      company: company ?? this.company,
-      position: position ?? this.position,
+      contractType: contractType ?? this.contractType,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
-      totalHoursRequired: totalHoursRequired ?? this.totalHoursRequired,
-      weeklyHoursTarget: weeklyHoursTarget ?? this.weeklyHoursTarget,
       status: status ?? this.status,
     );
   }
@@ -83,12 +68,9 @@ class UpsertContractUsecase {
         id: params.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
         studentId: params.studentId,
         supervisorId: params.supervisorId,
-        company: params.company,
-        position: params.position,
+        contractType: params.contractType,
         startDate: params.startDate,
         endDate: params.endDate,
-        totalHoursRequired: params.totalHoursRequired,
-        weeklyHoursTarget: params.weeklyHoursTarget,
         status: params.status,
         createdAt: DateTime.now(),
       );

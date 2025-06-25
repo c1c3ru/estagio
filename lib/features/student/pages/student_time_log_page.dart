@@ -70,6 +70,14 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
     }
   }
 
+  TimeOfDay _stringToTimeOfDay(String time) {
+    final parts = time.split(':');
+    return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+  }
+
+  String _timeOfDayToString(TimeOfDay time) =>
+      '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+
   void _showAddEditTimeLogDialog({TimeLogEntity? timeLog}) {
     if (_currentUserId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -85,18 +93,20 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
         text: timeLog != null
             ? DateFormat('dd/MM/yyyy').format(timeLog.logDate)
             : DateFormat('dd/MM/yyyy').format(DateTime.now()));
-    final checkInController = TextEditingController(
-        text: timeLog != null ? _formatTimeOfDay(timeLog.checkInTime) : '');
+    final checkInController =
+        TextEditingController(text: timeLog != null ? timeLog.checkInTime : '');
     final checkOutController = TextEditingController(
-        text: timeLog?.checkOutTime != null
-            ? _formatTimeOfDay(timeLog!.checkOutTime!)
-            : '');
+        text: timeLog?.checkOutTime != null ? timeLog!.checkOutTime! : '');
     final descriptionController =
         TextEditingController(text: timeLog?.description ?? '');
 
     DateTime selectedDate = timeLog?.logDate ?? DateTime.now();
-    TimeOfDay? selectedCheckInTime = timeLog?.checkInTime;
-    TimeOfDay? selectedCheckOutTime = timeLog?.checkOutTime;
+    TimeOfDay? selectedCheckInTime = timeLog?.checkInTime != null
+        ? _stringToTimeOfDay(timeLog!.checkInTime)
+        : null;
+    TimeOfDay? selectedCheckOutTime = timeLog?.checkOutTime != null
+        ? _stringToTimeOfDay(timeLog!.checkOutTime!)
+        : null;
 
     showDialog(
       context: context,
@@ -154,9 +164,8 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
                       );
                       if (picked != null && picked != selectedCheckInTime) {
                         setState(() {
-                          // setState do diálogo
                           selectedCheckInTime = picked;
-                          checkInController.text = _formatTimeOfDay(picked);
+                          checkInController.text = _timeOfDayToString(picked);
                         });
                       }
                     },
@@ -175,9 +184,8 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
                       );
                       if (picked != null && picked != selectedCheckOutTime) {
                         setState(() {
-                          // setState do diálogo
                           selectedCheckOutTime = picked;
-                          checkOutController.text = _formatTimeOfDay(picked);
+                          checkOutController.text = _timeOfDayToString(picked);
                         });
                       }
                     },
@@ -245,12 +253,6 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
         );
       },
     );
-  }
-
-  String _formatTimeOfDay(TimeOfDay time) {
-    final now = DateTime.now();
-    final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
-    return DateFormat('HH:mm').format(dt);
   }
 
   void _confirmDeleteTimeLog(String timeLogId) {
@@ -415,10 +417,9 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
 
   Widget _buildTimeLogCard(BuildContext context, TimeLogEntity log) {
     final theme = Theme.of(context);
-    final String checkInStr = _formatTimeOfDay(log.checkInTime);
-    final String checkOutStr = log.checkOutTime != null
-        ? _formatTimeOfDay(log.checkOutTime!)
-        : 'Pendente';
+    final String checkInStr = log.checkInTime;
+    final String checkOutStr =
+        log.checkOutTime != null ? log.checkOutTime! : 'Pendente';
     final String hoursStr = log.hoursLogged != null
         ? '${log.hoursLogged!.toStringAsFixed(1)}h'
         : '-';
@@ -437,7 +438,7 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: log.approved
+                  color: log.approved == true
                       ? AppColors.success.withAlpha(30)
                       : theme.colorScheme.secondaryContainer,
                   borderRadius: BorderRadius.circular(8),
@@ -449,7 +450,7 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
                       DateFormat('dd', 'pt_BR').format(log.logDate),
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: log.approved
+                        color: log.approved == true
                             ? AppColors.success
                             : theme.colorScheme.onSecondaryContainer,
                       ),
@@ -459,7 +460,7 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
                           .format(log.logDate)
                           .toUpperCase(),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: log.approved
+                        color: log.approved == true
                             ? AppColors.success
                             : theme.colorScheme.onSecondaryContainer,
                       ),
@@ -492,19 +493,19 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
                     Row(
                       children: [
                         Icon(
-                          log.approved
+                          log.approved == true
                               ? Icons.check_circle
                               : Icons.hourglass_empty,
-                          color: log.approved
+                          color: log.approved == true
                               ? AppColors.success
                               : AppColors.warning,
                           size: 16,
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          log.approved ? 'Aprovado' : 'Pendente',
+                          log.approved == true ? 'Aprovado' : 'Pendente',
                           style: theme.textTheme.labelSmall?.copyWith(
-                            color: log.approved
+                            color: log.approved == true
                                 ? AppColors.success
                                 : AppColors.warning,
                             fontWeight: FontWeight.bold,

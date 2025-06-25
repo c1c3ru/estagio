@@ -13,7 +13,11 @@ class UserModel extends UserEntity {
     super.emailConfirmed = false,
     required super.createdAt,
     super.updatedAt,
+    this.matricula,
   });
+
+  @override
+  final String? matricula;
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
@@ -31,6 +35,7 @@ class UserModel extends UserEntity {
       updatedAt: json['updated_at'] != null || json['updatedAt'] != null
           ? DateTime.parse(json['updated_at'] ?? json['updatedAt'] as String)
           : null,
+      matricula: json['matricula'] as String?,
     );
   }
 
@@ -41,11 +46,12 @@ class UserModel extends UserEntity {
       'full_name': fullName,
       'phone_number': phoneNumber,
       'profile_picture_url': profilePictureUrl,
-      'role': role.toString(),
+      'role': role.toString().split('.').last,
       'is_active': isActive,
       'email_confirmed': emailConfirmed,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
+      'matricula': matricula,
     };
   }
 
@@ -76,9 +82,11 @@ class UserModel extends UserEntity {
       emailConfirmed: entity.emailConfirmed,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      matricula: entity is UserModel ? entity.matricula : null,
     );
   }
 
+  @override
   UserModel copyWith({
     String? id,
     String? email,
@@ -90,6 +98,7 @@ class UserModel extends UserEntity {
     bool? emailConfirmed,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? matricula,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -102,6 +111,7 @@ class UserModel extends UserEntity {
       emailConfirmed: emailConfirmed ?? this.emailConfirmed,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      matricula: matricula ?? this.matricula,
     );
   }
 
@@ -118,7 +128,8 @@ class UserModel extends UserEntity {
         other.isActive == isActive &&
         other.emailConfirmed == emailConfirmed &&
         other.createdAt == createdAt &&
-        other.updatedAt == updatedAt;
+        other.updatedAt == updatedAt &&
+        other.matricula == matricula;
   }
 
   @override
@@ -132,11 +143,12 @@ class UserModel extends UserEntity {
         isActive.hashCode ^
         emailConfirmed.hashCode ^
         createdAt.hashCode ^
-        updatedAt.hashCode;
+        updatedAt.hashCode ^
+        matricula.hashCode;
   }
 
   @override
   String toString() {
-    return 'UserModel(id: $id, email: $email, fullName: $fullName, phoneNumber: $phoneNumber, profilePictureUrl: $profilePictureUrl, role: $role, isActive: $isActive, emailConfirmed: $emailConfirmed, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'UserModel(id: $id, email: $email, fullName: $fullName, phoneNumber: $phoneNumber, profilePictureUrl: $profilePictureUrl, role: $role, isActive: $isActive, emailConfirmed: $emailConfirmed, createdAt: $createdAt, updatedAt: $updatedAt, matricula: $matricula)';
   }
 }

@@ -1,5 +1,7 @@
 // ignore_for_file: override_on_non_overriding_member
 
+import 'package:flutter/foundation.dart';
+
 import '../../domain/repositories/i_time_log_repository.dart';
 import '../../domain/entities/time_log_entity.dart';
 import '../datasources/supabase/time_log_datasource.dart';
@@ -82,7 +84,7 @@ class TimeLogRepository implements ITimeLogRepository {
   @override
   Future<TimeLogEntity> createTimeLog(TimeLogEntity timeLog) async {
     try {
-      final timeLogModel = TimeLogModel.fromEntity(timeLog);
+      final timeLogModel = timeLog as TimeLogModel;
       final createdData =
           await _timeLogDatasource.createTimeLog(timeLogModel.toJson());
       return TimeLogModel.fromJson(createdData).toEntity();
@@ -94,7 +96,7 @@ class TimeLogRepository implements ITimeLogRepository {
   @override
   Future<TimeLogEntity> updateTimeLog(TimeLogEntity timeLog) async {
     try {
-      final timeLogModel = TimeLogModel.fromEntity(timeLog);
+      final timeLogModel = timeLog as TimeLogModel;
       final updatedData = await _timeLogDatasource.updateTimeLog(
         timeLog.id,
         timeLogModel.toJson(),
@@ -177,11 +179,21 @@ class TimeLogRepository implements ITimeLogRepository {
       int totalMinutes = 0;
 
       for (final timeLog in timeLogs) {
-        if (timeLog.checkInTime != null && timeLog.checkOutTime != null) {
-          final checkIn = timeLog.checkInTime!;
-          final checkOut = timeLog.checkOutTime!;
-          final duration = checkOut.difference(checkIn);
-          totalMinutes += duration.inMinutes as int;
+        if (timeLog.checkOutTime != null) {
+          try {
+            final checkInDateTime = DateTime.parse(
+                '${timeLog.logDate.toIso8601String().split('T')[0]}T${timeLog.checkInTime}');
+            final checkOutDateTime = DateTime.parse(
+                '${timeLog.logDate.toIso8601String().split('T')[0]}T${timeLog.checkOutTime!}');
+            final duration = checkOutDateTime.difference(checkInDateTime);
+            totalMinutes += duration.inMinutes;
+          } catch (e) {
+            // Lidar com possíveis erros de parsing, se o formato da hora for inválido
+            if (kDebugMode) {
+              print(
+                  'Erro ao parsear data/hora no registro de horas ${timeLog.id}: $e');
+            }
+          }
         }
       }
 

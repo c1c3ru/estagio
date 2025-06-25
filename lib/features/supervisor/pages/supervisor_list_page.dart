@@ -76,7 +76,7 @@ class _SupervisorListPageState extends State<SupervisorListPage> {
                       title: Text(
                           '${supervisor.position} - ${supervisor.department}'),
                       subtitle: Text(
-                          'Especialidade: ${supervisor.specialization}\nID: ${supervisor.id}'),
+                          'Departamento: ${supervisor.department ?? ''}\nID: ${supervisor.id}'),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -165,9 +165,9 @@ class _SupervisorListPageState extends State<SupervisorListPage> {
               ),
             );
           },
-          child: const Icon(Icons.add),
           backgroundColor: AppColors.primary,
           tooltip: 'Adicionar Supervisor',
+          child: const Icon(Icons.add),
         ),
       ),
     );

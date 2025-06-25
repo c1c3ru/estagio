@@ -20,11 +20,6 @@ class UpdateStudentProfileUsecase {
           ValidationFailure('O nome do estudante não pode estar vazio.'));
     }
 
-    if (student.email.isEmpty) {
-      return const Left(
-          ValidationFailure('O email do estudante não pode estar vazio.'));
-    }
-
     return await _repository.updateStudentProfile(student);
   }
 }

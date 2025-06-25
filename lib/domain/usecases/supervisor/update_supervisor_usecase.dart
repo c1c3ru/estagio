@@ -15,12 +15,8 @@ class UpdateSupervisorUsecase {
       return const Left(ValidationFailure('ID do supervisor é obrigatório'));
     }
 
-    if (supervisor.department.isEmpty) {
+    if (supervisor.department == null || supervisor.department!.isEmpty) {
       return const Left(ValidationFailure('Departamento é obrigatório'));
-    }
-
-    if (supervisor.specialization.isEmpty) {
-      return const Left(ValidationFailure('Especialização é obrigatória'));
     }
 
     return await _supervisorRepository.updateSupervisor(supervisor);

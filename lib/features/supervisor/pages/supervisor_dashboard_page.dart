@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dartz/dartz.dart';
 import 'package:gestao_de_estagio/core/enums/student_status.dart'
     as student_status_enum;
-import 'package:gestao_de_estagio/core/enums/user_role.dart';
 import 'package:gestao_de_estagio/domain/entities/filter_students_params.dart';
 import 'package:gestao_de_estagio/domain/usecases/auth/register_usecase.dart';
 import 'package:gestao_de_estagio/features/supervisor/bloc/supervisor_event.dart';
@@ -30,6 +29,8 @@ import '../../../../domain/usecases/supervisor/delete_student_by_supervisor_usec
 import '../../../../domain/usecases/contract/create_contract_usecase.dart';
 import '../../../../domain/usecases/contract/update_contract_usecase.dart';
 import '../../../../domain/usecases/contract/delete_contract_usecase.dart';
+
+import '../../../../core/enums/user_role.dart';
 
 class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
   // Usecases
@@ -285,7 +286,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
       fullName: event.studentData.fullName,
       email: event.initialEmail,
       password: event.initialPassword,
-      role: event.studentData.role,
+      role: UserRole.student,
       registration: event.studentData.registrationNumber,
     );
 
@@ -297,8 +298,8 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
       },
       (authUserEntity) async {
         try {
-          final studentToCreate = event.studentData
-              .copyWith(id: authUserEntity.id, email: authUserEntity.email);
+          final studentToCreate =
+              event.studentData.copyWith(id: authUserEntity.id);
 
           final studentProfileResult =
               await _createStudentBySupervisorUsecase.call(studentToCreate);

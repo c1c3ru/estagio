@@ -137,7 +137,8 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
             timeLog: TimeLogEntity(
               id: 'fake',
               studentId: 'fake',
-              clockIn: DateTime.now(),
+              logDate: DateTime.now(),
+              checkInTime: '08:00',
               createdAt: DateTime.now(),
             ),
             message: 'Registo criado com sucesso!'),
@@ -164,7 +165,8 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
             timeLog: TimeLogEntity(
               id: 'fake',
               studentId: 'fake',
-              clockIn: DateTime.now(),
+              logDate: DateTime.now(),
+              checkInTime: '08:00',
               createdAt: DateTime.now(),
             ),
             message: 'Registo atualizado com sucesso!'),

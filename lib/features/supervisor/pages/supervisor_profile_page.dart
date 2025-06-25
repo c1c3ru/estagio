@@ -23,7 +23,6 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
   // Controllers
   final _departmentController = TextEditingController();
   final _positionController = TextEditingController();
-  final _specializationController = TextEditingController();
 
   @override
   void initState() {
@@ -35,14 +34,12 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
   void dispose() {
     _departmentController.dispose();
     _positionController.dispose();
-    _specializationController.dispose();
     super.dispose();
   }
 
   void _populateFields(SupervisorEntity supervisor) {
-    _departmentController.text = supervisor.department;
-    _positionController.text = supervisor.position;
-    _specializationController.text = supervisor.specialization;
+    _departmentController.text = supervisor.department ?? '';
+    _positionController.text = supervisor.position ?? '';
   }
 
   void _toggleEditMode() {
@@ -60,7 +57,6 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
         final updated = _supervisor!.copyWith(
           department: _departmentController.text.trim(),
           position: _positionController.text.trim(),
-          specialization: _specializationController.text.trim(),
         );
         Modular.get<SupervisorBloc>()
             .add(UpdateSupervisorEvent(supervisor: updated));
@@ -146,12 +142,12 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
           ),
           const SizedBox(height: 16),
           Text(
-            supervisor.position,
+            supervisor.position ?? '',
             style: AppTextStyles.h6,
           ),
           const SizedBox(height: 4),
           Text(
-            supervisor.department,
+            supervisor.department ?? '',
             style: AppTextStyles.bodyMedium
                 .copyWith(color: AppColors.textSecondary),
           ),
@@ -169,15 +165,13 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildInfoRow(
-                'Departamento', supervisor.department, Icons.business),
-            _buildInfoRow('Cargo', supervisor.position, Icons.work),
-            _buildInfoRow(
-                'Especialização', supervisor.specialization, Icons.science),
+                'Departamento', supervisor.department ?? '', Icons.business),
+            _buildInfoRow('Cargo', supervisor.position ?? '', Icons.work),
             _buildInfoRow('ID', supervisor.id, Icons.badge),
             _buildInfoRow('Criado em', supervisor.createdAt.toString(),
                 Icons.calendar_today),
-            _buildInfoRow(
-                'Atualizado em', supervisor.updatedAt.toString(), Icons.update),
+            _buildInfoRow('Atualizado em',
+                supervisor.updatedAt?.toString() ?? '', Icons.update),
           ],
         ),
       ),
@@ -207,17 +201,6 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
               decoration: const InputDecoration(
                 labelText: 'Cargo',
                 prefixIcon: Icon(Icons.work),
-                border: OutlineInputBorder(),
-              ),
-              validator: (v) =>
-                  v == null || v.isEmpty ? 'Campo obrigatório' : null,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _specializationController,
-              decoration: const InputDecoration(
-                labelText: 'Especialização',
-                prefixIcon: Icon(Icons.science),
                 border: OutlineInputBorder(),
               ),
               validator: (v) =>

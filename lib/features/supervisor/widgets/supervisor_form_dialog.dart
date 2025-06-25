@@ -23,7 +23,6 @@ class _SupervisorFormDialogState extends State<SupervisorFormDialog> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _departmentController;
   late TextEditingController _positionController;
-  late TextEditingController _specializationController;
   late TextEditingController _phoneController;
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
@@ -33,9 +32,7 @@ class _SupervisorFormDialogState extends State<SupervisorFormDialog> {
     final s = widget.initialSupervisor;
     _departmentController = TextEditingController(text: s?.department ?? '');
     _positionController = TextEditingController(text: s?.position ?? '');
-    _specializationController =
-        TextEditingController(text: s?.specialization ?? '');
-    _phoneController = TextEditingController(text: s?.phone ?? '');
+    _phoneController = TextEditingController(text: s?.phoneNumber ?? '');
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
     super.initState();
@@ -45,7 +42,6 @@ class _SupervisorFormDialogState extends State<SupervisorFormDialog> {
   void dispose() {
     _departmentController.dispose();
     _positionController.dispose();
-    _specializationController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -80,12 +76,6 @@ class _SupervisorFormDialogState extends State<SupervisorFormDialog> {
                 decoration: const InputDecoration(labelText: 'Cargo'),
                 validator: (v) =>
                     v == null || v.isEmpty ? 'Informe o cargo' : null,
-              ),
-              TextFormField(
-                controller: _specializationController,
-                decoration: const InputDecoration(labelText: 'Especialização'),
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'Informe a especialização' : null,
               ),
               TextFormField(
                 controller: _phoneController,
@@ -123,19 +113,19 @@ class _SupervisorFormDialogState extends State<SupervisorFormDialog> {
               final supervisor = (widget.initialSupervisor ??
                       SupervisorEntity(
                         id: '',
-                        userId: '',
+                        fullName: '',
                         department: _departmentController.text.trim(),
                         position: _positionController.text.trim(),
-                        specialization: _specializationController.text.trim(),
-                        phone: _phoneController.text.trim(),
+                        jobCode: null,
+                        profilePictureUrl: null,
+                        phoneNumber: _phoneController.text.trim(),
                         createdAt: DateTime.now(),
                         updatedAt: DateTime.now(),
                       ))
                   .copyWith(
                 department: _departmentController.text.trim(),
                 position: _positionController.text.trim(),
-                specialization: _specializationController.text.trim(),
-                phone: _phoneController.text.trim(),
+                phoneNumber: _phoneController.text.trim(),
               );
               widget.onSubmit(
                 supervisor,

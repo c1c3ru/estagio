@@ -6,6 +6,31 @@ import '../../shared/bloc/time_log_bloc.dart';
 import '../../../domain/entities/time_log_entity.dart';
 import '../../shared/animations/lottie_animations.dart';
 
+// Funções auxiliares para converter checkInTime/checkOutTime em DateTime
+DateTime? getCheckInDateTime(TimeLogEntity log) {
+  if (log.checkInTime.isEmpty) return null;
+  final parts = log.checkInTime.split(':');
+  return DateTime(
+    log.logDate.year,
+    log.logDate.month,
+    log.logDate.day,
+    int.parse(parts[0]),
+    int.parse(parts[1]),
+  );
+}
+
+DateTime? getCheckOutDateTime(TimeLogEntity log) {
+  if (log.checkOutTime == null || log.checkOutTime!.isEmpty) return null;
+  final parts = log.checkOutTime!.split(':');
+  return DateTime(
+    log.logDate.year,
+    log.logDate.month,
+    log.logDate.day,
+    int.parse(parts[0]),
+    int.parse(parts[1]),
+  );
+}
+
 class TimeLogPage extends StatefulWidget {
   final String studentId;
 
@@ -117,7 +142,7 @@ class _TimeLogPageState extends State<TimeLogPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Animação de registro de tempo
-                Center(
+                const Center(
                   child: AppLottieAnimation(
                     assetPath: LottieAssetPaths.timeAnimation,
                     height: 120,
@@ -125,7 +150,7 @@ class _TimeLogPageState extends State<TimeLogPage> {
                 ),
                 const SizedBox(height: 16),
                 // Título mais amigável
-                Center(
+                const Center(
                   child: Text(
                     'Bata seu ponto de entrada e saída',
                     style: AppTextStyles.h5,
@@ -196,11 +221,14 @@ class _TimeLogPageState extends State<TimeLogPage> {
                                         color: AppColors.success,
                                       ),
                                     ),
-                                    Text(
-                                      _formatDateTime(
-                                          state.activeTimeLog!.clockIn),
-                                      style: AppTextStyles.bodySmall,
-                                    ),
+                                    if (getCheckInDateTime(
+                                            state.activeTimeLog!) !=
+                                        null)
+                                      Text(
+                                        _formatDateTime(getCheckInDateTime(
+                                            state.activeTimeLog!)!),
+                                        style: AppTextStyles.bodySmall,
+                                      ),
                                   ],
                                 ),
                               ),
@@ -478,14 +506,16 @@ class _TimeLogPageState extends State<TimeLogPage> {
     final daysWithLogs = <DateTime>{};
 
     for (final log in timeLogs) {
-      if (log.clockIn.isAfter(startOfWeek.subtract(const Duration(days: 1))) &&
-          log.clockIn.isBefore(endOfWeek.add(const Duration(days: 1)))) {
-        if (log.clockOut != null) {
-          final duration = log.clockOut!.difference(log.clockIn);
+      final checkIn = getCheckInDateTime(log);
+      if (checkIn != null &&
+          checkIn.isAfter(startOfWeek.subtract(const Duration(days: 1))) &&
+          checkIn.isBefore(endOfWeek.add(const Duration(days: 1)))) {
+        final checkOut = getCheckOutDateTime(log);
+        if (checkOut != null) {
+          final duration = checkOut.difference(checkIn);
           totalHours += duration.inMinutes / 60.0;
         }
-        daysWithLogs.add(
-            DateTime(log.clockIn.year, log.clockIn.month, log.clockIn.day));
+        daysWithLogs.add(DateTime(checkIn.year, checkIn.month, checkIn.day));
       }
     }
 
@@ -504,14 +534,16 @@ class _TimeLogPageState extends State<TimeLogPage> {
     final daysWithLogs = <DateTime>{};
 
     for (final log in timeLogs) {
-      if (log.clockIn.isAfter(startOfMonth.subtract(const Duration(days: 1))) &&
-          log.clockIn.isBefore(endOfMonth.add(const Duration(days: 1)))) {
-        if (log.clockOut != null) {
-          final duration = log.clockOut!.difference(log.clockIn);
+      final checkIn = getCheckInDateTime(log);
+      if (checkIn != null &&
+          checkIn.isAfter(startOfMonth.subtract(const Duration(days: 1))) &&
+          checkIn.isBefore(endOfMonth.add(const Duration(days: 1)))) {
+        final checkOut = getCheckOutDateTime(log);
+        if (checkOut != null) {
+          final duration = checkOut.difference(checkIn);
           totalHours += duration.inMinutes / 60.0;
         }
-        daysWithLogs.add(
-            DateTime(log.clockIn.year, log.clockIn.month, log.clockIn.day));
+        daysWithLogs.add(DateTime(checkIn.year, checkIn.month, checkIn.day));
       }
     }
 
@@ -526,14 +558,23 @@ class _TimeLogPageState extends State<TimeLogPage> {
     final grouped = <DateTime, List<TimeLogEntity>>{};
 
     for (final log in timeLogs) {
-      final date =
-          DateTime(log.clockIn.year, log.clockIn.month, log.clockIn.day);
-      grouped.putIfAbsent(date, () => []).add(log);
+      final checkIn = getCheckInDateTime(log);
+      if (checkIn != null) {
+        final date = DateTime(checkIn.year, checkIn.month, checkIn.day);
+        grouped.putIfAbsent(date, () => []).add(log);
+      }
     }
 
     // Ordenar logs dentro de cada data por horário de entrada
     for (final logs in grouped.values) {
-      logs.sort((a, b) => a.clockIn.compareTo(b.clockIn));
+      logs.sort((a, b) {
+        final checkInA = getCheckInDateTime(a);
+        final checkInB = getCheckInDateTime(b);
+        if (checkInA != null && checkInB != null) {
+          return checkInA.compareTo(checkInB);
+        }
+        return 0;
+      });
     }
 
     return grouped;
@@ -647,7 +688,7 @@ class _DateGroupCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            ...timeLogs.map((log) => _TimeLogItem(timeLog: log)).toList(),
+            ...timeLogs.map((log) => _TimeLogItem(timeLog: log)),
           ],
         ),
       ),
@@ -697,8 +738,10 @@ class _DateGroupCard extends StatelessWidget {
   double _calculateTotalHoursForDate() {
     double totalHours = 0;
     for (final log in timeLogs) {
-      if (log.clockOut != null) {
-        final duration = log.clockOut!.difference(log.clockIn);
+      final checkIn = getCheckInDateTime(log);
+      final checkOut = getCheckOutDateTime(log);
+      if (checkIn != null && checkOut != null) {
+        final duration = checkOut.difference(checkIn);
         totalHours += duration.inMinutes / 60;
       }
     }
@@ -713,10 +756,15 @@ class _TimeLogItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isActive = timeLog.clockOut == null;
-    final duration = timeLog.clockOut != null
-        ? timeLog.clockOut!.difference(timeLog.clockIn)
-        : DateTime.now().difference(timeLog.clockIn);
+    final checkIn = getCheckInDateTime(timeLog);
+    final checkOut = getCheckOutDateTime(timeLog);
+    final isActive = checkOut == null;
+
+    final duration = (checkIn != null && checkOut != null)
+        ? checkOut.difference(checkIn)
+        : (checkIn != null
+            ? DateTime.now().difference(checkIn)
+            : Duration.zero);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -771,7 +819,7 @@ class _TimeLogItem extends StatelessWidget {
                       style: AppTextStyles.caption,
                     ),
                     Text(
-                      _formatTime(timeLog.clockIn),
+                      checkIn != null ? _formatTime(checkIn) : '--:--',
                       style: AppTextStyles.bodyMedium,
                     ),
                   ],
@@ -788,9 +836,7 @@ class _TimeLogItem extends StatelessWidget {
                       style: AppTextStyles.caption,
                     ),
                     Text(
-                      timeLog.clockOut != null
-                          ? _formatTime(timeLog.clockOut!)
-                          : '--:--',
+                      checkOut != null ? _formatTime(checkOut) : '--:--',
                       style: AppTextStyles.bodyMedium,
                     ),
                   ],

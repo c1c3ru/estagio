@@ -181,18 +181,6 @@ class _ContractPageState extends State<ContractPage> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    activeContract.company,
-                    style: AppTextStyles.h5,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    activeContract.position,
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
@@ -209,26 +197,6 @@ class _ContractPageState extends State<ContractPage> {
                           Icons.event,
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildInfoItem(
-                          'Horas/Semana',
-                          '${activeContract.weeklyHoursTarget}h',
-                          Icons.schedule,
-                        ),
-                      ),
-                      if (activeContract.salary != null)
-                        Expanded(
-                          child: _buildInfoItem(
-                            'Salário',
-                            'R\$ ${activeContract.salary!.toStringAsFixed(2)}',
-                            Icons.attach_money,
-                          ),
-                        ),
                     ],
                   ),
                   if (activeContract.description != null &&
@@ -265,14 +233,7 @@ class _ContractPageState extends State<ContractPage> {
   }
 
   void _showEditContractModal({dynamic contract}) {
-    // Buscar supervisorId do estudante do StudentBloc
-    String? supervisorId;
-    final studentState = context.read<StudentBloc>().state;
-    if (studentState is StudentDashboardLoadSuccess) {
-      supervisorId = studentState.student.supervisorId;
-    } else if (studentState is StudentDetailsLoaded) {
-      supervisorId = studentState.student.supervisorId;
-    }
+    String? supervisorId = null;
     final contractBloc = context.read<ContractBloc>();
     showModalBottomSheet(
       context: context,
@@ -435,8 +396,8 @@ class _ContractCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = _getStatusColor(contract.status.value);
-    final statusText = _getStatusText(contract.status.value);
+    final statusColor = _getStatusColor(contract.status);
+    final statusText = _getStatusText(contract.status);
 
     return Card(
       child: Padding(
@@ -448,7 +409,7 @@ class _ContractCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    contract.company,
+                    contract.contractType,
                     style: AppTextStyles.bodyLarge.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -473,13 +434,6 @@ class _ContractCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              contract.position,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -493,34 +447,14 @@ class _ContractCard extends StatelessWidget {
                   '${_formatDate(contract.startDate)} - ${_formatDate(contract.endDate)}',
                   style: AppTextStyles.bodySmall,
                 ),
-                const Spacer(),
-                const Icon(
-                  Icons.schedule,
-                  size: 16,
-                  color: AppColors.textSecondary,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '${contract.weeklyHoursTarget}h/sem',
-                  style: AppTextStyles.bodySmall,
-                ),
               ],
             ),
-            if (contract.salary != null) ...[
+            if (contract.description != null &&
+                contract.description.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.attach_money,
-                    size: 16,
-                    color: AppColors.textSecondary,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'R\$ ${contract.salary!.toStringAsFixed(2)}',
-                    style: AppTextStyles.bodySmall,
-                  ),
-                ],
+              Text(
+                contract.description,
+                style: AppTextStyles.bodyMedium,
               ),
             ],
           ],
@@ -581,27 +515,31 @@ class _ContractEditForm extends StatefulWidget {
 
 class _ContractEditFormState extends State<_ContractEditForm> {
   final _formKey = GlobalKey<FormState>();
-  final _companyController = TextEditingController();
-  final _positionController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _weeklyHoursController = TextEditingController();
-  final _totalHoursController = TextEditingController();
-
+  String? _contractType;
+  String? _status;
   DateTime? _startDate;
   DateTime? _endDate;
   bool _isSaving = false;
+
+  final List<String> _contractTypes = [
+    'Obrigatório',
+    'Não obrigatório',
+  ];
+
+  final List<String> _statusOptions = [
+    'pendente',
+    'ativo',
+    'finalizado',
+  ];
 
   @override
   void initState() {
     super.initState();
     if (widget.contract != null) {
-      _companyController.text = widget.contract.company ?? '';
-      _positionController.text = widget.contract.position ?? '';
+      _contractType = widget.contract.contractType;
+      _status = widget.contract.status;
       _descriptionController.text = widget.contract.description ?? '';
-      _weeklyHoursController.text =
-          widget.contract.weeklyHoursTarget?.toString() ?? '';
-      _totalHoursController.text =
-          widget.contract.totalHoursRequired?.toString() ?? '';
       _startDate = widget.contract.startDate;
       _endDate = widget.contract.endDate;
     }
@@ -609,11 +547,7 @@ class _ContractEditFormState extends State<_ContractEditForm> {
 
   @override
   void dispose() {
-    _companyController.dispose();
-    _positionController.dispose();
     _descriptionController.dispose();
-    _weeklyHoursController.dispose();
-    _totalHoursController.dispose();
     super.dispose();
   }
 
@@ -661,26 +595,38 @@ class _ContractEditFormState extends State<_ContractEditForm> {
                 style: AppTextStyles.h6,
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _companyController,
+              DropdownButtonFormField<String>(
+                value: _contractType,
                 decoration: const InputDecoration(
-                  labelText: 'Empresa',
-                  prefixIcon: Icon(Icons.business),
+                  labelText: 'Tipo de Contrato',
+                  prefixIcon: Icon(Icons.assignment),
                   border: OutlineInputBorder(),
                 ),
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'Campo obrigatório' : null,
+                items: _contractTypes
+                    .map((type) => DropdownMenuItem(
+                          value: type,
+                          child: Text(type),
+                        ))
+                    .toList(),
+                onChanged: (value) => setState(() => _contractType = value),
+                validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _positionController,
+              DropdownButtonFormField<String>(
+                value: _status,
                 decoration: const InputDecoration(
-                  labelText: 'Cargo',
-                  prefixIcon: Icon(Icons.work),
+                  labelText: 'Status',
+                  prefixIcon: Icon(Icons.flag),
                   border: OutlineInputBorder(),
                 ),
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'Campo obrigatório' : null,
+                items: _statusOptions
+                    .map((status) => DropdownMenuItem(
+                          value: status,
+                          child: Text(status),
+                        ))
+                    .toList(),
+                onChanged: (value) => setState(() => _status = value),
+                validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
               ),
               const SizedBox(height: 16),
               Row(
@@ -738,28 +684,6 @@ class _ContractEditFormState extends State<_ContractEditForm> {
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _weeklyHoursController,
-                decoration: const InputDecoration(
-                  labelText: 'Horas por semana',
-                  prefixIcon: Icon(Icons.timer),
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _totalHoursController,
-                decoration: const InputDecoration(
-                  labelText: 'Total de horas',
-                  prefixIcon: Icon(Icons.timelapse),
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(
                   labelText: 'Descrição (opcional)',
@@ -804,15 +728,7 @@ class _ContractEditFormState extends State<_ContractEditForm> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _isSaving = true);
 
-    // Buscar supervisorId do estudante (pode ser passado via widget ou buscar via Provider/BLoC)
     String? supervisorId = widget.supervisorId;
-    if (supervisorId == null) {
-      // Tenta buscar supervisorId do estudante via Provider/BLoC
-      // Aqui você pode adaptar para buscar do AuthBloc, StudentBloc, etc.
-      // Exemplo:
-      // final student = context.read<StudentBloc>().state.student;
-      // supervisorId = student?.supervisorId;
-    }
     if (supervisorId == null || supervisorId.isEmpty) {
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -828,17 +744,15 @@ class _ContractEditFormState extends State<_ContractEditForm> {
       id: widget.contract?.id ?? '',
       studentId: widget.studentId,
       supervisorId: supervisorId,
-      company: _companyController.text.trim(),
-      position: _positionController.text.trim(),
+      contractType: _contractType!,
+      status: _status!,
+      startDate: _startDate!,
+      endDate: _endDate!,
       description: _descriptionController.text.trim().isEmpty
           ? null
           : _descriptionController.text.trim(),
-      salary: widget.contract?.salary, // Não há campo de salário no form
-      startDate: _startDate!,
-      endDate: _endDate!,
-      totalHoursRequired: double.tryParse(_totalHoursController.text) ?? 0,
-      weeklyHoursTarget: double.tryParse(_weeklyHoursController.text) ?? 0,
-      status: widget.contract?.status ?? ContractStatus.pending,
+      documentUrl: widget.contract?.documentUrl,
+      createdBy: widget.contract?.createdBy,
       createdAt: widget.contract?.createdAt ?? DateTime.now(),
       updatedAt: widget.contract != null ? DateTime.now() : null,
     );

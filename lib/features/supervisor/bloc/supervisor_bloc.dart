@@ -38,6 +38,8 @@ import '../../../../domain/usecases/contract/delete_contract_usecase.dart';
 // Usecases de Auth
 import '../../../../domain/usecases/auth/register_usecase.dart';
 
+import 'package:gestao_de_estagio/core/enums/user_role.dart';
+
 // import '../../../../domain/repositories/i_contract_repository.dart'
 //     show UpsertContractParams;
 
@@ -311,7 +313,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
       fullName: event.studentData.fullName,
       email: event.initialEmail,
       password: event.initialPassword,
-      role: event.studentData.role,
+      role: UserRole.student,
       registration: event.studentData.registrationNumber,
     );
 
@@ -323,8 +325,8 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
       },
       (authUserEntity) async {
         try {
-          final studentToCreate = event.studentData
-              .copyWith(id: authUserEntity.id, email: authUserEntity.email);
+          final studentToCreate =
+              event.studentData.copyWith(id: authUserEntity.id);
 
           final studentProfileResult =
               await _createStudentBySupervisorUsecase.call(studentToCreate);

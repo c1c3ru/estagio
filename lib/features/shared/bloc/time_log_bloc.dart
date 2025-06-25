@@ -260,14 +260,21 @@ class TimeLogBloc extends Bloc<TimeLogEvent, TimeLogState> {
     Emitter<TimeLogState> emit,
   ) async {
     emit(TimeLogClockingOut());
-    try {
-      final timeLog =
-          await _clockOutUsecase(event.studentId, notes: event.notes);
-      emit(TimeLogClockOutSuccess(timeLog: timeLog));
-      add(TimeLogLoadByStudentRequested(studentId: event.studentId));
-    } catch (e) {
-      emit(TimeLogClockOutError(message: e.toString()));
-    }
+    final result = await _clockOutUsecase(
+      studentId: event.studentId,
+      notes: event.notes,
+    );
+    result.fold(
+      (failure) => emit(TimeLogClockOutError(message: failure.message)),
+      (_) async {
+        final timeLogs = await _getTimeLogsByStudentUsecase(event.studentId);
+        final lastTimeLog = timeLogs.isNotEmpty ? timeLogs.first : null;
+        if (lastTimeLog != null) {
+          emit(TimeLogClockOutSuccess(timeLog: lastTimeLog));
+        }
+        add(TimeLogLoadByStudentRequested(studentId: event.studentId));
+      },
+    );
   }
 
   Future<void> _onTimeLogGetActiveRequested(
