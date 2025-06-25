@@ -20,7 +20,7 @@ class StudentListWidget extends StatelessWidget {
   });
 
   Color _getStatusColor(StudentStatus status, BuildContext context) {
-    final theme = Theme.of(context);
+    Theme.of(context);
     switch (status) {
       case StudentStatus.active:
         return AppColors.statusActive;
@@ -32,8 +32,6 @@ class StudentListWidget extends StatelessWidget {
         return AppColors.statusCompleted;
       case StudentStatus.terminated:
         return AppColors.statusTerminated;
-      default:
-        return theme.hintColor;
     }
   }
 

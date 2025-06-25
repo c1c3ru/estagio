@@ -208,6 +208,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                 'Clique para cadastrar um novo contrato'),
                             onTap: () async {
                               if (!mounted) return;
+                              final bloc =
+                                  BlocProvider.of<StudentBloc>(context);
                               await showDialog(
                                 context: context,
                                 builder: (context) => _NovoContratoDialog(
@@ -215,7 +217,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                               );
                               if (!mounted) return;
                               // Após fechar o modal, recarrega os dados
-                              BlocProvider.of<StudentBloc>(context).add(
+                              bloc.add(
                                 LoadStudentDashboardDataEvent(
                                     userId: state.student.id),
                               );

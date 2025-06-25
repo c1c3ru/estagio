@@ -141,7 +141,6 @@ class _TimeLogPageState extends State<TimeLogPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Animação de registro de tempo
                 const Center(
                   child: AppLottieAnimation(
                     assetPath: LottieAssetPaths.timeAnimation,
@@ -149,7 +148,6 @@ class _TimeLogPageState extends State<TimeLogPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Título mais amigável
                 const Center(
                   child: Text(
                     'Bata seu ponto de entrada e saída',
@@ -373,11 +371,9 @@ class _TimeLogPageState extends State<TimeLogPage> {
                 );
               }
 
-              // Agrupar logs por data
               final groupedLogs = _groupTimeLogsByDate(state.timeLogs);
               final sortedDates = groupedLogs.keys.toList()
-                ..sort(
-                    (a, b) => b.compareTo(a)); // Ordenar por data mais recente
+                ..sort((a, b) => b.compareTo(a));
 
               return ListView.separated(
                 shrinkWrap: true,
@@ -565,7 +561,6 @@ class _TimeLogPageState extends State<TimeLogPage> {
       }
     }
 
-    // Ordenar logs dentro de cada data por horário de entrada
     for (final logs in grouped.values) {
       logs.sort((a, b) {
         final checkInA = getCheckInDateTime(a);
@@ -586,37 +581,68 @@ class _TimeLogPageState extends State<TimeLogPage> {
 
   void _showLottieFeedback(
       BuildContext context, String assetPath, String message) {
+    if (!mounted) return;
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AppLottieAnimation(
-              assetPath: assetPath,
-              height: 120,
-              repeat: false,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              style: AppTextStyles.bodyLarge
-                  .copyWith(color: Colors.white, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
+      builder: (BuildContext dialogContext) {
+        return _AutoClosingLottieDialog(
+          assetPath: assetPath,
+          message: message,
+        );
+      },
     );
+  }
+}
+
+class _AutoClosingLottieDialog extends StatefulWidget {
+  final String assetPath;
+  final String message;
+
+  const _AutoClosingLottieDialog({
+    required this.assetPath,
+    required this.message,
+  });
+
+  @override
+  State<_AutoClosingLottieDialog> createState() =>
+      _AutoClosingLottieDialogState();
+}
+
+class _AutoClosingLottieDialogState extends State<_AutoClosingLottieDialog> {
+  @override
+  void initState() {
+    super.initState();
     Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      if (Navigator.of(context).canPop()) {
+      if (mounted) {
         Navigator.of(context).pop();
       }
     });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppLottieAnimation(
+            assetPath: widget.assetPath,
+            height: 120,
+            repeat: false,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            widget.message,
+            style: AppTextStyles.bodyLarge
+                .copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
   }
 }
 

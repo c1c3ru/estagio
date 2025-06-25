@@ -78,9 +78,8 @@ class _StudentEditPageState extends State<StudentEditPage> {
     _phoneNumberController.text = student.phoneNumber ?? '';
 
     _selectedBirthDate = student.birthDate;
-    _birthDateController.text = student.birthDate != null
-        ? DateFormat('dd/MM/yyyy').format(student.birthDate)
-        : '';
+    _birthDateController.text =
+        DateFormat('dd/MM/yyyy').format(student.birthDate);
 
     _selectedContractStartDate = student.contractStartDate;
     _contractStartDateController.text =

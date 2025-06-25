@@ -61,9 +61,6 @@ class _LoginPageState extends State<LoginPage> {
               case UserRole.supervisor:
                 Modular.to.navigate('/supervisor/');
                 break;
-              default:
-                FeedbackService.showError(
-                    context, 'Papel de usuário não suportado');
             }
           }
         },

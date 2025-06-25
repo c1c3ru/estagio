@@ -307,13 +307,14 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                         students: state.students,
                         onEdit: (student) async {
                           if (!mounted) return;
+                          final bloc = BlocProvider.of<SupervisorBloc>(context);
                           await showDialog(
                             context: context,
                             builder: (context) => StudentFormDialog(
                               isEdit: true,
                               initialStudent: student,
                               onSubmit: (editedStudent, _, __) {
-                                BlocProvider.of<SupervisorBloc>(context).add(
+                                bloc.add(
                                   UpdateStudentBySupervisorEvent(
                                       studentData: editedStudent),
                                 );
@@ -323,6 +324,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                         },
                         onDelete: (student) async {
                           if (!mounted) return;
+                          final bloc = BlocProvider.of<SupervisorBloc>(context);
                           final confirm = await showDialog<bool>(
                             context: context,
                             builder: (context) => AlertDialog(
@@ -345,9 +347,8 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                             ),
                           );
                           if (confirm == true) {
-                            BlocProvider.of<SupervisorBloc>(context).add(
-                                DeleteStudentBySupervisorEvent(
-                                    studentId: student.id));
+                            bloc.add(DeleteStudentBySupervisorEvent(
+                                studentId: student.id));
                           }
                         },
                       ),

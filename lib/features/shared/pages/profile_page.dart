@@ -804,8 +804,6 @@ class _ProfilePageState extends State<ProfilePage> {
         return AppColors.primary;
       case UserRole.supervisor:
         return AppColors.success;
-      default:
-        return AppColors.textSecondary;
     }
   }
 
@@ -815,8 +813,6 @@ class _ProfilePageState extends State<ProfilePage> {
         return 'Estudante';
       case UserRole.supervisor:
         return 'Supervisor';
-      default:
-        return 'Usuário';
     }
   }
 }

@@ -77,8 +77,6 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
         return AppColors.statusCompleted;
       case student_status_enum.StudentStatus.terminated:
         return AppColors.statusTerminated;
-      default:
-        return Theme.of(context).disabledColor;
     }
   }
 

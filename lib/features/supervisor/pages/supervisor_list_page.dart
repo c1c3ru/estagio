@@ -105,6 +105,8 @@ class _SupervisorListPageState extends State<SupervisorListPage> {
                                 color: Colors.redAccent),
                             tooltip: 'Remover',
                             onPressed: () async {
+                              final bloc =
+                                  BlocProvider.of<SupervisorBloc>(context);
                               final confirm = await showDialog<bool>(
                                 context: context,
                                 builder: (context) => AlertDialog(
@@ -128,8 +130,7 @@ class _SupervisorListPageState extends State<SupervisorListPage> {
                               );
                               if (!mounted) return;
                               if (confirm == true) {
-                                BlocProvider.of<SupervisorBloc>(context)
-                                    .add(DeleteSupervisorEvent(supervisor.id));
+                                bloc.add(DeleteSupervisorEvent(supervisor.id));
                               }
                             },
                           ),
