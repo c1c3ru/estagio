@@ -632,7 +632,6 @@ class _DateGroupCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final totalHours = _calculateTotalHoursForDate();
     final isToday = _isToday(date);
-    final isYesterday = _isYesterday(date);
 
     return Card(
       elevation: 2,
@@ -697,7 +696,6 @@ class _DateGroupCard extends StatelessWidget {
 
   String _getDateLabel() {
     if (_isToday(date)) return 'Hoje';
-    if (_isYesterday(date)) return 'Ontem';
     return _formatDate(date);
   }
 
@@ -706,13 +704,6 @@ class _DateGroupCard extends StatelessWidget {
     return date.year == now.year &&
         date.month == now.month &&
         date.day == now.day;
-  }
-
-  bool _isYesterday(DateTime date) {
-    final yesterday = DateTime.now().subtract(const Duration(days: 1));
-    return date.year == yesterday.year &&
-        date.month == yesterday.month &&
-        date.day == yesterday.day;
   }
 
   String _formatDate(DateTime date) {

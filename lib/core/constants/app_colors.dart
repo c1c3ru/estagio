@@ -58,6 +58,6 @@ class AppColors {
 
   static const Color statusTerminated = Color(0xFFF44336);
 
-  static Color statusExpired = Colors.grey.shade600;
-  static Color statusUnknown = Colors.grey.shade400;
+  static const Color statusExpired = Color(0xFF757575);
+  static const Color statusUnknown = Color(0xFFBDBDBD);
 }

@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import '../../../../domain/entities/student_entity.dart';
 import '../../../../core/enums/class_shift.dart';
 import '../../../../core/enums/internship_shift.dart';
-import '../../../../core/enums/user_role.dart';
 import '../../../../core/enums/student_status.dart';
 import 'package:gestao_de_estagio/features/shared/animations/lottie_animations.dart';
 

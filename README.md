@@ -16,117 +16,225 @@ Plaintext
 Estrutura de Pastas
 Plaintext
 
-lib/
-├── app_module.dart                    # Configuração principal de injeção de dependências
-├── main.dart                          # Ponto de entrada da aplicação
-├── core/                              # Funcionalidades compartilhadas
-│   ├── constants/                     # Constantes da aplicação
-│   │   ├── app_colors.dart
-│   │   ├── app_constants.dart
-│   │   └── app_strings.dart
-│   ├── enums/                         # Enumerações
-│   │   ├── contract_status.dart
-│   │   ├── internship_shift.dart
-│   │   └── user_role.dart
-│   ├── errors/                        # Tratamento de erros
-│   │   ├── app_exceptions.dart
-│   │   └── app_failures.dart
-│   ├── guards/                        # Guardas de rota e autorização
-│   │   └── role_guard.dart
-│   ├── utils/                         # Utilitários
-│   │   ├── date_formatter.dart
-│   │   └── validators.dart
-│   └── widgets/                       # Widgets reutilizáveis
-│       ├── app_button.dart
-│       ├── app_text_field.dart
-│       └── loading_indicator.dart
-├── data/                              # Camada de dados
-│   ├── datasources/                   # Fontes de dados
-│   │   └── supabase/                  # Implementações Supabase
-│   │       ├── auth_datasource.dart
-│   │       ├── contract_datasource.dart
-│   │       ├── student_datasource.dart
-│   │       ├── supervisor_datasource.dart
-│   │       └── time_log_datasource.dart
-│   ├── models/                        # Modelos de dados
-│   │   ├── contract_model.dart
-│   │   ├── student_model.dart
-│   │   ├── supervisor_model.dart
-│   │   ├── time_log_model.dart
-│   │   └── user_model.dart
-│   └── repositories/                  # Implementações de repositórios
-│       ├── auth_repository.dart
-│       ├── contract_repository.dart
-│       ├── student_repository.dart
-│       ├── supervisor_repository.dart
-│       └── time_log_repository.dart
-├── domain/                            # Camada de domínio
-│   ├── entities/                      # Entidades de negócio
-│   │   ├── contract_entity.dart
-│   │   ├── student_entity.dart
-│   │   ├── supervisor_entity.dart
-│   │   ├── time_log_entity.dart
-│   │   └── user_entity.dart
-│   ├── repositories/                  # Interfaces de repositórios
-│   │   ├── i_auth_repository.dart
-│   │   ├── i_contract_repository.dart
-│   │   ├── i_student_repository.dart
-│   │   ├── i_supervisor_repository.dart
-│   │   └── i_time_log_repository.dart
-│   └── usecases/                      # Casos de uso
-│       ├── auth/                      # Casos de uso de autenticação
-│       │   ├── get_current_user_usecase.dart
-│       │   ├── login_usecase.dart
-│       │   ├── logout_usecase.dart
-│       │   └── register_usecase.dart
-│       ├── contract/                  # Casos de uso de contratos
-│       │   ├── create_contract_usecase.dart
-│       │   ├── get_contracts_by_student_usecase.dart
-│       │   └── update_contract_usecase.dart
-│       ├── student/                   # Casos de uso de estudantes
-│       │   ├── get_all_students_usecase.dart
-│       │   ├── get_student_by_id_usecase.dart
-│       │   └── update_student_usecase.dart
-│       ├── supervisor/                # Casos de uso de supervisores
-│       │   ├── get_all_supervisors_usecase.dart
-│       │   └── get_supervisor_by_id_usecase.dart
-│       └── time_log/                  # Casos de uso de registros de tempo
-│           ├── clock_in_usecase.dart
-│           ├── clock_out_usecase.dart
-│           └── get_time_logs_usecase.dart
-└── features/                          # Funcionalidades da aplicação
-    ├── auth/                          # Módulo de autenticação
-    │   ├── auth_module.dart
-    │   ├── bloc/                      # Gerenciamento de estado
-    │   │   ├── auth_bloc.dart
-    │   │   ├── auth_event.dart
-    │   │   └── auth_state.dart
-    │   └── pages/                     # Páginas de autenticação
-    │       ├── login_page.dart
-    │       └── register_page.dart
-    ├── shared/                        # Componentes compartilhados
-    │   └── widgets/
-    │       └── user_avatar.dart
-    ├── student/                       # Módulo do estudante
-    │   ├── bloc/
-    │   │   ├── student_bloc.dart
-    │   │   ├── student_event.dart
-    │   │   └── student_state.dart
-    │   ├── pages/
-    │   │   ├── student_dashboard_page.dart
-    │   │   ├── student_profile_page.dart
-    │   │   └── student_time_tracking_page.dart
-    │   └── student_module.dart
-    └── supervisor/                    # Módulo do supervisor
-        ├── bloc/
-        │   ├── supervisor_bloc.dart
-        │   ├── supervisor_event.dart
-        │   └── supervisor_state.dart
-        ├── pages/
-        │   ├── student_details_page.dart
-        │   ├── supervisor_dashboard_page.dart
-        │   └── supervisor_time_approval_page.dart
-        └── supervisor_module.dart
+📦lib
+ ┣ 📂core
+ ┃ ┣ 📂constants
+ ┃ ┃ ┣ 📜app_colors.dart
+ ┃ ┃ ┣ 📜app_constants.dart
+ ┃ ┃ ┗ 📜app_strings.dart
+ ┃ ┣ 📂enums
+ ┃ ┃ ┣ 📜class_shift.dart
+ ┃ ┃ ┣ 📜contract_status.dart
+ ┃ ┃ ┣ 📜internship_shift.dart
+ ┃ ┃ ┣ 📜student_status.dart
+ ┃ ┃ ┗ 📜user_role.dart
+ ┃ ┣ 📂errors
+ ┃ ┃ ┣ 📜app_exceptions.dart
+ ┃ ┃ ┗ 📜error_handler.dart
+ ┃ ┣ 📂guards
+ ┃ ┃ ┣ 📜auth_guard.dart
+ ┃ ┃ ┗ 📜role_guard.dart
+ ┃ ┣ 📂theme
+ ┃ ┃ ┣ 📜app_text_styles.dart
+ ┃ ┃ ┗ 📜app_theme.dart
+ ┃ ┣ 📂utils
+ ┃ ┃ ┣ 📜date_utils.dart
+ ┃ ┃ ┣ 📜feedback_service.dart
+ ┃ ┃ ┣ 📜logger_utils.dart
+ ┃ ┃ ┗ 📜validators.dart
+ ┃ ┗ 📂widgets
+ ┃ ┃ ┣ 📜app_button.dart
+ ┃ ┃ ┣ 📜app_text_field.dart
+ ┃ ┃ ┗ 📜loading_indicator.dart
+ ┣ 📂data
+ ┃ ┣ 📂datasources
+ ┃ ┃ ┣ 📂local
+ ┃ ┃ ┃ ┣ 📜cache_manager.dart
+ ┃ ┃ ┃ ┣ 📜in_memory_preferences_manager.dart
+ ┃ ┃ ┃ ┣ 📜preferences_manager.dart
+ ┃ ┃ ┃ ┗ 📜preferences_manager_mock.dart
+ ┃ ┃ ┗ 📂supabase
+ ┃ ┃ ┃ ┣ 📜auth_datasource.dart
+ ┃ ┃ ┃ ┣ 📜contract_datasource.dart
+ ┃ ┃ ┃ ┣ 📜notification_datasource.dart
+ ┃ ┃ ┃ ┣ 📜student_datasource.dart
+ ┃ ┃ ┃ ┣ 📜supabase_client.dart
+ ┃ ┃ ┃ ┣ 📜supervisor_datasource.dart
+ ┃ ┃ ┃ ┗ 📜time_log_datasource.dart
+ ┃ ┣ 📂models
+ ┃ ┃ ┣ 📜contract_model.dart
+ ┃ ┃ ┣ 📜notification_model.dart
+ ┃ ┃ ┣ 📜student_model.dart
+ ┃ ┃ ┣ 📜supervisor_model.dart
+ ┃ ┃ ┣ 📜time_log_model.dart
+ ┃ ┃ ┗ 📜user_model.dart
+ ┃ ┗ 📂repositories
+ ┃ ┃ ┣ 📜auth_repository.dart
+ ┃ ┃ ┣ 📜contract_repository.dart
+ ┃ ┃ ┣ 📜notification_repository.dart
+ ┃ ┃ ┣ 📜student_repository.dart
+ ┃ ┃ ┣ 📜supervisor_repository.dart
+ ┃ ┃ ┗ 📜time_log_repository.dart
+ ┣ 📂domain
+ ┃ ┣ 📂entities
+ ┃ ┃ ┣ 📜contract_entity.dart
+ ┃ ┃ ┣ 📜filter_students_params.dart
+ ┃ ┃ ┣ 📜notification_entity.dart
+ ┃ ┃ ┣ 📜student_entity.dart
+ ┃ ┃ ┣ 📜supervisor_entity.dart
+ ┃ ┃ ┣ 📜time_log_entity.dart
+ ┃ ┃ ┗ 📜user_entity.dart
+ ┃ ┣ 📂repositories
+ ┃ ┃ ┣ 📜i_auth_datasource.dart
+ ┃ ┃ ┣ 📜i_auth_repository.dart
+ ┃ ┃ ┣ 📜i_contract_repository.dart
+ ┃ ┃ ┣ 📜i_notification_repository.dart
+ ┃ ┃ ┣ 📜i_student_repository.dart
+ ┃ ┃ ┣ 📜i_supervisor_repository.dart
+ ┃ ┃ ┗ 📜i_time_log_repository.dart
+ ┃ ┗ 📂usecases
+ ┃ ┃ ┣ 📂auth
+ ┃ ┃ ┃ ┣ 📜get_auth_state_changes_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_current_user_usecase.dart
+ ┃ ┃ ┃ ┣ 📜login_usecase.dart
+ ┃ ┃ ┃ ┣ 📜logout_usecase.dart
+ ┃ ┃ ┃ ┣ 📜register_usecase.dart
+ ┃ ┃ ┃ ┣ 📜reset_password_usecase.dart
+ ┃ ┃ ┃ ┣ 📜update_profile_params.dart
+ ┃ ┃ ┃ ┗ 📜update_profile_usecase.dart
+ ┃ ┃ ┣ 📂contract
+ ┃ ┃ ┃ ┣ 📜create_contract_usecase.dart
+ ┃ ┃ ┃ ┣ 📜delete_contract_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_active_contract_by_student_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_all_contracts_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_contract_by_id_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_contract_statistics_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_contracts_by_student_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_contracts_by_supervisor_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_contracts_for_student_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_contracts_usecase.dart
+ ┃ ┃ ┃ ┣ 📜update_contract_usecase.dart
+ ┃ ┃ ┃ ┗ 📜upsert_contract_usecase.dart
+ ┃ ┃ ┣ 📂student
+ ┃ ┃ ┃ ┣ 📜check_in_usecase.dart
+ ┃ ┃ ┃ ┣ 📜check_out_usecase.dart
+ ┃ ┃ ┃ ┣ 📜create_student_usecase.dart
+ ┃ ┃ ┃ ┣ 📜create_time_log_usecase.dart
+ ┃ ┃ ┃ ┣ 📜delete_student_usecase.dart
+ ┃ ┃ ┃ ┣ 📜delete_time_log_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_all_students_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_student_by_id_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_student_by_user_id_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_student_dashboard_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_student_details_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_student_time_logs_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_student_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_students_by_supervisor_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_total_hours_by_student_usecase.dart
+ ┃ ┃ ┃ ┣ 📜update_student_profile_usecase.dart
+ ┃ ┃ ┃ ┣ 📜update_student_usecase.dart
+ ┃ ┃ ┃ ┗ 📜update_time_log_usecase.dart
+ ┃ ┃ ┣ 📂supervisor
+ ┃ ┃ ┃ ┣ 📜approve_or_reject_time_log_usecase.dart
+ ┃ ┃ ┃ ┣ 📜create_student_by_supervisor_usecase.dart
+ ┃ ┃ ┃ ┣ 📜create_supervisor_usecase.dart
+ ┃ ┃ ┃ ┣ 📜delete_student_by_supervisor_usecase.dart
+ ┃ ┃ ┃ ┣ 📜delete_supervisor_usecase.dart
+ ┃ ┃ ┃ ┣ 📜filter_students_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_all_students_for_supervisor_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_all_students_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_all_supervisors_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_all_time_logs_for_supervisor_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_student_details_for_supervisor_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_supervisor_by_id_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_supervisor_by_user_id_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_supervisor_details_usecase.dart
+ ┃ ┃ ┃ ┣ 📜manage_student_usecase.dart
+ ┃ ┃ ┃ ┣ 📜update_student_by_supervisor_usecase.dart
+ ┃ ┃ ┃ ┗ 📜update_supervisor_usecase.dart
+ ┃ ┃ ┗ 📂time_log
+ ┃ ┃ ┃ ┣ 📜clock_in_usecase.dart
+ ┃ ┃ ┃ ┣ 📜clock_out_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_active_time_log_usecase.dart
+ ┃ ┃ ┃ ┣ 📜get_time_logs_by_student_usecase.dart
+ ┃ ┃ ┃ ┗ 📜get_total_hours_by_student_usecase.dart
+ ┣ 📂features
+ ┃ ┣ 📂auth
+ ┃ ┃ ┣ 📂bloc
+ ┃ ┃ ┃ ┣ 📜auth_bloc.dart
+ ┃ ┃ ┃ ┣ 📜auth_event.dart
+ ┃ ┃ ┃ ┗ 📜auth_state.dart
+ ┃ ┃ ┣ 📂pages
+ ┃ ┃ ┃ ┣ 📜email_confirmation_page.dart
+ ┃ ┃ ┃ ┣ 📜forgot_password_page.dart
+ ┃ ┃ ┃ ┣ 📜login_page.dart
+ ┃ ┃ ┃ ┣ 📜register_page.dart
+ ┃ ┃ ┃ ┗ 📜supervisor_register_page.dart
+ ┃ ┃ ┣ 📂widgets
+ ┃ ┃ ┃ ┣ 📜auth_button.dart
+ ┃ ┃ ┃ ┣ 📜auth_text_field.dart
+ ┃ ┃ ┃ ┣ 📜login_form.dart
+ ┃ ┃ ┃ ┣ 📜register_form.dart
+ ┃ ┃ ┃ ┗ 📜supervisor_register_form.dart
+ ┃ ┃ ┗ 📜auth_module.dart
+ ┃ ┣ 📂shared
+ ┃ ┃ ┣ 📂animations
+ ┃ ┃ ┃ ┣ 📜loading_animation.dart
+ ┃ ┃ ┃ ┗ 📜lottie_animations.dart
+ ┃ ┃ ┣ 📂bloc
+ ┃ ┃ ┃ ┣ 📜contract_bloc.dart
+ ┃ ┃ ┃ ┣ 📜notification_bloc.dart
+ ┃ ┃ ┃ ┗ 📜time_log_bloc.dart
+ ┃ ┃ ┣ 📂pages
+ ┃ ┃ ┃ ┣ 📜notification_page.dart
+ ┃ ┃ ┃ ┣ 📜profile_page.dart
+ ┃ ┃ ┃ ┗ 📜time_log_page.dart
+ ┃ ┃ ┗ 📂widgets
+ ┃ ┃ ┃ ┣ 📜animated_transitions.dart
+ ┃ ┃ ┃ ┣ 📜status_badge.dart
+ ┃ ┃ ┃ ┗ 📜user_avatar.dart
+ ┃ ┣ 📂student
+ ┃ ┃ ┣ 📂bloc
+ ┃ ┃ ┃ ┣ 📜student_bloc.dart
+ ┃ ┃ ┃ ┣ 📜student_event.dart
+ ┃ ┃ ┃ ┗ 📜student_state.dart
+ ┃ ┃ ┣ 📂pages
+ ┃ ┃ ┃ ┣ 📜contract_page.dart
+ ┃ ┃ ┃ ┣ 📜student_colleagues_page.dart
+ ┃ ┃ ┃ ┣ 📜student_home_page.dart
+ ┃ ┃ ┃ ┣ 📜student_profile_page.dart
+ ┃ ┃ ┃ ┣ 📜student_time_log_page.dart
+ ┃ ┃ ┃ ┗ 📜time_log_page.dart
+ ┃ ┃ ┣ 📂widgets
+ ┃ ┃ ┃ ┣ 📜online_colleagues_widget.dart
+ ┃ ┃ ┃ ┗ 📜time_tracker_widget.dart
+ ┃ ┃ ┗ 📜student_module.dart
+ ┃ ┗ 📂supervisor
+ ┃ ┃ ┣ 📂bloc
+ ┃ ┃ ┃ ┣ 📜supervisor_bloc.dart
+ ┃ ┃ ┃ ┣ 📜supervisor_event.dart
+ ┃ ┃ ┃ ┗ 📜supervisor_state.dart
+ ┃ ┃ ┣ 📂pages
+ ┃ ┃ ┃ ┣ 📜student_details_page.dart
+ ┃ ┃ ┃ ┣ 📜student_edit_page.dart
+ ┃ ┃ ┃ ┣ 📜supervisor_dashboard_page.dart
+ ┃ ┃ ┃ ┣ 📜supervisor_home_page.dart
+ ┃ ┃ ┃ ┣ 📜supervisor_list_page.dart
+ ┃ ┃ ┃ ┣ 📜supervisor_profile_page.dart
+ ┃ ┃ ┃ ┗ 📜supervisor_time_approval_page.dart
+ ┃ ┃ ┣ 📂widgets
+ ┃ ┃ ┃ ┣ 📜contract_gantt_chart.dart
+ ┃ ┃ ┃ ┣ 📜dashboard_summary_cards.dart
+ ┃ ┃ ┃ ┣ 📜student_form_dialog.dart
+ ┃ ┃ ┃ ┣ 📜student_list_widget.dart
+ ┃ ┃ ┃ ┣ 📜supervisor_app_drawer.dart
+ ┃ ┃ ┃ ┗ 📜supervisor_form_dialog.dart
+ ┃ ┃ ┗ 📜supervisor_module.dart
+ ┣ 📜app_module.dart
+ ┣ 📜app_widget.dart
+ ┣ 📜main.dart
+ ┗ 📜r.dart
+ 
 Camadas da Arquitetura
 1. Presentation Layer (features/)
 Responsabilidade: Interface do usuário e gerenciamento de estado.

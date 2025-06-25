@@ -2,11 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:intl/intl.dart'; // Para formatação de datas
-import 'package:gestao_de_estagio/core/enums/user_role.dart';
-import 'package:gestao_de_estagio/core/errors/app_exceptions.dart';
 
 import '../../../../core/constants/app_colors.dart'; // Para cores de status
 import '../../../../domain/entities/student_entity.dart';
+import 'package:gestao_de_estagio/core/enums/student_status.dart';
 
 class StudentListWidget extends StatelessWidget {
   final List<StudentEntity> students;
@@ -33,7 +32,6 @@ class StudentListWidget extends StatelessWidget {
         return AppColors.statusCompleted;
       case StudentStatus.terminated:
         return AppColors.statusTerminated;
-      case StudentStatus.unknown:
       default:
         return theme.hintColor;
     }

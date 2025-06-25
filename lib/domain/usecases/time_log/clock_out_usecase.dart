@@ -2,7 +2,6 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/errors/app_exceptions.dart';
-import '../../entities/time_log_entity.dart';
 import '../../repositories/i_time_log_repository.dart';
 
 class ClockOutUsecase {

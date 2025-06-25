@@ -1,7 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import '../../../core/errors/app_exceptions.dart';
-import '../../../core/enums/contract_status.dart';
 import '../../entities/contract_entity.dart';
 import '../../repositories/i_contract_repository.dart';
 

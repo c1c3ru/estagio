@@ -252,8 +252,6 @@ class AuthDatasource implements IAuthDatasource {
   Future<void> _ensureUserDataExists(User user) async {
     try {
       final role = user.userMetadata?['role'] ?? 'student';
-      final fullName =
-          user.userMetadata?['full_name'] ?? user.email ?? 'Nome não informado';
       final registration = user.userMetadata?['registration'];
 
       if (kDebugMode) {
@@ -441,8 +439,6 @@ class AuthDatasource implements IAuthDatasource {
       }
 
       // Tentar fazer uma consulta simples para testar a conexão
-      final response =
-          await _supabaseClient.from('students').select('count').limit(1);
 
       if (kDebugMode) {
         print('✅ Conectividade com Supabase OK');
@@ -554,8 +550,6 @@ class AuthDatasource implements IAuthDatasource {
       }
 
       // Tentar fazer uma consulta simples
-      final result =
-          await _supabaseClient.from('students').select('count').limit(1);
 
       if (kDebugMode) {
         print('✅ Consulta à tabela students bem-sucedida');

@@ -4,9 +4,6 @@ import 'package:gestao_de_estagio/core/constants/app_colors.dart';
 import 'package:gestao_de_estagio/core/theme/app_text_styles.dart';
 import 'package:gestao_de_estagio/features/shared/bloc/contract_bloc.dart';
 import 'package:gestao_de_estagio/domain/entities/contract_entity.dart';
-import 'package:gestao_de_estagio/core/enums/contract_status.dart';
-import 'package:gestao_de_estagio/features/student/bloc/student_bloc.dart';
-import 'package:gestao_de_estagio/features/student/bloc/student_state.dart';
 import 'package:gestao_de_estagio/features/shared/animations/lottie_animations.dart';
 
 class ContractPage extends StatefulWidget {
@@ -233,7 +230,7 @@ class _ContractPageState extends State<ContractPage> {
   }
 
   void _showEditContractModal({dynamic contract}) {
-    String? supervisorId = null;
+    String? supervisorId;
     final contractBloc = context.read<ContractBloc>();
     showModalBottomSheet(
       context: context,

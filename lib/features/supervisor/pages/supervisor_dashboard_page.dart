@@ -34,7 +34,6 @@ import '../../../../core/enums/user_role.dart';
 
 class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
   // Usecases
-  final GetSupervisorDetailsUsecase _getSupervisorDetailsUsecase;
   final GetAllStudentsForSupervisorUsecase _getAllStudentsForSupervisorUsecase;
   final GetStudentDetailsForSupervisorUsecase
       _getStudentDetailsForSupervisorUsecase;
@@ -46,7 +45,6 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
   final GetAllContractsUsecase _getAllContractsUsecase;
   final CreateContractUsecase _createContractUsecase;
   final UpdateContractUsecase _updateContractUsecase;
-  final DeleteContractUsecase _deleteContractUsecase;
   final RegisterUsecase _registerAuthUserUsecase;
 
   SupervisorBloc({
@@ -66,8 +64,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
     required UpdateContractUsecase updateContractUsecase,
     required DeleteContractUsecase deleteContractUsecase,
     required RegisterUsecase registerAuthUserUsecase,
-  })  : _getSupervisorDetailsUsecase = getSupervisorDetailsUsecase,
-        _getAllStudentsForSupervisorUsecase =
+  })  : _getAllStudentsForSupervisorUsecase =
             getAllStudentsForSupervisorUsecase,
         _getStudentDetailsForSupervisorUsecase =
             getStudentDetailsForSupervisorUsecase,
@@ -80,7 +77,6 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
         _getAllContractsUsecase = getAllContractsUsecase,
         _createContractUsecase = createContractUsecase,
         _updateContractUsecase = updateContractUsecase,
-        _deleteContractUsecase = deleteContractUsecase,
         _registerAuthUserUsecase = registerAuthUserUsecase,
         super(const SupervisorInitial()) {
     on<LoadSupervisorDashboardDataEvent>(_onLoadSupervisorDashboardData);

@@ -33,7 +33,7 @@ import '../../../../domain/usecases/supervisor/delete_supervisor_usecase.dart';
 // Usecases de Contrato (usados pelo Supervisor)
 import '../../../../domain/usecases/contract/create_contract_usecase.dart';
 import '../../../../domain/usecases/contract/update_contract_usecase.dart';
-import '../../../../domain/usecases/contract/delete_contract_usecase.dart';
+// import '../../../../domain/usecases/contract/delete_contract_usecase.dart';
 
 // Usecases de Auth
 import '../../../../domain/usecases/auth/register_usecase.dart';
@@ -45,7 +45,6 @@ import 'package:gestao_de_estagio/core/enums/user_role.dart';
 
 class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
   // Usecases
-  final GetSupervisorDetailsUsecase _getSupervisorDetailsUsecase;
   final GetAllStudentsForSupervisorUsecase _getAllStudentsForSupervisorUsecase;
   final GetStudentDetailsForSupervisorUsecase
       _getStudentDetailsForSupervisorUsecase;
@@ -57,7 +56,6 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
   final GetAllContractsUsecase _getAllContractsUsecase;
   final CreateContractUsecase _createContractUsecase;
   final UpdateContractUsecase _updateContractUsecase;
-  final DeleteContractUsecase _deleteContractUsecase;
   final RegisterUsecase _registerAuthUserUsecase;
   final GetAllSupervisorsUsecase _getAllSupervisorsUsecase;
   final CreateSupervisorUsecase _createSupervisorUsecase;
@@ -79,14 +77,12 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
     required GetAllContractsUsecase getAllContractsUsecase,
     required CreateContractUsecase createContractUsecase,
     required UpdateContractUsecase updateContractUsecase,
-    required DeleteContractUsecase deleteContractUsecase,
     required RegisterUsecase registerAuthUserUsecase,
     required GetAllSupervisorsUsecase getAllSupervisorsUsecase,
     required CreateSupervisorUsecase createSupervisorUsecase,
     required UpdateSupervisorUsecase updateSupervisorUsecase,
     required DeleteSupervisorUsecase deleteSupervisorUsecase,
-  })  : _getSupervisorDetailsUsecase = getSupervisorDetailsUsecase,
-        _getAllStudentsForSupervisorUsecase =
+  })  : _getAllStudentsForSupervisorUsecase =
             getAllStudentsForSupervisorUsecase,
         _getStudentDetailsForSupervisorUsecase =
             getStudentDetailsForSupervisorUsecase,
@@ -99,7 +95,6 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
         _getAllContractsUsecase = getAllContractsUsecase,
         _createContractUsecase = createContractUsecase,
         _updateContractUsecase = updateContractUsecase,
-        _deleteContractUsecase = deleteContractUsecase,
         _registerAuthUserUsecase = registerAuthUserUsecase,
         _getAllSupervisorsUsecase = getAllSupervisorsUsecase,
         _createSupervisorUsecase = createSupervisorUsecase,

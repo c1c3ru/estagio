@@ -222,7 +222,6 @@ class AppModule extends Module {
           getAllContractsUsecase: i(),
           createContractUsecase: i(),
           updateContractUsecase: i(),
-          deleteContractUsecase: i(),
           registerAuthUserUsecase: i(),
           getAllSupervisorsUsecase: i(),
           createSupervisorUsecase: i(),
