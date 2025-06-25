@@ -1,29 +1,19 @@
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:gestao_de_estagio/domain/usecases/student/check_in_usecase.dart';
-import 'package:gestao_de_estagio/domain/usecases/student/check_out_usecase.dart';
-import 'package:gestao_de_estagio/domain/usecases/student/create_time_log_usecase.dart';
-import 'package:gestao_de_estagio/domain/usecases/student/delete_student_usecase.dart';
-import 'package:gestao_de_estagio/domain/usecases/student/delete_time_log_usecase.dart';
-import 'package:gestao_de_estagio/domain/usecases/student/get_student_by_id_usecase.dart';
-import 'package:gestao_de_estagio/domain/usecases/student/get_student_by_user_id_usecase.dart';
-import 'package:gestao_de_estagio/domain/usecases/student/get_student_details_usecase.dart';
-import 'package:gestao_de_estagio/domain/usecases/student/get_student_time_logs_usecase.dart';
-import 'package:gestao_de_estagio/domain/usecases/student/get_students_by_supervisor_usecase.dart';
-import 'package:gestao_de_estagio/domain/usecases/student/update_student_profile_usecase.dart';
-import 'package:gestao_de_estagio/domain/usecases/student/update_student_usecase.dart';
-import 'package:gestao_de_estagio/domain/usecases/student/update_time_log_usecase.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:gestao_de_estagio/domain/usecases/contract/get_contracts_for_student_usecase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-// DataSources
-import 'data/datasources/local/cache_manager.dart';
-import 'data/datasources/local/preferences_manager.dart';
+// Data Sources
 import 'data/datasources/supabase/auth_datasource.dart';
-import 'data/datasources/supabase/contract_datasource.dart';
-import 'data/datasources/supabase/notification_datasource.dart';
 import 'data/datasources/supabase/student_datasource.dart';
 import 'data/datasources/supabase/supervisor_datasource.dart';
 import 'data/datasources/supabase/time_log_datasource.dart';
+import 'data/datasources/supabase/contract_datasource.dart';
+import 'data/datasources/supabase/notification_datasource.dart';
+import 'data/datasources/local/preferences_manager.dart';
+import 'data/datasources/local/cache_manager.dart';
+import 'domain/repositories/i_auth_datasource.dart';
+
 // Repositories
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/student_repository.dart';
@@ -31,15 +21,16 @@ import 'data/repositories/supervisor_repository.dart';
 import 'data/repositories/time_log_repository.dart';
 import 'data/repositories/contract_repository.dart';
 import 'data/repositories/notification_repository.dart';
-// Interfaces
-import 'domain/repositories/i_auth_datasource.dart';
+
+// Domain Repositories
 import 'domain/repositories/i_auth_repository.dart';
 import 'domain/repositories/i_student_repository.dart';
 import 'domain/repositories/i_supervisor_repository.dart';
 import 'domain/repositories/i_time_log_repository.dart';
 import 'domain/repositories/i_contract_repository.dart';
 import 'domain/repositories/i_notification_repository.dart';
-// Usecases Auth
+
+// Use Cases - Auth
 import 'domain/usecases/auth/login_usecase.dart';
 import 'domain/usecases/auth/register_usecase.dart';
 import 'domain/usecases/auth/logout_usecase.dart';
@@ -47,12 +38,33 @@ import 'domain/usecases/auth/get_current_user_usecase.dart';
 import 'domain/usecases/auth/reset_password_usecase.dart';
 import 'domain/usecases/auth/update_profile_usecase.dart';
 import 'domain/usecases/auth/get_auth_state_changes_usecase.dart';
-// Usecases Student
+
+// Use Cases - Student
 import 'domain/usecases/student/get_all_students_usecase.dart';
+import 'domain/usecases/student/get_student_by_id_usecase.dart';
+import 'domain/usecases/student/get_student_by_user_id_usecase.dart';
 import 'domain/usecases/student/create_student_usecase.dart';
+import 'domain/usecases/student/update_student_usecase.dart';
+import 'domain/usecases/student/get_student_details_usecase.dart';
+import 'domain/usecases/student/update_student_profile_usecase.dart';
+import 'domain/usecases/student/check_in_usecase.dart';
+import 'domain/usecases/student/check_out_usecase.dart';
+import 'domain/usecases/student/get_student_time_logs_usecase.dart';
+import 'domain/usecases/student/create_time_log_usecase.dart';
+import 'domain/usecases/student/update_time_log_usecase.dart';
+import 'domain/usecases/student/delete_time_log_usecase.dart';
+
+import 'domain/usecases/student/delete_student_usecase.dart';
+import 'domain/usecases/student/get_students_by_supervisor_usecase.dart';
 import 'domain/usecases/student/get_student_dashboard_usecase.dart';
-// Usecases Supervisor
+
+// Use Cases - Supervisor
 import 'domain/usecases/supervisor/get_all_supervisors_usecase.dart';
+import 'domain/usecases/supervisor/get_supervisor_by_id_usecase.dart';
+import 'domain/usecases/supervisor/get_supervisor_by_user_id_usecase.dart';
+import 'domain/usecases/supervisor/create_supervisor_usecase.dart';
+import 'domain/usecases/supervisor/update_supervisor_usecase.dart';
+import 'domain/usecases/supervisor/delete_supervisor_usecase.dart';
 import 'domain/usecases/supervisor/get_supervisor_details_usecase.dart';
 import 'domain/usecases/supervisor/get_all_students_for_supervisor_usecase.dart';
 import 'domain/usecases/supervisor/get_student_details_for_supervisor_usecase.dart';
@@ -61,25 +73,24 @@ import 'domain/usecases/supervisor/update_student_by_supervisor_usecase.dart';
 import 'domain/usecases/supervisor/delete_student_by_supervisor_usecase.dart';
 import 'domain/usecases/supervisor/get_all_time_logs_for_supervisor_usecase.dart';
 import 'domain/usecases/supervisor/approve_or_reject_time_log_usecase.dart';
-import 'domain/usecases/contract/get_all_contracts_usecase.dart';
-import 'domain/usecases/contract/create_contract_usecase.dart';
-import 'domain/usecases/contract/update_contract_usecase.dart';
-import 'domain/usecases/contract/delete_contract_usecase.dart';
-import 'domain/usecases/supervisor/create_supervisor_usecase.dart';
-import 'domain/usecases/supervisor/update_supervisor_usecase.dart';
-import 'domain/usecases/supervisor/delete_supervisor_usecase.dart';
-// Usecases TimeLog
+
+// Use Cases - TimeLog
 import 'domain/usecases/time_log/clock_in_usecase.dart';
 import 'domain/usecases/time_log/clock_out_usecase.dart';
 import 'domain/usecases/time_log/get_time_logs_by_student_usecase.dart';
 import 'domain/usecases/time_log/get_active_time_log_usecase.dart';
 import 'domain/usecases/time_log/get_total_hours_by_student_usecase.dart';
-// Usecases Contract
-import 'domain/usecases/contract/get_contracts_for_student_usecase.dart';
+
+// Use Cases - Contract
 import 'domain/usecases/contract/get_contracts_by_student_usecase.dart';
 import 'domain/usecases/contract/get_contracts_by_supervisor_usecase.dart';
 import 'domain/usecases/contract/get_active_contract_by_student_usecase.dart';
+import 'domain/usecases/contract/create_contract_usecase.dart';
+import 'domain/usecases/contract/update_contract_usecase.dart';
+import 'domain/usecases/contract/delete_contract_usecase.dart';
 import 'domain/usecases/contract/get_contract_statistics_usecase.dart';
+import 'domain/usecases/contract/get_all_contracts_usecase.dart';
+
 // BLoCs
 import 'features/auth/bloc/auth_bloc.dart';
 import 'features/student/bloc/student_bloc.dart';
@@ -87,135 +98,161 @@ import 'features/supervisor/bloc/supervisor_bloc.dart';
 import 'features/shared/bloc/time_log_bloc.dart';
 import 'features/shared/bloc/contract_bloc.dart';
 import 'features/shared/bloc/notification_bloc.dart';
-// Guards
-import 'core/guards/auth_guard.dart';
+
 // Pages
 import 'features/auth/pages/login_page.dart';
+import 'features/auth/pages/register_page.dart';
+import 'features/student/pages/student_home_page.dart';
+import 'features/supervisor/pages/supervisor_home_page.dart';
+import 'features/student/pages/time_log_page.dart';
+import 'features/student/pages/contract_page.dart';
+import 'features/shared/pages/notification_page.dart';
+import 'features/auth/pages/forgot_password_page.dart';
+import 'features/student/pages/student_colleagues_page.dart';
+import 'features/student/pages/student_profile_page.dart';
+import 'features/supervisor/pages/supervisor_time_approval_page.dart';
 
-// Módulos
-import 'features/auth/auth_module.dart';
-import 'features/supervisor/supervisor_module.dart';
-import 'features/student/student_module.dart';
+// Guards
+import 'core/guards/auth_guard.dart';
 
 class AppModule extends Module {
-  final SharedPreferences sharedPreferences;
-  AppModule({required this.sharedPreferences});
-
-  @override
-  List<Module> get imports => [];
-
   @override
   void binds(Injector i) {
-    i.addInstance<SharedPreferences?>(sharedPreferences);
-    // =====================================================================
-    // Dependencies Externas e Gerenciadores Locais
-    // =====================================================================
+    // External Dependencies
     i.addLazySingleton<SupabaseClient>(() => Supabase.instance.client);
 
-    // PreferencesManager depende de SharedPreferences?
-    i.addLazySingleton<PreferencesManager>(
-        (Injector i) => PreferencesManager(i.get<SharedPreferences?>()));
-
+    // Data Sources
+    i.addLazySingleton<IAuthDatasource>(() => AuthDatasource(i()));
+    i.addLazySingleton<AuthDatasource>(() => AuthDatasource(i()));
+    i.addLazySingleton<StudentDatasource>(() => StudentDatasource(i()));
+    i.addLazySingleton<SupervisorDatasource>(() => SupervisorDatasource(i()));
+    i.addLazySingleton<TimeLogDatasource>(() => TimeLogDatasource(i()));
+    i.addLazySingleton<ContractDatasource>(() => ContractDatasource(i()));
+    i.addLazySingleton<NotificationDatasource>(
+        () => NotificationDatasource(i()));
+    i.addLazySingleton<PreferencesManager>(() => PreferencesManager(null));
     i.addLazySingleton<CacheManager>(() => CacheManager());
 
-    i.addLazySingleton<IAuthDatasource>(
-        () => AuthDatasource(i.get<SupabaseClient>()));
-    i.addLazySingleton<StudentDatasource>(
-        () => StudentDatasource(i.get<SupabaseClient>()));
-    i.addLazySingleton<SupervisorDatasource>(
-        () => SupervisorDatasource(i.get<SupabaseClient>()));
-    i.addLazySingleton<TimeLogDatasource>(
-        () => TimeLogDatasource(i.get<SupabaseClient>()));
-    i.addLazySingleton<ContractDatasource>(
-        () => ContractDatasource(i.get<SupabaseClient>()));
-    i.addLazySingleton<NotificationDatasource>(
-        () => NotificationDatasource(i.get<SupabaseClient>()));
-
-    i.addLazySingleton<INotificationRepository>(
-        () => NotificationRepository(i.get<NotificationDatasource>()));
-
-    i.addLazySingleton<IAuthRepository>(() =>
-        AuthRepository(i.get<IAuthDatasource>(), i.get<PreferencesManager>()));
-    i.addLazySingleton<IStudentRepository>(() => StudentRepository(
-        i.get<StudentDatasource>(), i.get<TimeLogDatasource>()));
-    i.addLazySingleton<ISupervisorRepository>(() => SupervisorRepository(
-        i.get<SupervisorDatasource>(),
-        i.get<ITimeLogRepository>(),
-        i.get<IContractRepository>()));
-    i.addLazySingleton<ITimeLogRepository>(
-        () => TimeLogRepository(i.get<TimeLogDatasource>()));
-    i.addLazySingleton<IContractRepository>(
-        () => ContractRepository(i.get<ContractDatasource>()));
-
-    // =====================================================================
-    // Camada de Domínio (UseCases)
-    // =====================================================================
-    i.addLazySingleton(() => LoginUsecase(i()));
-    i.addLazySingleton(() => RegisterUsecase(i()));
-    i.addLazySingleton(() => LogoutUsecase(i()));
-    i.addLazySingleton(() => GetCurrentUserUsecase(i()));
-    i.addLazySingleton(() => ResetPasswordUsecase(i()));
-    i.addLazySingleton(() => UpdateProfileUsecase(i()));
-    i.addLazySingleton(() => GetAuthStateChangesUsecase(i()));
-    i.addLazySingleton(() => GetAllStudentsUsecase(i()));
-    i.addLazySingleton(() => CreateStudentUsecase(i()));
-    i.addLazySingleton(() => GetStudentDashboardUsecase(i()));
-    i.addLazySingleton(() => GetAllSupervisorsUsecase(i()));
-    i.addLazySingleton(() => GetSupervisorDetailsUsecase(i()));
-    i.addLazySingleton(() => GetAllStudentsForSupervisorUsecase(i()));
-    i.addLazySingleton(() => GetStudentDetailsForSupervisorUsecase(i()));
-    i.addLazySingleton(() => CreateStudentBySupervisorUsecase(i()));
-    i.addLazySingleton(() => UpdateStudentBySupervisorUsecase(i()));
-    i.addLazySingleton(() => DeleteStudentBySupervisorUsecase(i()));
-    i.addLazySingleton(() => GetAllTimeLogsForSupervisorUsecase(i()));
-    i.addLazySingleton(() => ApproveOrRejectTimeLogUsecase(i()));
-    i.addLazySingleton(() => GetAllContractsUsecase(i()));
-    i.addLazySingleton(() => CreateContractUsecase(i()));
-    i.addLazySingleton(() => UpdateContractUsecase(i()));
-    i.addLazySingleton(() => DeleteContractUsecase(i()));
-    i.addLazySingleton(() => CreateSupervisorUsecase(i()));
-    i.addLazySingleton(() => UpdateSupervisorUsecase(i()));
-    i.addLazySingleton(() => DeleteSupervisorUsecase(i()));
-    i.addLazySingleton(() => ClockInUsecase(i()));
-    i.addLazySingleton(() => ClockOutUsecase(i()));
-    i.addLazySingleton(() => GetTimeLogsByStudentUsecase(i()));
-    i.addLazySingleton(() => GetActiveTimeLogUsecase(i()));
-    i.addLazySingleton(() => GetTotalHoursByStudentUsecase(i()));
-    i.addLazySingleton(() => GetContractsForStudentUsecase(i()));
-    i.addLazySingleton(() => GetContractsByStudentUsecase(i()));
-    i.addLazySingleton(() => GetContractsBySupervisorUsecase(i()));
-    i.addLazySingleton(() => GetActiveContractByStudentUsecase(i()));
-    i.addLazySingleton(() => GetContractStatisticsUsecase(i()));
-    i.addLazySingleton(() => GetStudentByIdUsecase(i()));
-    i.addLazySingleton(() => GetStudentByUserIdUsecase(i()));
-    i.addLazySingleton(() => UpdateStudentUsecase(i()));
-    i.addLazySingleton(() => GetStudentDetailsUsecase(i()));
-    i.addLazySingleton(() => UpdateStudentProfileUsecase(i()));
-    i.addLazySingleton(() => CheckInUsecase(i()));
-    i.addLazySingleton(() => CheckOutUsecase(i()));
-    i.addLazySingleton(() => GetStudentTimeLogsUsecase(i()));
-    i.addLazySingleton(() => CreateTimeLogUsecase(i()));
-    i.addLazySingleton(() => UpdateTimeLogUsecase(i()));
-    i.addLazySingleton(() => DeleteTimeLogUsecase(i()));
-    i.addLazySingleton(() => DeleteStudentUsecase(i()));
-    i.addLazySingleton(() => GetStudentsBySupervisorUsecase(i()));
-
-    // =====================================================================
-    // Camada de Apresentação (BLoCs e Guards)
-    // =====================================================================
-    i.addLazySingleton(() => AuthBloc(
-          loginUseCase: i(),
-          logoutUseCase: i(),
-          registerUseCase: i(),
-          getCurrentUserUseCase: i(),
-          getAuthStateChangesUseCase: i(),
-          updateProfileUseCase: i(),
-          resetPasswordUseCase: i(),
+    // Repositories
+    i.addLazySingleton<IAuthRepository>(() => AuthRepository(
+          i(), // IAuthDatasource
+          i(), // PreferencesManager
         ));
-    i.addLazySingleton(() => StudentBloc(
+    i.addLazySingleton<IStudentRepository>(() => StudentRepository(i(), i()));
+    i.addLazySingleton<ISupervisorRepository>(
+        () => SupervisorRepository(i(), i(), i()));
+    i.addLazySingleton<ITimeLogRepository>(() => TimeLogRepository(i()));
+    i.addLazySingleton<IContractRepository>(() => ContractRepository(i()));
+    i.addLazySingleton<INotificationRepository>(
+        () => NotificationRepository(i()));
+
+    // Use Cases - Auth
+    i.addLazySingleton<LoginUsecase>(() => LoginUsecase(i()));
+    i.addLazySingleton<RegisterUsecase>(() => RegisterUsecase(i()));
+    i.addLazySingleton<LogoutUsecase>(() => LogoutUsecase(i()));
+    i.addLazySingleton<GetCurrentUserUsecase>(() => GetCurrentUserUsecase(i()));
+    i.addLazySingleton<ResetPasswordUsecase>(() => ResetPasswordUsecase(i()));
+    i.addLazySingleton<UpdateProfileUsecase>(() => UpdateProfileUsecase(i()));
+    i.addLazySingleton<GetAuthStateChangesUsecase>(
+        () => GetAuthStateChangesUsecase(i()));
+
+    // Use Cases - Student
+    i.addLazySingleton<GetAllStudentsUsecase>(() => GetAllStudentsUsecase(i()));
+    i.addLazySingleton<GetStudentByIdUsecase>(() => GetStudentByIdUsecase(i()));
+    i.addLazySingleton<GetStudentByUserIdUsecase>(
+        () => GetStudentByUserIdUsecase(i()));
+    i.addLazySingleton<CreateStudentUsecase>(() => CreateStudentUsecase(i()));
+    i.addLazySingleton<UpdateStudentUsecase>(() => UpdateStudentUsecase(i()));
+    i.addLazySingleton<GetStudentDetailsUsecase>(
+        () => GetStudentDetailsUsecase(i()));
+    i.addLazySingleton<UpdateStudentProfileUsecase>(
+        () => UpdateStudentProfileUsecase(i()));
+    i.addLazySingleton<CheckInUsecase>(() => CheckInUsecase(i()));
+    i.addLazySingleton<CheckOutUsecase>(() => CheckOutUsecase(i()));
+    i.addLazySingleton<GetStudentTimeLogsUsecase>(
+        () => GetStudentTimeLogsUsecase(i()));
+    i.addLazySingleton<CreateTimeLogUsecase>(() => CreateTimeLogUsecase(i()));
+    i.addLazySingleton<UpdateTimeLogUsecase>(() => UpdateTimeLogUsecase(i()));
+    i.addLazySingleton<DeleteTimeLogUsecase>(() => DeleteTimeLogUsecase(i()));
+    i.addLazySingleton<GetContractsForStudentUsecase>(
+        () => GetContractsForStudentUsecase(i()));
+    i.addLazySingleton<DeleteStudentUsecase>(() => DeleteStudentUsecase(i()));
+    i.addLazySingleton<GetStudentsBySupervisorUsecase>(
+        () => GetStudentsBySupervisorUsecase(i()));
+    i.addLazySingleton<GetStudentDashboardUsecase>(
+        () => GetStudentDashboardUsecase(i()));
+
+    // Use Cases - Supervisor
+    i.addLazySingleton<GetAllSupervisorsUsecase>(
+        () => GetAllSupervisorsUsecase(i()));
+    i.addLazySingleton<GetSupervisorByIdUsecase>(
+        () => GetSupervisorByIdUsecase(i()));
+    i.addLazySingleton<GetSupervisorByUserIdUsecase>(
+        () => GetSupervisorByUserIdUsecase(i()));
+    i.addLazySingleton<CreateSupervisorUsecase>(
+        () => CreateSupervisorUsecase(i()));
+    i.addLazySingleton<UpdateSupervisorUsecase>(
+        () => UpdateSupervisorUsecase(i()));
+    i.addLazySingleton<DeleteSupervisorUsecase>(
+        () => DeleteSupervisorUsecase(i()));
+    i.addLazySingleton<GetSupervisorDetailsUsecase>(
+        () => GetSupervisorDetailsUsecase(i()));
+    i.addLazySingleton<GetAllStudentsForSupervisorUsecase>(
+        () => GetAllStudentsForSupervisorUsecase(i()));
+    i.addLazySingleton<GetStudentDetailsForSupervisorUsecase>(
+        () => GetStudentDetailsForSupervisorUsecase(i()));
+    i.addLazySingleton<CreateStudentBySupervisorUsecase>(
+        () => CreateStudentBySupervisorUsecase(i()));
+    i.addLazySingleton<UpdateStudentBySupervisorUsecase>(
+        () => UpdateStudentBySupervisorUsecase(i()));
+    i.addLazySingleton<DeleteStudentBySupervisorUsecase>(
+        () => DeleteStudentBySupervisorUsecase(i()));
+    i.addLazySingleton<GetAllTimeLogsForSupervisorUsecase>(
+        () => GetAllTimeLogsForSupervisorUsecase(i()));
+    i.addLazySingleton<ApproveOrRejectTimeLogUsecase>(
+        () => ApproveOrRejectTimeLogUsecase(i()));
+
+    // Use Cases - TimeLog
+    i.addLazySingleton<ClockInUsecase>(() => ClockInUsecase(i()));
+    i.addLazySingleton<ClockOutUsecase>(() => ClockOutUsecase(i()));
+    i.addLazySingleton<GetTimeLogsByStudentUsecase>(
+        () => GetTimeLogsByStudentUsecase(i()));
+    i.addLazySingleton<GetActiveTimeLogUsecase>(
+        () => GetActiveTimeLogUsecase(i()));
+    i.addLazySingleton<GetTotalHoursByStudentUsecase>(
+        () => GetTotalHoursByStudentUsecase(i()));
+
+    // Use Cases - Contract
+    i.addLazySingleton<GetContractsByStudentUsecase>(
+        () => GetContractsByStudentUsecase(i()));
+    i.addLazySingleton<GetContractsBySupervisorUsecase>(
+        () => GetContractsBySupervisorUsecase(i()));
+    i.addLazySingleton<GetActiveContractByStudentUsecase>(
+        () => GetActiveContractByStudentUsecase(i()));
+    i.addLazySingleton<CreateContractUsecase>(() => CreateContractUsecase(i()));
+    i.addLazySingleton<UpdateContractUsecase>(() => UpdateContractUsecase(i()));
+    i.addLazySingleton<DeleteContractUsecase>(() => DeleteContractUsecase(i()));
+    i.addLazySingleton<GetContractStatisticsUsecase>(
+        () => GetContractStatisticsUsecase(i()));
+    i.addLazySingleton<GetAllContractsUsecase>(
+        () => GetAllContractsUsecase(i()));
+
+    // BLoCs
+    i.addLazySingleton<AuthBloc>(() => AuthBloc(
+          loginUseCase: i(),
+          registerUseCase: i(),
+          logoutUseCase: i(),
+          getCurrentUserUseCase: i(),
+          resetPasswordUseCase: i(),
+          updateProfileUseCase: i(),
+          getAuthStateChangesUseCase: i(),
+        ));
+
+    i.addLazySingleton<StudentBloc>(() => StudentBloc(
           getStudentDashboardUsecase: i(),
         ));
-    i.addLazySingleton(() => SupervisorBloc(
+
+    i.addLazySingleton<SupervisorBloc>(() => SupervisorBloc(
           getSupervisorDetailsUsecase: i(),
           getAllStudentsForSupervisorUsecase: i(),
           getStudentDetailsForSupervisorUsecase: i(),
@@ -233,14 +270,16 @@ class AppModule extends Module {
           updateSupervisorUsecase: i(),
           deleteSupervisorUsecase: i(),
         ));
-    i.addLazySingleton(() => TimeLogBloc(
+
+    i.addLazySingleton<TimeLogBloc>(() => TimeLogBloc(
           clockInUsecase: i(),
           clockOutUsecase: i(),
           getTimeLogsByStudentUsecase: i(),
           getActiveTimeLogUsecase: i(),
           getTotalHoursByStudentUsecase: i(),
         ));
-    i.addLazySingleton(() => ContractBloc(
+
+    i.addLazySingleton<ContractBloc>(() => ContractBloc(
           getContractsByStudentUsecase: i(),
           getContractsBySupervisorUsecase: i(),
           getActiveContractByStudentUsecase: i(),
@@ -249,24 +288,56 @@ class AppModule extends Module {
           deleteContractUsecase: i(),
           getContractStatisticsUsecase: i(),
         ));
-    i.addLazySingleton(() => NotificationBloc(
+
+    i.addLazySingleton<NotificationBloc>(() => NotificationBloc(
           notificationRepository: i(),
           authRepository: i(),
         ));
 
-    // O AuthGuard agora pode ser um bind normal, pois suas dependências
-    // (AuthBloc -> AuthRepository -> PreferencesManager -> SharedPreferences)
-    // serão resolvidas de forma assíncrona pelo Modular.
-    i.addLazySingleton(() => AuthGuard(i()));
+    // Guards
+    i.addLazySingleton<AuthGuard>(() => AuthGuard(i<AuthBloc>()));
   }
 
   @override
   void routes(RouteManager r) {
-    r.child('/', child: (context) => const LoginPage());
-    r.module('/auth', module: AuthModule());
-    r.module('/student',
-        module: StudentModule(), guards: [Modular.get<AuthGuard>()]);
-    r.module('/supervisor',
-        module: SupervisorModule(), guards: [Modular.get<AuthGuard>()]);
+    // Auth Routes
+    r.child(Modular.initialRoute, child: (context) => const LoginPage());
+    r.child('/register', child: (context) => const RegisterPage());
+    r.child('/forgot-password', child: (context) => const ForgotPasswordPage());
+
+    // Student Routes
+    r.child("/student",
+        child: (context) => BlocProvider(
+              create: (_) => Modular.get<StudentBloc>(),
+              child: const StudentHomePage(),
+            ));
+    r.child("/student/time-log",
+        child: (context) => TimeLogPage(
+              studentId: r.args.data["studentId"] ?? "",
+            ));
+    r.child("/student/contracts",
+        child: (context) => ContractPage(
+              studentId: (r.args.data is Map && r.args.data != null)
+                  ? (r.args.data["studentId"] ?? "")
+                  : "",
+            ));
+    r.child("/student/colleagues",
+        child: (context) => const StudentColleaguesPage());
+    r.child("/student/profile", child: (context) => const StudentProfilePage());
+
+    // Supervisor Routes
+    r.child("/supervisor",
+        child: (context) => BlocProvider(
+              create: (_) => Modular.get<SupervisorBloc>(),
+              child: const SupervisorHomePage(),
+            ));
+    r.child("/supervisor/time-approval",
+        child: (context) => BlocProvider(
+              create: (_) => Modular.get<SupervisorBloc>(),
+              child: const SupervisorTimeApprovalPage(),
+            ));
+
+    // Shared Routes
+    r.child("/notifications", child: (context) => const NotificationPage());
   }
 }
