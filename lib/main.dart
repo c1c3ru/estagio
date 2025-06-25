@@ -1,34 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-
 import 'app_module.dart';
 import 'app_widget.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
 
+  // --- Inicialização do Supabase ---
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
 
-  SharedPreferences? sharedPreferences;
-  if (!kIsWeb) {
-    try {
-      sharedPreferences = await SharedPreferences.getInstance();
-    } catch (_) {
-      sharedPreferences = null;
-    }
-  }
-
+  // --- Inicialização do Módulo Principal com SharedPreferences ---
+  // A lógica de SharedPreferences é tratada dentro do AppModule agora.
+  // Isso garante que os binds ocorram antes de qualquer outra coisa.
   runApp(
     ModularApp(
-      module: AppModule(sharedPreferences: sharedPreferences),
+      module: AppModule(),
       child: const AppWidget(),
     ),
   );

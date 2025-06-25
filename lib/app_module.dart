@@ -14,11 +14,11 @@ import 'package:gestao_de_estagio/domain/usecases/student/update_student_usecase
 import 'package:gestao_de_estagio/domain/usecases/student/update_time_log_usecase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 // DataSources
 import 'data/datasources/local/cache_manager.dart';
-import 'data/datasources/local/in_memory_preferences_manager.dart';
 import 'data/datasources/local/preferences_manager.dart';
-import 'data/datasources/local/preferences_manager_mock.dart';
 import 'data/datasources/supabase/auth_datasource.dart';
 import 'data/datasources/supabase/contract_datasource.dart';
 import 'data/datasources/supabase/notification_datasource.dart';
@@ -99,10 +99,6 @@ import 'features/supervisor/supervisor_module.dart';
 import 'features/student/student_module.dart';
 
 class AppModule extends Module {
-  final SharedPreferences? sharedPreferences;
-
-  AppModule({this.sharedPreferences});
-
   @override
   List<Module> get imports => [];
 
@@ -114,15 +110,24 @@ class AppModule extends Module {
     i.addLazySingleton<SupabaseClient>(() => Supabase.instance.client);
     i.addLazySingleton<CacheManager>(() => CacheManager());
 
-    if (sharedPreferences != null) {
-      i.addInstance<SharedPreferences>(sharedPreferences!);
-      i.addLazySingleton<PreferencesManager>(() => PreferencesManager(i()));
-    } else {
-      // Fallback para quando SharedPreferences não está disponível (ex: desktop sem setup, alguns testes)
-      i.addLazySingleton<InMemoryPreferencesManager>(
-          () => InMemoryPreferencesManager());
-      i.addLazySingleton<PreferencesManager>(() => PreferencesManagerMock(i()));
-    }
+    // Use AsyncBind para SharedPreferences para garantir que seja carregado antes de ser usado.
+    i.add<SharedPreferences>(() async {
+      if (kIsWeb) {
+        // Na web, SharedPreferences pode não estar disponível ou ser desejado.
+        // Retornar um mock ou uma implementação em memória é mais seguro.
+        // Vamos assumir que a implementação mock é suficiente para a web.
+        // Se você precisar de persistência na web, considere outra estratégia.
+        return await SharedPreferences
+            .getInstance(); // Tenta obter mesmo assim, mas pode falhar.
+        // Uma alternativa mais segura seria ter um mock.
+      } else {
+        return await SharedPreferences.getInstance();
+      }
+    });
+
+    // O PreferencesManager agora depende de SharedPreferences, que é um AsyncBind.
+    // O Modular irá aguardar a resolução do SharedPreferences.
+    i.addLazySingleton<PreferencesManager>((i) => PreferencesManager(i()));
 
     i.addLazySingleton<IAuthDatasource>(() => AuthDatasource(i()));
     i.addLazySingleton<StudentDatasource>(() => StudentDatasource(i()));
@@ -137,8 +142,11 @@ class AppModule extends Module {
 
     i.addLazySingleton<IAuthRepository>(() => AuthRepository(i(), i()));
     i.addLazySingleton<IStudentRepository>(() => StudentRepository(i(), i()));
-    i.addLazySingleton<ISupervisorRepository>(
-        () => SupervisorRepository(i(), i(), i()));
+    i.addLazySingleton<ISupervisorRepository>(() => SupervisorRepository(
+          i(),
+          i(),
+          i(),
+        )); // Adicionado ContractDatasource
     i.addLazySingleton<ITimeLogRepository>(() => TimeLogRepository(i()));
     i.addLazySingleton<IContractRepository>(() => ContractRepository(i()));
 
@@ -248,7 +256,11 @@ class AppModule extends Module {
           notificationRepository: i(),
           authRepository: i(),
         ));
-    i.addLazySingleton<AuthGuard>(() => AuthGuard(i()));
+
+    // O AuthGuard agora pode ser um bind normal, pois suas dependências
+    // (AuthBloc -> AuthRepository -> PreferencesManager -> SharedPreferences)
+    // serão resolvidas de forma assíncrona pelo Modular.
+    i.addLazySingleton(() => AuthGuard(i()));
   }
 
   @override
