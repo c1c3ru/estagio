@@ -14,7 +14,6 @@ import 'package:gestao_de_estagio/domain/usecases/student/update_student_usecase
 import 'package:gestao_de_estagio/domain/usecases/student/update_time_log_usecase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 
 // DataSources
 import 'data/datasources/local/cache_manager.dart';
@@ -99,56 +98,54 @@ import 'features/supervisor/supervisor_module.dart';
 import 'features/student/student_module.dart';
 
 class AppModule extends Module {
+  final SharedPreferences sharedPreferences;
+  AppModule({required this.sharedPreferences});
+
   @override
   List<Module> get imports => [];
 
   @override
   void binds(Injector i) {
+    i.addInstance<SharedPreferences?>(sharedPreferences);
     // =====================================================================
     // Dependencies Externas e Gerenciadores Locais
     // =====================================================================
     i.addLazySingleton<SupabaseClient>(() => Supabase.instance.client);
+
+    // PreferencesManager depende de SharedPreferences?
+    i.addLazySingleton<PreferencesManager>(
+        (Injector i) => PreferencesManager(i.get<SharedPreferences?>()));
+
     i.addLazySingleton<CacheManager>(() => CacheManager());
 
-    // Use AsyncBind para SharedPreferences para garantir que seja carregado antes de ser usado.
-    i.add<SharedPreferences>(() async {
-      if (kIsWeb) {
-        // Na web, SharedPreferences pode não estar disponível ou ser desejado.
-        // Retornar um mock ou uma implementação em memória é mais seguro.
-        // Vamos assumir que a implementação mock é suficiente para a web.
-        // Se você precisar de persistência na web, considere outra estratégia.
-        return await SharedPreferences
-            .getInstance(); // Tenta obter mesmo assim, mas pode falhar.
-        // Uma alternativa mais segura seria ter um mock.
-      } else {
-        return await SharedPreferences.getInstance();
-      }
-    });
-
-    // O PreferencesManager agora depende de SharedPreferences, que é um AsyncBind.
-    // O Modular irá aguardar a resolução do SharedPreferences.
-    i.addLazySingleton<PreferencesManager>((i) => PreferencesManager(i()));
-
-    i.addLazySingleton<IAuthDatasource>(() => AuthDatasource(i()));
-    i.addLazySingleton<StudentDatasource>(() => StudentDatasource(i()));
-    i.addLazySingleton<SupervisorDatasource>(() => SupervisorDatasource(i()));
-    i.addLazySingleton<TimeLogDatasource>(() => TimeLogDatasource(i()));
-    i.addLazySingleton<ContractDatasource>(() => ContractDatasource(i()));
+    i.addLazySingleton<IAuthDatasource>(
+        () => AuthDatasource(i.get<SupabaseClient>()));
+    i.addLazySingleton<StudentDatasource>(
+        () => StudentDatasource(i.get<SupabaseClient>()));
+    i.addLazySingleton<SupervisorDatasource>(
+        () => SupervisorDatasource(i.get<SupabaseClient>()));
+    i.addLazySingleton<TimeLogDatasource>(
+        () => TimeLogDatasource(i.get<SupabaseClient>()));
+    i.addLazySingleton<ContractDatasource>(
+        () => ContractDatasource(i.get<SupabaseClient>()));
     i.addLazySingleton<NotificationDatasource>(
-        () => NotificationDatasource(i()));
+        () => NotificationDatasource(i.get<SupabaseClient>()));
 
     i.addLazySingleton<INotificationRepository>(
-        () => NotificationRepository(i()));
+        () => NotificationRepository(i.get<NotificationDatasource>()));
 
-    i.addLazySingleton<IAuthRepository>(() => AuthRepository(i(), i()));
-    i.addLazySingleton<IStudentRepository>(() => StudentRepository(i(), i()));
+    i.addLazySingleton<IAuthRepository>(() =>
+        AuthRepository(i.get<IAuthDatasource>(), i.get<PreferencesManager>()));
+    i.addLazySingleton<IStudentRepository>(() => StudentRepository(
+        i.get<StudentDatasource>(), i.get<TimeLogDatasource>()));
     i.addLazySingleton<ISupervisorRepository>(() => SupervisorRepository(
-          i(),
-          i(),
-          i(),
-        )); // Adicionado ContractDatasource
-    i.addLazySingleton<ITimeLogRepository>(() => TimeLogRepository(i()));
-    i.addLazySingleton<IContractRepository>(() => ContractRepository(i()));
+        i.get<SupervisorDatasource>(),
+        i.get<ITimeLogRepository>(),
+        i.get<IContractRepository>()));
+    i.addLazySingleton<ITimeLogRepository>(
+        () => TimeLogRepository(i.get<TimeLogDatasource>()));
+    i.addLazySingleton<IContractRepository>(
+        () => ContractRepository(i.get<ContractDatasource>()));
 
     // =====================================================================
     // Camada de Domínio (UseCases)

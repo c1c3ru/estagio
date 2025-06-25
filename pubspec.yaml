@@ -12,15 +12,15 @@ dependencies:
     sdk: flutter
 
   # State Management
-  flutter_bloc: ^8.1.6
-  bloc: ^8.1.4
+  flutter_bloc: ^9.1.1
+  bloc: ^9.0.0
   equatable: ^2.0.5
   
   # Dependency Injection
-  flutter_modular: ^6.3.4
+  flutter_modular: ^6.4.1
   
   # Supabase
-  supabase_flutter: ^2.5.6
+  supabase_flutter: ^2.9.1
   
   # UI Components
   cupertino_icons: ^1.0.8
@@ -28,8 +28,8 @@ dependencies:
   
   # Utils
   dartz: ^0.10.1
-  shared_preferences: ^2.2.3
-  intl: ^0.19.0
+  shared_preferences: ^2.5.3
+  intl: ^0.20.2
   
   # Validation
   formz: ^0.7.0
@@ -54,7 +54,7 @@ dev_dependencies:
   flutter_lints: ^3.0.0
   
   # Testing
-  bloc_test: ^9.1.7
+  bloc_test: ^10.0.0
   mocktail: ^1.0.3
   
   # Code Generation

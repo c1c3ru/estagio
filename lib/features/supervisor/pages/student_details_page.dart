@@ -162,7 +162,6 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
                     },
                     type: AppButtonType.outlined,
                   ),
-                  // TODO: Adicionar botões para "Ver todos os logs" ou "Gerir Contratos"
                 ],
               ),
             );
@@ -473,9 +472,6 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
                       '${log.hoursLogged?.toStringAsFixed(1) ?? "-"}h',
                       style: theme.textTheme.bodyMedium
                           ?.copyWith(fontWeight: FontWeight.bold)),
-                  onTap: () {
-                    // TODO: Navegar para detalhes do log ou permitir edição/aprovação aqui
-                  },
                 ),
               ))
           .toList(),

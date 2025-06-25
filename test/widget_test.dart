@@ -34,7 +34,8 @@ void main() {
     when(mockGetAuthStateChangesUsecase.call())
         .thenAnswer((_) => Stream.value(null));
 
-    Modular.init(AppModule());
+    final sharedPreferences = await SharedPreferences.getInstance();
+    Modular.init(AppModule(sharedPreferences: sharedPreferences));
     final authGuard = MockAuthGuard();
     when(authGuard.canActivate(any, any)).thenAnswer((_) async => true);
     Modular.replaceInstance<AuthGuard>(authGuard);
