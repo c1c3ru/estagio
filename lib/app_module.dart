@@ -114,6 +114,7 @@ import 'features/auth/pages/register_type_page.dart';
 import 'features/auth/pages/supervisor_register_page.dart';
 import 'features/student/pages/student_register_page.dart';
 import 'features/auth/pages/unauthorized_page.dart';
+import 'features/supervisor/pages/supervisor_profile_page.dart';
 
 // Guards
 import 'core/guards/auth_guard.dart';
@@ -255,7 +256,7 @@ class AppModule extends Module {
           getStudentDashboardUsecase: i(),
         ));
 
-    i.addLazySingleton<SupervisorBloc>(() => SupervisorBloc(
+    i.add<SupervisorBloc>(() => SupervisorBloc(
           getSupervisorDetailsUsecase: i(),
           getAllStudentsForSupervisorUsecase: i(),
           getStudentDetailsForSupervisorUsecase: i(),
@@ -346,9 +347,20 @@ class AppModule extends Module {
               create: (_) => Modular.get<SupervisorBloc>(),
               child: const SupervisorTimeApprovalPage(),
             ));
+    r.child("/supervisor/profile",
+        child: (context) => BlocProvider(
+              create: (_) => Modular.get<SupervisorBloc>(),
+              child: const SupervisorProfilePage(),
+            ));
 
     // Shared Routes
-    r.child("/notifications", child: (context) => const NotificationPage());
+    r.child(
+      "/notifications",
+      child: (context) => BlocProvider(
+        create: (_) => Modular.get<NotificationBloc>(),
+        child: const NotificationPage(),
+      ),
+    );
 
     r.child('/login', child: (context) => const LoginPage());
   }
