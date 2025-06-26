@@ -74,7 +74,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       password: event.password,
     );
     result.fold(
-      (failure) => emit(AuthFailure(failure.message)),
+      (failure) {
+        if (failure.message.toLowerCase().contains('não confirmado') ||
+            failure.message.toLowerCase().contains('email não confirmado')) {
+          emit(AuthEmailConfirmationRequired(
+            email: event.email,
+            message:
+                'E-mail não confirmado. Verifique sua caixa de entrada (inclusive o spam) e confirme o cadastro antes de fazer login.',
+          ));
+        } else {
+          emit(AuthFailure(failure.message));
+        }
+      },
       (user) {
         if (_isProfileIncomplete(user)) {
           emit(AuthProfileIncomplete(user));

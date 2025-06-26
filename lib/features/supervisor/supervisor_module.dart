@@ -7,6 +7,7 @@ import 'package:gestao_de_estagio/features/supervisor/pages/supervisor_dashboard
 import 'package:gestao_de_estagio/features/supervisor/pages/supervisor_home_page.dart';
 import 'package:gestao_de_estagio/features/supervisor/pages/supervisor_time_approval_page.dart';
 import 'package:gestao_de_estagio/features/supervisor/pages/supervisor_profile_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 // Para SupabaseClient
 
 // Datasources
@@ -117,17 +118,26 @@ class SupervisorModule extends Module {
   void routes(RouteManager r) {
     r.child(
       Modular.initialRoute,
-      child: (_) => const SupervisorHomePage(),
+      child: (_) => BlocProvider(
+        create: (_) => Modular.get<SupervisorBloc>(),
+        child: const SupervisorHomePage(),
+      ),
       transition: TransitionType.fadeIn,
     );
     r.child(
       '/time-approval',
-      child: (_) => const SupervisorTimeApprovalPage(),
+      child: (_) => BlocProvider(
+        create: (_) => Modular.get<SupervisorBloc>(),
+        child: const SupervisorTimeApprovalPage(),
+      ),
       transition: TransitionType.fadeIn,
     );
     r.child(
       '/profile',
-      child: (_) => const SupervisorProfilePage(),
+      child: (_) => BlocProvider(
+        create: (_) => Modular.get<SupervisorBloc>(),
+        child: const SupervisorProfilePage(),
+      ),
       transition: TransitionType.fadeIn,
     );
     r.child(

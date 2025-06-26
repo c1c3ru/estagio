@@ -138,7 +138,17 @@ class AuthDatasource implements IAuthDatasource {
             ? DateTime.parse(response.user!.updatedAt!).toIso8601String()
             : null,
       };
+    } on AuthException catch (e) {
+      if (e.toString().contains('email_not_confirmed')) {
+        throw AuthException(
+            'E-mail não confirmado. Verifique sua caixa de entrada e confirme o cadastro antes de fazer login.');
+      }
+      rethrow;
     } catch (e) {
+      if (e.toString().contains('email_not_confirmed')) {
+        throw AuthException(
+            'E-mail não confirmado. Verifique sua caixa de entrada e confirme o cadastro antes de fazer login.');
+      }
       if (kDebugMode) {
         print('❌ Erro no login: $e');
       }
@@ -148,7 +158,6 @@ class AuthDatasource implements IAuthDatasource {
       if (kDebugMode) {
         print('❌ Mensagem completa: $e');
       }
-
       if (e.toString().contains('Invalid login credentials') ||
           e.toString().contains('invalid_credentials')) {
         throw AuthException(
@@ -242,12 +251,16 @@ class AuthDatasource implements IAuthDatasource {
         if (existingSupervisor == null) {
           if (kDebugMode) {
             print(
-                '❌ Perfil de supervisor não encontrado para usuário ${user.id}');
+                '📝 Nenhum dado de supervisor encontrado para ${user.id}, criando agora...');
           }
-          // O perfil do supervisor deve ser criado por um administrador.
-          // Se não existir, o login deve falhar.
-          throw AuthException(
-              'Perfil de supervisor não encontrado. Contate o administrador.');
+          await _supabaseClient.from('supervisors').insert({
+            'id': user.id,
+            'full_name':
+                user.userMetadata?['full_name'] ?? user.email ?? 'Supervisor',
+          });
+          if (kDebugMode) {
+            print('✅ Dados de supervisor criados para ${user.id}');
+          }
         } else {
           if (kDebugMode) {
             print('✅ Dados do supervisor já existem para usuário ${user.id}');

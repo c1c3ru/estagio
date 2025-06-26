@@ -42,6 +42,10 @@ class _LoginPageState extends State<LoginPage> {
         listener: (context, state) {
           if (state is AuthFailure) {
             FeedbackService.showError(context, state.message);
+          } else if (state is AuthEmailConfirmationRequired) {
+            FeedbackService.showWarning(context, state.message);
+            Modular.to
+                .pushNamed('/auth/email-confirmation', arguments: state.email);
           } else if (state is AuthProfileIncomplete) {
             // Redirecionar para a tela de completar perfil conforme o papel do usuário
             if (state.user.role == UserRole.student) {
@@ -57,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
                 Modular.to.navigate('/student/');
                 break;
               case UserRole.supervisor:
-                Modular.to.navigate('/supervisor/');
+                Modular.to.navigate('/supervisor');
                 break;
             }
           }

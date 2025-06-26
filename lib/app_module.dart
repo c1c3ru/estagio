@@ -349,5 +349,7 @@ class AppModule extends Module {
 
     // Shared Routes
     r.child("/notifications", child: (context) => const NotificationPage());
+
+    r.child('/login', child: (context) => const LoginPage());
   }
 }

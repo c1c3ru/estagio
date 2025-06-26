@@ -69,19 +69,13 @@ class SupervisorAppDrawer extends StatelessWidget {
             icon: Icons.dashboard_outlined,
             title: 'Dashboard',
             isSelected: currentIndex == 0,
-            onTap: () => Modular.to.navigate(SupervisorRoutes.dashboard),
+            onTap: () => Modular.to.navigate('/supervisor'),
           ),
           _buildDrawerItem(
-            icon: Icons.people_outline,
-            title: 'Equipe',
+            icon: Icons.person,
+            title: 'Perfil',
             isSelected: currentIndex == 1,
-            onTap: () => Modular.to.navigate(SupervisorRoutes.team),
-          ),
-          _buildDrawerItem(
-            icon: Icons.assignment_outlined,
-            title: 'Relatórios',
-            isSelected: currentIndex == 2,
-            onTap: () => Modular.to.navigate(SupervisorRoutes.reports),
+            onTap: () => Modular.to.navigate('/supervisor/profile'),
           ),
           const Divider(thickness: 1, indent: 16, endIndent: 16),
           _buildDrawerItem(
@@ -89,9 +83,8 @@ class SupervisorAppDrawer extends StatelessWidget {
             title: 'Sair',
             isSelected: false,
             onTap: () {
-              // Dispara o logout corretamente
               Modular.get<AuthBloc>().add(LogoutRequested());
-              Modular.to.navigate(SupervisorRoutes.login);
+              Modular.to.navigate('/login');
             },
           ),
         ],
@@ -135,8 +128,14 @@ class SupervisorBottomNavBar extends StatelessWidget {
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: (index) {
-        // Navega para a rota correspondente ao índice do item clicado.
-        Modular.to.navigate(SupervisorRoutes.mainRoutes[index]);
+        switch (index) {
+          case 0:
+            Modular.to.navigate('/supervisor');
+            break;
+          case 1:
+            Modular.to.navigate('/supervisor/profile');
+            break;
+        }
       },
       items: const [
         BottomNavigationBarItem(
@@ -145,14 +144,9 @@ class SupervisorBottomNavBar extends StatelessWidget {
           label: 'Dashboard',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.people_outline),
-          activeIcon: Icon(Icons.people),
-          label: 'Equipe',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.assignment_outlined),
-          activeIcon: Icon(Icons.assignment),
-          label: 'Relatórios',
+          icon: Icon(Icons.person),
+          activeIcon: Icon(Icons.person),
+          label: 'Perfil',
         ),
       ],
     );

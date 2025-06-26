@@ -37,7 +37,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
       listener: (context, state) {
         if (state is AuthUnauthenticated) {
           // Garante que a navegação seja feita fora do build
-          Future.microtask(() => Modular.to.navigate('/login/'));
+          Future.microtask(() => Modular.to.navigate('/login'));
         }
       },
       child: Scaffold(
@@ -400,17 +400,13 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
           onTap: (index) {
             switch (index) {
               case 0: // Início
-                // Já estamos na página inicial, não faz nada
+                Modular.to.navigate('/supervisor');
                 break;
-              case 1: // Estudantes
-                Modular.to.pushNamed('/supervisor/time-approval');
+              case 1: // Aprovar Horas
+                Modular.to.navigate('/supervisor/time-approval');
                 break;
-              case 2: // Relatórios
-                // A página de relatórios é o dashboard/home
-                Modular.to.navigate('/supervisor/');
-                break;
-              case 3: // Perfil
-                Modular.to.pushNamed('/supervisor/profile');
+              case 2: // Perfil
+                Modular.to.navigate('/supervisor/profile');
                 break;
             }
           },
@@ -421,11 +417,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.people),
-              label: 'Estudantes',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.assessment),
-              label: 'Relatórios',
+              label: 'Aprovar Horas',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person),
