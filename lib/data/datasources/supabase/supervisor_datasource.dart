@@ -208,7 +208,7 @@ class SupervisorDatasource {
       }
 
       if (pendingOnly) {
-        query = query.eq('is_approved', false);
+        query = query.eq('approved', false);
       }
 
       final response = await query.order('created_at', ascending: false);
@@ -226,7 +226,7 @@ class SupervisorDatasource {
   }) async {
     try {
       final data = {
-        'is_approved': approved,
+        'approved': approved,
         'supervisor_id': supervisorId,
         'rejection_reason': rejectionReason,
         'updated_at': DateTime.now().toIso8601String(),
