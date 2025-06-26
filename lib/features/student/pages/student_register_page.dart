@@ -1,34 +1,70 @@
-// lib/features/auth/pages/supervisor_register_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:gestao_de_estagio/features/auth/bloc/auth_bloc.dart';
+import 'package:gestao_de_estagio/features/auth/bloc/auth_event.dart';
+import 'package:gestao_de_estagio/features/auth/bloc/auth_state.dart'
+    as custom_auth;
+import 'package:gestao_de_estagio/features/auth/widgets/auth_text_field.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/enums/user_role.dart';
 import '../../../core/utils/validators.dart';
-import '../bloc/auth_bloc.dart';
-import '../bloc/auth_event.dart';
-import '../bloc/auth_state.dart' as custom_auth;
-import '../widgets/auth_text_field.dart';
 
-class SupervisorRegisterPage extends StatefulWidget {
-  const SupervisorRegisterPage({super.key});
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+class StudentRegisterPage extends StatefulWidget {
+  const StudentRegisterPage({super.key});
 
   @override
-  State<SupervisorRegisterPage> createState() => _SupervisorRegisterPageState();
+  State<StudentRegisterPage> createState() => _StudentRegisterPageState();
 }
 
-class _SupervisorRegisterPageState extends State<SupervisorRegisterPage> {
+class _StudentRegisterPageState extends State<StudentRegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _registrationController = TextEditingController();
-  final _departmentController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  UserRole _selectedRole = UserRole.student;
+
+  // Novos campos para estágio obrigatório e supervisor
+  bool? _isMandatoryInternship;
+  String? _selectedSupervisorId;
+  List<Map<String, dynamic>> _supervisors = [];
+  bool _loadingSupervisors = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedRole = UserRole.student;
+    _fetchSupervisors();
+  }
+
+  Future<void> _fetchSupervisors() async {
+    setState(() => _loadingSupervisors = true);
+    try {
+      final supabase = Modular.get<SupabaseClient>();
+      final response = await supabase
+          .from('supervisors')
+          .select('id, full_name')
+          .order('full_name');
+      setState(() {
+        _supervisors = List<Map<String, dynamic>>.from(response);
+        _loadingSupervisors = false;
+      });
+    } catch (e) {
+      setState(() => _loadingSupervisors = false);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao buscar supervisores: $e')),
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -37,19 +73,39 @@ class _SupervisorRegisterPageState extends State<SupervisorRegisterPage> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     _registrationController.dispose();
-    _departmentController.dispose();
     super.dispose();
   }
 
   void _onRegisterPressed() {
     if (_formKey.currentState?.validate() ?? false) {
+      if (_selectedRole == UserRole.student) {
+        if (_isMandatoryInternship == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Informe se o estágio é obrigatório.')),
+          );
+          return;
+        }
+        if (_selectedSupervisorId == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Selecione um supervisor.')),
+          );
+          return;
+        }
+      }
       Modular.get<AuthBloc>().add(
         RegisterRequested(
           fullName: _nameController.text.trim(),
           email: _emailController.text.trim(),
           password: _passwordController.text,
-          role: UserRole.supervisor,
-          registration: _registrationController.text.trim(),
+          role: _selectedRole,
+          registration: _selectedRole == UserRole.student
+              ? _registrationController.text.trim()
+              : null,
+          isMandatoryInternship:
+              _selectedRole == UserRole.student ? _isMandatoryInternship : null,
+          supervisorId:
+              _selectedRole == UserRole.student ? _selectedSupervisorId : null,
         ),
       );
     }
@@ -85,6 +141,7 @@ class _SupervisorRegisterPageState extends State<SupervisorRegisterPage> {
                 duration: const Duration(seconds: 5),
               ),
             );
+            // Navegar para a página de confirmação de email
             Modular.to
                 .pushNamed('/auth/email-confirmation', arguments: state.email);
           } else if (state is custom_auth.AuthSuccess) {
@@ -106,13 +163,13 @@ class _SupervisorRegisterPageState extends State<SupervisorRegisterPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const Text(
-                        'Cadastrar Supervisor',
+                        'Cadastro de Estudante/Bolsista/Estagiário',
                         style: AppTextStyles.h3,
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Preencha os dados para se cadastrar como supervisor',
+                        'Preencha os dados para se cadastrar como estudante, bolsista ou estagiário',
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -143,26 +200,48 @@ class _SupervisorRegisterPageState extends State<SupervisorRegisterPage> {
                         validator: Validators.email,
                       ),
                       const SizedBox(height: 20),
+                      // Matrícula de estudante/bolsista/estagiário
                       AuthTextField(
                         controller: _registrationController,
-                        label: 'Matrícula SIAPE',
+                        label: 'Matrícula do estudante/bolsista/estagiário',
                         keyboardType: TextInputType.number,
                         prefixIcon: Icons.badge_outlined,
-                        validator: Validators.siapeRegistration,
+                        validator: Validators.studentRegistration,
                       ),
                       const SizedBox(height: 20),
-                      AuthTextField(
-                        controller: _departmentController,
-                        label: 'Departamento',
-                        keyboardType: TextInputType.text,
-                        prefixIcon: Icons.business_outlined,
-                        validator: (value) {
-                          if (value?.isEmpty ?? true) {
-                            return AppStrings.fieldRequired;
-                          }
-                          return null;
+                      // Estágio obrigatório
+                      SwitchListTile(
+                        title: const Text('Estágio obrigatório?'),
+                        value: _isMandatoryInternship ?? false,
+                        onChanged: (value) {
+                          setState(() => _isMandatoryInternship = value);
                         },
+                        activeColor: AppColors.primary,
+                        contentPadding: EdgeInsets.zero,
                       ),
+                      const SizedBox(height: 20),
+                      // Seleção de supervisor
+                      _loadingSupervisors
+                          ? const Center(child: CircularProgressIndicator())
+                          : DropdownButtonFormField<String>(
+                              value: _selectedSupervisorId,
+                              decoration: const InputDecoration(
+                                labelText: 'Supervisor do Estágio',
+                                prefixIcon:
+                                    Icon(Icons.supervisor_account_outlined),
+                                border: OutlineInputBorder(),
+                              ),
+                              items: _supervisors
+                                  .map((supervisor) => DropdownMenuItem(
+                                        value: supervisor['id'] as String,
+                                        child: Text(
+                                            supervisor['full_name'] as String),
+                                      ))
+                                  .toList(),
+                              onChanged: (id) {
+                                setState(() => _selectedSupervisorId = id);
+                              },
+                            ),
                       const SizedBox(height: 20),
                       AuthTextField(
                         controller: _passwordController,
@@ -200,6 +279,7 @@ class _SupervisorRegisterPageState extends State<SupervisorRegisterPage> {
                         ),
                       ),
                       const SizedBox(height: 24),
+                      // Botão de cadastro
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(

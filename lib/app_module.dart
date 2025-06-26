@@ -101,7 +101,6 @@ import 'features/shared/bloc/notification_bloc.dart';
 
 // Pages
 import 'features/auth/pages/login_page.dart';
-import 'features/auth/pages/register_page.dart';
 import 'features/student/pages/student_home_page.dart';
 import 'features/supervisor/pages/supervisor_home_page.dart';
 import 'features/student/pages/time_log_page.dart';
@@ -111,6 +110,9 @@ import 'features/auth/pages/forgot_password_page.dart';
 import 'features/student/pages/student_colleagues_page.dart';
 import 'features/student/pages/student_profile_page.dart';
 import 'features/supervisor/pages/supervisor_time_approval_page.dart';
+import 'features/auth/pages/register_type_page.dart';
+import 'features/auth/pages/supervisor_register_page.dart';
+import 'features/student/pages/student_register_page.dart';
 
 // Guards
 import 'core/guards/auth_guard.dart';
@@ -302,8 +304,14 @@ class AppModule extends Module {
   void routes(RouteManager r) {
     // Auth Routes
     r.child(Modular.initialRoute, child: (context) => const LoginPage());
-    r.child('/register', child: (context) => const RegisterPage());
-    r.child('/forgot-password', child: (context) => const ForgotPasswordPage());
+    r.child('/auth/register-type',
+        child: (context) => const RegisterTypePage());
+    r.child('/auth/register-student',
+        child: (context) => const StudentRegisterPage());
+    r.child('/auth/register-supervisor',
+        child: (context) => const SupervisorRegisterPage());
+    r.child('/auth/forgot-password',
+        child: (context) => const ForgotPasswordPage());
 
     // Student Routes
     r.child("/student",

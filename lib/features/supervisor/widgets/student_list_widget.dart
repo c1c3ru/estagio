@@ -61,10 +61,27 @@ class StudentListWidget extends StatelessWidget {
     if (students.isEmpty) {
       // Embora a SupervisorDashboardPage já trate a lista vazia,
       // este widget pode ser reutilizado, então é bom ter um fallback.
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(20.0),
-          child: Text('Nenhum estudante para exibir.'),
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.info_outline,
+                  size: 48, color: Theme.of(context).colorScheme.primary),
+              const SizedBox(height: 16),
+              Text(
+                'Nenhum estudante para exibir.',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.white
+                          : AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -85,106 +102,120 @@ class StudentListWidget extends StatelessWidget {
         final displayStatusColor = _getStatusColor(displayStatus, context);
 
         return Card(
-          elevation: 1.5,
-          margin: const EdgeInsets.symmetric(
-              horizontal: 0,
-              vertical:
-                  6.0), // Ajustado para não ter margem horizontal se a page já tiver padding
+          elevation: 2,
+          margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8.0),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
+            borderRadius: BorderRadius.circular(12.0),
           ),
-          child: ListTile(
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-            leading: CircleAvatar(
-              radius: 24,
-              backgroundColor: displayStatusColor.withAlpha(50),
-              backgroundImage: student.profilePictureUrl != null &&
-                      student.profilePictureUrl!.isNotEmpty
-                  ? NetworkImage(student.profilePictureUrl!)
-                  : null,
-              child: student.profilePictureUrl == null ||
-                      student.profilePictureUrl!.isEmpty
-                  ? Text(
-                      student.fullName.isNotEmpty
-                          ? student.fullName[0].toUpperCase()
-                          : '?',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: displayStatusColor,
-                        fontSize: 18,
-                      ),
-                    )
-                  : null,
-            ),
-            title: Text(
-              student.fullName,
-              style: theme.textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w600),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 2),
-                Text(
-                  student.course,
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(color: theme.hintColor),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.greyDark
+              : AppColors.surface,
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8.0),
+            child: ListTile(
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+              leading: CircleAvatar(
+                radius: 24,
+                backgroundColor: displayStatusColor.withAlpha(50),
+                backgroundImage: student.profilePictureUrl != null &&
+                        student.profilePictureUrl!.isNotEmpty
+                    ? NetworkImage(student.profilePictureUrl!)
+                    : null,
+                child: student.profilePictureUrl == null ||
+                        student.profilePictureUrl!.isEmpty
+                    ? Text(
+                        student.fullName.isNotEmpty
+                            ? student.fullName[0].toUpperCase()
+                            : '?',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: displayStatusColor,
+                          fontSize: 18,
+                        ),
+                      )
+                    : null,
+              ),
+              title: Text(
+                student.fullName,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.white
+                      : AppColors.textPrimary,
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(Icons.circle, size: 8, color: displayStatusColor),
-                    const SizedBox(width: 4),
-                    Text(
-                      displayStatus
-                          .displayName, // Usando a extensão para nome amigável
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: displayStatusColor,
-                        fontWeight: FontWeight.w500,
-                      ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 2),
+                  Text(
+                    student.course,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.textHint
+                          : theme.hintColor,
                     ),
-                    const Text('  •  ', style: TextStyle(color: Colors.grey)),
-                    Expanded(
-                      child: Text(
-                        _getDaysRemainingText(student.contractEndDate),
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(color: theme.hintColor),
-                        overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.circle, size: 8, color: displayStatusColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        displayStatus.displayName,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: displayStatusColor,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
+                      const Text('  •  ', style: TextStyle(color: Colors.grey)),
+                      Expanded(
+                        child: Text(
+                          _getDaysRemainingText(student.contractEndDate),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? AppColors.textHint
+                                    : theme.hintColor,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (onEdit != null)
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.blueGrey),
+                      tooltip: 'Editar',
+                      onPressed: () => onEdit!(student),
                     ),
-                  ],
-                ),
-              ],
+                  if (onDelete != null)
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.redAccent),
+                      tooltip: 'Remover',
+                      onPressed: () => onDelete!(student),
+                    ),
+                  Icon(Icons.arrow_forward_ios_rounded,
+                      size: 16, color: theme.hintColor),
+                ],
+              ),
+              onTap: () {
+                Modular.to
+                    .pushNamed('/supervisor/student-details/${student.id}');
+              },
             ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (onEdit != null)
-                  IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.blueGrey),
-                    tooltip: 'Editar',
-                    onPressed: () => onEdit!(student),
-                  ),
-                if (onDelete != null)
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.redAccent),
-                    tooltip: 'Remover',
-                    onPressed: () => onDelete!(student),
-                  ),
-                Icon(Icons.arrow_forward_ios_rounded,
-                    size: 16, color: theme.hintColor),
-              ],
-            ),
-            onTap: () {
-              // Navegar para a página de detalhes do estudante
-              Modular.to.pushNamed('/supervisor/student-details/${student.id}');
-            },
           ),
         );
       },

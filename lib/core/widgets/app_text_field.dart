@@ -67,6 +67,7 @@ class _AppTextFieldState extends State<AppTextField> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return TextFormField(
       controller: widget.controller,
       focusNode: widget.focusNode,
@@ -84,26 +85,33 @@ class _AppTextFieldState extends State<AppTextField> {
       minLines: widget.minLines,
       readOnly: widget.readOnly,
       onTap: widget.onTap,
-      style: theme.textTheme.bodyLarge, // Estilo do texto de entrada
+      style: theme.textTheme.bodyLarge?.copyWith(
+        color: isDark ? AppColors.white : AppColors.textPrimary,
+        fontSize: 17,
+      ),
       decoration: InputDecoration(
         labelText: widget.labelText,
         hintText: widget.hintText,
-        // Aplicando o estilo do tema, mas permitindo override se necessário
-        labelStyle: theme.inputDecorationTheme.labelStyle,
-        hintStyle: theme.inputDecorationTheme.hintStyle,
+        labelStyle: theme.textTheme.bodyMedium?.copyWith(
+          color: isDark ? AppColors.white : AppColors.textPrimary,
+          fontWeight: FontWeight.w600,
+          fontSize: 15,
+        ),
+        hintStyle: theme.textTheme.bodyMedium?.copyWith(
+          color: isDark ? AppColors.textHint : AppColors.textSecondary,
+          fontSize: 15,
+        ),
         prefixIcon: widget.prefixIcon != null
             ? Icon(widget.prefixIcon,
-                color: theme.inputDecorationTheme.prefixIconColor)
+                color: isDark ? AppColors.textHint : AppColors.textSecondary)
             : null,
-        suffixIcon: widget
-                .obscureText // Se for campo de senha, mostra ícone para alternar visibilidade
+        suffixIcon: widget.obscureText
             ? IconButton(
                 icon: Icon(
                   _obscureText
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
-                  color: theme.inputDecorationTheme
-                      .prefixIconColor, // Reutilizando cor do prefixo
+                  color: isDark ? AppColors.textHint : AppColors.textSecondary,
                 ),
                 onPressed: () {
                   setState(() {
@@ -114,22 +122,40 @@ class _AppTextFieldState extends State<AppTextField> {
             : (widget.suffixIcon != null
                 ? IconButton(
                     icon: Icon(widget.suffixIcon,
-                        color: theme.inputDecorationTheme.prefixIconColor),
+                        color: isDark
+                            ? AppColors.textHint
+                            : AppColors.textSecondary),
                     onPressed: widget.onSuffixIconPressed,
                   )
                 : null),
-        border: theme.inputDecorationTheme.border,
-        enabledBorder: theme.inputDecorationTheme.enabledBorder,
-        focusedBorder: theme.inputDecorationTheme.focusedBorder,
-        errorBorder: theme.inputDecorationTheme.errorBorder,
-        focusedErrorBorder: theme.inputDecorationTheme.focusedErrorBorder,
-        disabledBorder: theme.inputDecorationTheme.disabledBorder,
-        filled: true, // Para que a fillColor tenha efeito
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.error),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.error, width: 2),
+        ),
+        filled: true,
         fillColor: widget.enabled
-            ? theme.inputDecorationTheme.fillColor
+            ? (isDark ? AppColors.greyDark : AppColors.surface)
             : AppColors.greyLight.withOpacity(0.3),
         contentPadding:
-            const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
+            const EdgeInsets.symmetric(vertical: 18.0, horizontal: 16.0),
+        // Sombra leve ao focar
+        // (Flutter não suporta shadow direto, mas pode ser feito via Material/Container se necessário)
       ),
     );
   }
