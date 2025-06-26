@@ -56,7 +56,7 @@ class _SupervisorRegisterPageState extends State<SupervisorRegisterPage> {
   }
 
   void _onLoginPressed() {
-    Modular.to.pop();
+    Modular.to.navigate('/');
   }
 
   @override

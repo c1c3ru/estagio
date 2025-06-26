@@ -1,8 +1,7 @@
 import 'package:gestao_de_estagio/core/enums/user_role.dart';
 
 abstract class IAuthDatasource {
-  Future<Map<String, dynamic>?> signInWithEmailAndPassword(
-      String email, String password);
+  Stream<Map<String, dynamic>?> getAuthStateChanges();
 
   Future<Map<String, dynamic>> signUpWithEmailAndPassword({
     required String email,
@@ -21,8 +20,15 @@ abstract class IAuthDatasource {
     String? contractEndDate,
   });
 
+  Future<Map<String, dynamic>> signInWithEmailAndPassword(
+    String email,
+    String password,
+  );
+
   Future<void> signOut();
+
   Future<Map<String, dynamic>?> getCurrentUser();
+
   Future<void> resetPassword(String email);
 
   Future<Map<String, dynamic>> updateProfile({
@@ -33,6 +39,4 @@ abstract class IAuthDatasource {
     String? phoneNumber,
     String? profilePictureUrl,
   });
-
-  Stream<Map<String, dynamic>?> getAuthStateChanges();
 }

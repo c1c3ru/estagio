@@ -9,12 +9,13 @@ class RegisterTypePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back,
+              color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => Modular.to.pop(),
         ),
       ),
@@ -79,23 +80,26 @@ class _RegisterTypeCard extends StatelessWidget {
       child: Card(
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         child: Container(
           width: 180,
           padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 48, color: AppColors.primary),
+              Icon(icon,
+                  size: 48, color: Theme.of(context).colorScheme.primary),
               const SizedBox(height: 16),
               Text(title,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold)),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      )),
               const SizedBox(height: 8),
               Text(description,
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                   textAlign: TextAlign.center),
             ],
           ),

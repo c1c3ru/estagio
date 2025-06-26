@@ -3,6 +3,8 @@ import '../../core/errors/app_exceptions.dart';
 import '../entities/user_entity.dart';
 import '../usecases/auth/update_profile_usecase.dart';
 import '../../core/enums/user_role.dart';
+import '../../core/enums/class_shift.dart';
+import '../../core/enums/internship_shift.dart';
 
 abstract class IAuthRepository {
   Future<Either<AppFailure, UserEntity>> login({
@@ -20,6 +22,13 @@ abstract class IAuthRepository {
     String? registration,
     bool? isMandatoryInternship,
     String? supervisorId,
+    String? course,
+    String? advisorName,
+    ClassShift? classShift,
+    InternshipShift? internshipShift,
+    DateTime? birthDate,
+    DateTime? contractStartDate,
+    DateTime? contractEndDate,
   });
 
   Future<Either<AppFailure, UserEntity?>> getCurrentUser();

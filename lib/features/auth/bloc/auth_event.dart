@@ -1,5 +1,7 @@
 // lib/features/auth/presentation/bloc/auth_event.dart
 import 'package:equatable/equatable.dart';
+import 'package:gestao_de_estagio/core/enums/class_shift.dart';
+import 'package:gestao_de_estagio/core/enums/internship_shift.dart';
 import '../../../domain/entities/user_entity.dart';
 import '../../../domain/usecases/auth/update_profile_usecase.dart';
 import '../../../core/enums/user_role.dart';
@@ -34,6 +36,13 @@ class RegisterRequested extends AuthEvent {
   final String? registration;
   final bool? isMandatoryInternship;
   final String? supervisorId;
+  final String? course;
+  final String? advisorName;
+  final ClassShift? classShift;
+  final InternshipShift? internshipShift;
+  final DateTime? birthDate;
+  final DateTime? contractStartDate;
+  final DateTime? contractEndDate;
 
   const RegisterRequested({
     required this.fullName,
@@ -43,6 +52,13 @@ class RegisterRequested extends AuthEvent {
     this.registration,
     this.isMandatoryInternship,
     this.supervisorId,
+    this.course,
+    this.advisorName,
+    this.classShift,
+    this.internshipShift,
+    this.birthDate,
+    this.contractStartDate,
+    this.contractEndDate,
   });
 
   @override
@@ -53,7 +69,14 @@ class RegisterRequested extends AuthEvent {
         role,
         registration,
         isMandatoryInternship,
-        supervisorId
+        supervisorId,
+        course,
+        advisorName,
+        classShift,
+        internshipShift,
+        birthDate,
+        contractStartDate,
+        contractEndDate,
       ];
 }
 

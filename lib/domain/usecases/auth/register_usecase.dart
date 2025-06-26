@@ -3,6 +3,8 @@ import '../../repositories/i_auth_repository.dart';
 import '../../entities/user_entity.dart';
 import '../../../core/errors/app_exceptions.dart';
 import '../../../core/enums/user_role.dart';
+import 'package:gestao_de_estagio/core/enums/class_shift.dart';
+import 'package:gestao_de_estagio/core/enums/internship_shift.dart';
 
 class RegisterUsecase {
   final IAuthRepository _repository;
@@ -17,6 +19,13 @@ class RegisterUsecase {
     String? registration,
     bool? isMandatoryInternship,
     String? supervisorId,
+    String? course,
+    String? advisorName,
+    ClassShift? classShift,
+    InternshipShift? internshipShift,
+    DateTime? birthDate,
+    DateTime? contractStartDate,
+    DateTime? contractEndDate,
   }) async {
     if (fullName.isEmpty) {
       return const Left(ValidationFailure('Nome completo é obrigatório'));
@@ -52,6 +61,13 @@ class RegisterUsecase {
       registration: registration,
       isMandatoryInternship: isMandatoryInternship,
       supervisorId: supervisorId,
+      course: course,
+      advisorName: advisorName,
+      classShift: classShift,
+      internshipShift: internshipShift,
+      birthDate: birthDate,
+      contractStartDate: contractStartDate,
+      contractEndDate: contractEndDate,
     );
   }
 

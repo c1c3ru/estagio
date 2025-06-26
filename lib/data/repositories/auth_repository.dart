@@ -1,5 +1,7 @@
 import 'package:dartz/dartz.dart';
 
+import '../../core/enums/class_shift.dart';
+import '../../core/enums/internship_shift.dart';
 import '../../core/enums/user_role.dart';
 import '../../core/errors/app_exceptions.dart';
 import '../../domain/entities/user_entity.dart';
@@ -76,6 +78,13 @@ class AuthRepository implements IAuthRepository {
     String? registration,
     bool? isMandatoryInternship,
     String? supervisorId,
+    String? course,
+    String? advisorName,
+    ClassShift? classShift,
+    InternshipShift? internshipShift,
+    DateTime? birthDate,
+    DateTime? contractStartDate,
+    DateTime? contractEndDate,
   }) async {
     try {
       final userData = await _authDatasource.signUpWithEmailAndPassword(
@@ -86,6 +95,13 @@ class AuthRepository implements IAuthRepository {
         registration: registration,
         isMandatoryInternship: isMandatoryInternship,
         supervisorId: supervisorId,
+        course: course,
+        advisorName: advisorName,
+        classShift: classShift?.name,
+        internshipShift: internshipShift?.name,
+        birthDate: birthDate?.toIso8601String(),
+        contractStartDate: contractStartDate?.toIso8601String(),
+        contractEndDate: contractEndDate?.toIso8601String(),
       );
       return Right(UserModel.fromJson(userData).toEntity());
     } catch (e) {

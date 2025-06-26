@@ -105,7 +105,8 @@ class _LoginPageState extends State<LoginPage> {
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       TextButton(
-                        onPressed: () => Modular.to.pushNamed('/auth/register'),
+                        onPressed: () =>
+                            Modular.to.pushNamed('/auth/register-type'),
                         child: const Text(AppStrings.register),
                       ),
                     ],
