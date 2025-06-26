@@ -60,71 +60,8 @@ class AuthDatasource implements IAuthDatasource {
         throw AuthException('Erro ao registrar usuário');
       }
 
-      // Criar dados do estudante/supervisor na tabela correspondente
-      try {
-        // Verificar políticas primeiro
-        await checkTablePolicies();
-        await checkRLSPolicies();
-
-        if (role == UserRole.student) {
-          if (kDebugMode) {
-            print(
-                '📝 Criando dados do estudante para usuário ${response.user!.id}');
-          }
-
-          // Verificar permissão de inserção
-          await verifyUserInsertionPermission(response.user!.id);
-
-          // Inserir estudante com os campos obrigatórios
-          await _supabaseClient.from('students').insert({
-            'id': response.user!.id,
-            'full_name': fullName,
-            'registration_number': registration ?? 'PENDENTE',
-            'course': course,
-            'advisor_name': advisorName,
-            'is_mandatory_internship': isMandatoryInternship ?? false,
-            'supervisor_id': supervisorId,
-            'class_shift': classShift,
-            'internship_shift_1': internshipShift,
-            'birth_date': birthDate,
-            'contract_start_date': contractStartDate,
-            'contract_end_date': contractEndDate,
-            'status': 'active',
-            'created_at': DateTime.now().toIso8601String(),
-            'updated_at': DateTime.now().toIso8601String(),
-          });
-
-          if (kDebugMode) {
-            print('✅ Dados do estudante criados com sucesso');
-          }
-        } else if (role == UserRole.supervisor) {
-          if (kDebugMode) {
-            print(
-                '📝 Criando dados do supervisor para usuário ${response.user!.id}');
-          }
-          await _supabaseClient.from('supervisors').insert({
-            'id': response.user!.id, // Incluir o ID do usuário
-            'full_name': fullName,
-            'department': 'Departamento não definido',
-            'position': 'Supervisor',
-            'job_code': registration,
-            'created_at': DateTime.now().toIso8601String(),
-            'updated_at': DateTime.now().toIso8601String(),
-          });
-          if (kDebugMode) {
-            print('✅ Dados do supervisor criados com sucesso');
-          }
-        }
-      } catch (e) {
-        // Se falhar ao criar os dados, não falha o registro
-        // mas loga o erro para debug
-        if (kDebugMode) {
-          print('⚠️ Erro ao criar dados do ${role.name}: $e');
-        }
-        if (kDebugMode) {
-          print('⚠️ Detalhes do erro: ${e.toString()}');
-        }
-      }
+      // Remover criação de perfil aqui! O perfil será criado após login/validação de e-mail
+      // await _supabaseClient.from('students' ou 'supervisors').insert(...)
 
       return {
         'id': response.user!.id,
