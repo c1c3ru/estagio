@@ -35,7 +35,8 @@ void main() {
         .thenAnswer((_) => Stream.value(null));
 
     final sharedPreferences = await SharedPreferences.getInstance();
-    Modular.init(AppModule(sharedPreferences: sharedPreferences));
+    Modular.init(AppModule());
+    Modular.replaceInstance<SharedPreferences>(sharedPreferences);
     final authGuard = MockAuthGuard();
     when(authGuard.canActivate(any, any)).thenAnswer((_) async => true);
     Modular.replaceInstance<AuthGuard>(authGuard);
