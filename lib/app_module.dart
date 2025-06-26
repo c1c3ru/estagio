@@ -113,6 +113,7 @@ import 'features/supervisor/pages/supervisor_time_approval_page.dart';
 import 'features/auth/pages/register_type_page.dart';
 import 'features/auth/pages/supervisor_register_page.dart';
 import 'features/student/pages/student_register_page.dart';
+import 'features/auth/pages/unauthorized_page.dart';
 
 // Guards
 import 'core/guards/auth_guard.dart';
@@ -312,6 +313,7 @@ class AppModule extends Module {
         child: (context) => const SupervisorRegisterPage());
     r.child('/auth/forgot-password',
         child: (context) => const ForgotPasswordPage());
+    r.child('/auth/unauthorized', child: (context) => const UnauthorizedPage());
 
     // Student Routes
     r.child("/student",

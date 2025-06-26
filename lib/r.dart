@@ -7,6 +7,8 @@ class AssetAnimations {
       'assets/animations/Loading_animations.json';
   static const String confettiAnimation =
       'assets/animations/confetti_animation.json';
+  static const String emailConfirmationsAnimation =
+      'assets/animations/email_confirmations_animation.json';
   static const String emptyStateAnimation =
       'assets/animations/empty_state_animation.json';
   static const String errorCrossAnimation =
@@ -18,7 +20,7 @@ class AssetAnimations {
   static const String passwordResetAnimation =
       'assets/animations/password_reset_animation.json';
   static const String studentPageAnimation =
-      'assets/animations/student_page_animation.json';
+      'assets/animations/student_page_animation .json';
   static const String successCheckAnimation =
       'assets/animations/success_check_animation.json';
   static const String supervisorPageAnimation =

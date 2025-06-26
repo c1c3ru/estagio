@@ -41,9 +41,7 @@ class _LoginPageState extends State<LoginPage> {
         bloc: _authBloc,
         listener: (context, state) {
           if (state is AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
+            FeedbackService.showError(context, state.message);
           } else if (state is AuthProfileIncomplete) {
             // Redirecionar para a tela de completar perfil conforme o papel do usuário
             if (state.user.role == UserRole.student) {

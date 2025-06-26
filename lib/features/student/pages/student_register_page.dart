@@ -15,6 +15,7 @@ import '../../../core/enums/internship_shift.dart';
 import '../../../core/utils/validators.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/utils/feedback_service.dart';
 
 class StudentRegisterPage extends StatefulWidget {
   const StudentRegisterPage({super.key});
@@ -71,9 +72,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
     } catch (e) {
       setState(() => _loadingSupervisors = false);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao buscar supervisores: $e')),
-      );
+      FeedbackService.showError(context, 'Erro ao buscar supervisores: $e');
     }
   }
 
@@ -93,16 +92,12 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
     if (_formKey.currentState?.validate() ?? false) {
       if (_selectedRole == UserRole.student) {
         if (_isMandatoryInternship == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Informe se o estágio é obrigatório.')),
-          );
+          FeedbackService.showWarning(
+              context, 'Informe se o estágio é obrigatório.');
           return;
         }
         if (_selectedSupervisorId == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Selecione um supervisor.')),
-          );
+          FeedbackService.showWarning(context, 'Selecione um supervisor.');
           return;
         }
       }
@@ -113,10 +108,8 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
           _selectedBirthDate == null ||
           _selectedContractStartDate == null ||
           _selectedContractEndDate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Preencha todos os campos de data e turno.')),
-        );
+        FeedbackService.showWarning(
+            context, 'Preencha todos os campos de data e turno.');
         return;
       }
 
@@ -217,25 +210,14 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
         body: BlocConsumer<AuthBloc, custom_auth.AuthState>(
           listener: (context, state) {
             if (state is custom_auth.AuthFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message)),
-              );
+              FeedbackService.showError(context, state.message);
             } else if (state is custom_auth.AuthEmailConfirmationRequired) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.orange,
-                  duration: const Duration(seconds: 5),
-                ),
-              );
-              // Navegar para a página de confirmação de email
+              FeedbackService.showWarning(context, state.message);
               Modular.to.pushNamed('/auth/email-confirmation',
                   arguments: state.email);
             } else if (state is custom_auth.AuthSuccess) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('Cadastro realizado com sucesso!')),
-              );
+              FeedbackService.showSuccess(
+                  context, 'Cadastro realizado com sucesso!');
               Modular.to.navigate('/');
             }
           },

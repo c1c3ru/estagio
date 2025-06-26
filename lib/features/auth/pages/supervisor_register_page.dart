@@ -11,6 +11,7 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart' as custom_auth;
 import '../widgets/auth_text_field.dart';
+import '../../../core/utils/feedback_service.dart';
 
 class SupervisorRegisterPage extends StatefulWidget {
   const SupervisorRegisterPage({super.key});
@@ -74,23 +75,14 @@ class _SupervisorRegisterPageState extends State<SupervisorRegisterPage> {
       body: BlocConsumer<AuthBloc, custom_auth.AuthState>(
         listener: (context, state) {
           if (state is custom_auth.AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
+            FeedbackService.showError(context, state.message);
           } else if (state is custom_auth.AuthEmailConfirmationRequired) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.orange,
-                duration: const Duration(seconds: 5),
-              ),
-            );
+            FeedbackService.showWarning(context, state.message);
             Modular.to
                 .pushNamed('/auth/email-confirmation', arguments: state.email);
           } else if (state is custom_auth.AuthSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Cadastro realizado com sucesso!')),
-            );
+            FeedbackService.showSuccess(
+                context, 'Cadastro realizado com sucesso!');
             Modular.to.navigate('/');
           }
         },
