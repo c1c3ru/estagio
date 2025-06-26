@@ -13,6 +13,8 @@ import '../../../domain/entities/contract_entity.dart';
 import '../../../core/enums/contract_status.dart';
 import '../../../domain/usecases/supervisor/get_all_supervisors_usecase.dart';
 import '../../../domain/entities/supervisor_entity.dart';
+import 'package:lottie/lottie.dart';
+import '../../../r.dart';
 
 class StudentHomePage extends StatefulWidget {
   const StudentHomePage({super.key});
@@ -70,10 +72,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.school,
-                    size: 80,
-                    color: AppColors.primary,
+                  Lottie.asset(
+                    AssetAnimations.studentPageAnimation,
+                    height: 120,
+                    repeat: true,
                   ),
                   const SizedBox(height: 24),
                   const Text(

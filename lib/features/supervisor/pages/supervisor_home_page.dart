@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:lottie/lottie.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../auth/bloc/auth_bloc.dart';
@@ -13,6 +14,7 @@ import '../widgets/student_list_widget.dart';
 import '../widgets/student_form_dialog.dart';
 import '../../../domain/entities/filter_students_params.dart';
 import '../../../core/enums/student_status.dart';
+import '../../../r.dart';
 
 class SupervisorHomePage extends StatefulWidget {
   const SupervisorHomePage({super.key});
@@ -99,6 +101,12 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Lottie.asset(
+                        AssetAnimations.supervisorPageAnimation,
+                        height: 120,
+                        repeat: true,
+                      ),
+                      const SizedBox(height: 16),
                       // Welcome Card
                       Card(
                         child: Padding(

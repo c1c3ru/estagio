@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:lottie/lottie.dart';
-import '../../../core/constants/app_colors.dart';
 
 class RegisterTypePage extends StatelessWidget {
   const RegisterTypePage({super.key});

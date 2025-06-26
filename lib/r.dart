@@ -1,5 +1,5 @@
 class AssetAnimations {
-  static const String notFoundAnimation =
+  static const String notFound404Animation =
       'assets/animations/404_not_found_animation.json';
   static const String formularioAnimation =
       'assets/animations/Formulario_animation.json';
@@ -17,16 +17,15 @@ class AssetAnimations {
       'assets/animations/loading_dots_animation.json';
   static const String passwordResetAnimation =
       'assets/animations/password_reset_animation.json';
+  static const String studentPageAnimation =
+      'assets/animations/student_page_animation.json';
   static const String successCheckAnimation =
       'assets/animations/success_check_animation.json';
+  static const String supervisorPageAnimation =
+      'assets/animations/supervisor_page_animation.json';
   static const String timeNimation = 'assets/animations/time_nimation.json';
 }
 
 class AssetImages {
   static const String estagio = 'assets/images/estagio.png';
-}
-
-class R {
-  static const String notFoundAnimation = AssetAnimations.notFoundAnimation;
-  // Adicione outros recursos conforme necessário
 }
