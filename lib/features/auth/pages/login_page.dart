@@ -58,7 +58,7 @@ class _LoginPageState extends State<LoginPage> {
             // Navegar para a página apropriada baseado no papel do usuário
             switch (state.user.role) {
               case UserRole.student:
-                Modular.to.navigate('/student/');
+                Modular.to.navigate('/student');
                 break;
               case UserRole.supervisor:
                 Modular.to.navigate('/supervisor');

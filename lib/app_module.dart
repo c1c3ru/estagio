@@ -104,7 +104,6 @@ import 'features/auth/pages/login_page.dart';
 import 'features/student/pages/student_home_page.dart';
 import 'features/supervisor/pages/supervisor_home_page.dart';
 import 'features/student/pages/time_log_page.dart';
-import 'features/student/pages/contract_page.dart';
 import 'features/shared/pages/notification_page.dart';
 import 'features/auth/pages/forgot_password_page.dart';
 import 'features/student/pages/student_colleagues_page.dart';
@@ -322,16 +321,19 @@ class AppModule extends Module {
               create: (_) => Modular.get<StudentBloc>(),
               child: const StudentHomePage(),
             ));
-    r.child("/student/time-log",
-        child: (context) => TimeLogPage(
-              studentId: r.args.data["studentId"] ?? "",
-            ));
-    r.child("/student/contracts",
-        child: (context) => ContractPage(
-              studentId: (r.args.data is Map && r.args.data != null)
-                  ? (r.args.data["studentId"] ?? "")
-                  : "",
-            ));
+    r.child(
+      "/student/time-log",
+      child: (context) => BlocProvider.value(
+        value: Modular.get<TimeLogBloc>(),
+        child: TimeLogPage(
+          studentId: (r.args.data != null &&
+                  r.args.data is Map &&
+                  r.args.data["studentId"] != null)
+              ? r.args.data["studentId"]
+              : "",
+        ),
+      ),
+    );
     r.child("/student/colleagues",
         child: (context) => const StudentColleaguesPage());
     r.child("/student/profile", child: (context) => const StudentProfilePage());

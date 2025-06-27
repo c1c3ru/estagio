@@ -214,8 +214,11 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                   BlocProvider.of<StudentBloc>(context);
                               await showDialog(
                                 context: context,
-                                builder: (context) => _NovoContratoDialog(
-                                    studentId: state.student.id),
+                                builder: (context) => BlocProvider.value(
+                                  value: Modular.get<ContractBloc>(),
+                                  child: _NovoContratoDialog(
+                                      studentId: state.student.id),
+                                ),
                               );
                               if (!mounted) return;
                               // Após fechar o modal, recarrega os dados
@@ -434,6 +437,15 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
         _supervisorSelecionado == null) {
       return;
     }
+    if (widget.studentId.isEmpty || _supervisorSelecionado!.id.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ID do estudante ou do supervisor está vazio!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
     setState(() => _loading = true);
     try {
       final contract = ContractEntity(
@@ -496,17 +508,25 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
                   child: CircularProgressIndicator(),
                 )
               else
-                DropdownButtonFormField<SupervisorEntity>(
-                  value: _supervisorSelecionado,
-                  items: _supervisores
-                      .map((s) => DropdownMenuItem(
-                            value: s,
-                            child: Text('${s.position} - ${s.id}'),
-                          ))
-                      .toList(),
-                  onChanged: (s) => setState(() => _supervisorSelecionado = s),
-                  decoration: const InputDecoration(labelText: 'Supervisor'),
-                  validator: (v) => v == null ? 'Obrigatório' : null,
+                Flexible(
+                  child: DropdownButtonFormField<SupervisorEntity>(
+                    value: _supervisorSelecionado,
+                    items: _supervisores
+                        .map((s) => DropdownMenuItem(
+                              value: s,
+                              child: Text(
+                                s.position != null && s.position!.isNotEmpty
+                                    ? '${s.fullName} - ${s.position}'
+                                    : s.fullName,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ))
+                        .toList(),
+                    onChanged: (s) =>
+                        setState(() => _supervisorSelecionado = s),
+                    decoration: const InputDecoration(labelText: 'Supervisor'),
+                    validator: (v) => v == null ? 'Obrigatório' : null,
+                  ),
                 ),
               TextFormField(
                 controller: _companyController,
@@ -524,7 +544,8 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
                     child: TextButton(
                       onPressed: () async {
                         final picked = await showDatePicker(
-                          context: context,
+                          context: Modular
+                              .routerDelegate.navigatorKey.currentContext!,
                           initialDate: DateTime.now(),
                           firstDate: DateTime(2000),
                           lastDate: DateTime(2100),
@@ -540,7 +561,8 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
                     child: TextButton(
                       onPressed: () async {
                         final picked = await showDatePicker(
-                          context: context,
+                          context: Modular
+                              .routerDelegate.navigatorKey.currentContext!,
                           initialDate: DateTime.now(),
                           firstDate: DateTime(2000),
                           lastDate: DateTime(2100),

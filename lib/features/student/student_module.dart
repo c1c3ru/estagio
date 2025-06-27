@@ -190,11 +190,11 @@ class StudentModule extends Module {
           BlocProvider.value(value: Modular.get<ContractBloc>()),
         ],
         child: ContractPage(
-          studentId: (r.args.data is Map &&
-                  r.args.data != null &&
-                  r.args.data["studentId"] != null &&
-                  (r.args.data["studentId"] as String).isNotEmpty)
-              ? r.args.data["studentId"] as String
+          studentId: (r.args.data != null &&
+                  r.args.data is Map &&
+                  r.args.data['studentId'] != null &&
+                  (r.args.data['studentId'] as String).isNotEmpty)
+              ? r.args.data['studentId'] as String
               : null,
         ),
       ),

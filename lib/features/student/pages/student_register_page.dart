@@ -120,7 +120,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
           password: _passwordController.text,
           role: _selectedRole,
           registration: _registrationController.text.trim(),
-          isMandatoryInternship: _isMandatoryInternship,
+          isMandatoryInternship: _isMandatoryInternship ?? false,
           supervisorId: _selectedSupervisorId,
           // Novos campos
           course: _courseController.text.trim(),
@@ -436,6 +436,12 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                                   !_obscureConfirmPassword);
                             },
                           ),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Após o cadastro, você receberá um e-mail de confirmação. É necessário confirmar o e-mail para acessar o sistema.',
+                          style: TextStyle(color: Colors.orange, fontSize: 15),
+                          textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),
                         // Botão de cadastro

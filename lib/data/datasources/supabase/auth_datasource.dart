@@ -211,12 +211,17 @@ class AuthDatasource implements IAuthDatasource {
     try {
       final role = user.userMetadata?['role'] ?? 'student';
       final registration = user.userMetadata?['registration'];
+      final internshipShift = user.userMetadata?['internship_shift'];
 
       if (kDebugMode) {
         print('🔍 Verificando dados para usuário ${user.id} com role: $role');
       }
 
       if (role == 'student') {
+        if (internshipShift == null || internshipShift.isEmpty) {
+          throw AuthException(
+              'Turno do estágio obrigatório não informado. Complete o cadastro.');
+        }
         final studentResponse = await _supabaseClient
             .from('students')
             .select('id')
@@ -235,6 +240,9 @@ class AuthDatasource implements IAuthDatasource {
             'course': 'PENDENTE',
             'advisor_name': 'PENDENTE',
             'status': 'active',
+            'is_mandatory_internship': false,
+            'class_shift': 'morning',
+            'internship_shift_1': internshipShift,
           });
           if (kDebugMode) {
             print('✅ Dados de estudante criados para ${user.id}');
