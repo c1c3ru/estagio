@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'app_module.dart';
 import 'app_widget.dart';
 import 'core/constants/app_constants.dart';
@@ -12,6 +13,19 @@ Future<void> main() async {
 
   if (kDebugMode) {
     print('🟡 main: Iniciando aplicação...');
+  }
+
+  try {
+    // Carregar variáveis de ambiente
+    await dotenv.load(fileName: ".env");
+    if (kDebugMode) {
+      print('✅ Variáveis de ambiente carregadas');
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('⚠️ Erro ao carregar .env: $e');
+      print('⚠️ Tentando continuar sem arquivo .env...');
+    }
   }
 
   try {

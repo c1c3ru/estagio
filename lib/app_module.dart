@@ -102,19 +102,16 @@ import 'features/shared/bloc/notification_bloc.dart';
 
 // Pages
 import 'features/auth/pages/login_page.dart';
-import 'features/student/pages/student_home_page.dart';
-import 'features/supervisor/pages/supervisor_home_page.dart';
-import 'features/student/pages/time_log_page.dart';
 import 'features/shared/pages/notification_page.dart';
 import 'features/auth/pages/forgot_password_page.dart';
-import 'features/student/pages/student_colleagues_page.dart';
-import 'features/student/pages/student_profile_page.dart';
-import 'features/supervisor/pages/supervisor_time_approval_page.dart';
 import 'features/auth/pages/register_type_page.dart';
 import 'features/auth/pages/supervisor_register_page.dart';
 import 'features/student/pages/student_register_page.dart';
 import 'features/auth/pages/unauthorized_page.dart';
-import 'features/supervisor/pages/supervisor_profile_page.dart';
+
+// Modules
+import 'features/student/student_module.dart';
+import 'features/supervisor/supervisor_module.dart';
 
 // Guards
 import 'core/guards/auth_guard.dart';
@@ -123,7 +120,7 @@ class AppModule extends Module {
   @override
   void binds(Injector i) {
     // External Dependencies
-    // i.addLazySingleton<SupabaseClient>(() => Supabase.instance.client); // Removido para evitar erro de inicialização
+    i.addLazySingleton<SupabaseClient>(() => Supabase.instance.client);
 
     // Data Sources
     i.addLazySingleton<IAuthDatasource>(() => AuthDatasource(i()));
@@ -319,45 +316,11 @@ class AppModule extends Module {
         child: (context) => const ForgotPasswordPage());
     r.child('/auth/unauthorized', child: (context) => const UnauthorizedPage());
 
-    // Student Routes
-    r.child("/student",
-        child: (context) => BlocProvider(
-              create: (_) => Modular.get<StudentBloc>(),
-              child: const StudentHomePage(),
-            ));
-    r.child(
-      "/student/time-log",
-      child: (context) => BlocProvider.value(
-        value: Modular.get<TimeLogBloc>(),
-        child: TimeLogPage(
-          studentId: (r.args.data != null &&
-                  r.args.data is Map &&
-                  r.args.data["studentId"] != null)
-              ? r.args.data["studentId"]
-              : "",
-        ),
-      ),
-    );
-    r.child("/student/colleagues",
-        child: (context) => const StudentColleaguesPage());
-    r.child("/student/profile", child: (context) => const StudentProfilePage());
+    // Student Module Routes
+    r.module('/student', module: StudentModule());
 
-    // Supervisor Routes
-    r.child("/supervisor",
-        child: (context) => BlocProvider(
-              create: (_) => Modular.get<SupervisorBloc>(),
-              child: const SupervisorHomePage(),
-            ));
-    r.child("/supervisor/time-approval",
-        child: (context) => BlocProvider(
-              create: (_) => Modular.get<SupervisorBloc>(),
-              child: const SupervisorTimeApprovalPage(),
-            ));
-    r.child("/supervisor/profile",
-        child: (context) => BlocProvider(
-              create: (_) => Modular.get<SupervisorBloc>(),
-              child: const SupervisorProfilePage(),
-            ));
+    // Supervisor Module Routes
+    r.module('/supervisor', module: SupervisorModule());
 
     // Shared Routes
     r.child(

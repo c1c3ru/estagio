@@ -4,13 +4,11 @@ import 'package:gestao_de_estagio/features/auth/pages/forgot_password_page.dart'
 import 'package:gestao_de_estagio/features/auth/pages/login_page.dart';
 import 'package:gestao_de_estagio/features/auth/pages/register_type_page.dart';
 import 'package:gestao_de_estagio/features/auth/pages/email_confirmation_page.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthModule extends Module {
   @override
   void exportedBinds(Injector i) {
-    // Supabase Client
-    i.addInstance(Supabase.instance.client);
+    // Supabase Client já registrado globalmente no AppModule
   }
 
   @override
