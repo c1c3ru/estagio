@@ -18,11 +18,12 @@ class AuthLoading extends AuthState {}
 /// Estado de sucesso na autenticação (login ou verificação de status).
 class AuthSuccess extends AuthState {
   final UserEntity user;
+  final bool isProfileIncomplete;
 
-  const AuthSuccess(this.user);
+  const AuthSuccess(this.user, {this.isProfileIncomplete = false});
 
   @override
-  List<Object> get props => [user];
+  List<Object> get props => [user, isProfileIncomplete];
 }
 
 /// Estado quando o utilizador não está autenticado.

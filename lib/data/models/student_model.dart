@@ -21,6 +21,7 @@ class StudentModel {
   final DateTime createdAt;
   final DateTime? updatedAt;
   final String? status;
+  final String? supervisorId;
 
   StudentModel({
     required this.id,
@@ -43,6 +44,7 @@ class StudentModel {
     required this.createdAt,
     this.updatedAt,
     this.status,
+    this.supervisorId,
   });
 
   factory StudentModel.fromJson(Map<String, dynamic> json) {
@@ -72,6 +74,7 @@ class StudentModel {
           ? DateTime.parse(json['updated_at'] as String)
           : null,
       status: json['status'] as String?,
+      supervisorId: json['supervisor_id'] as String?,
     );
   }
 
@@ -97,6 +100,7 @@ class StudentModel {
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
       'status': status,
+      'supervisor_id': supervisorId,
     };
   }
 
@@ -122,6 +126,7 @@ class StudentModel {
       createdAt: createdAt,
       updatedAt: updatedAt,
       status: status,
+      supervisorId: supervisorId,
     );
   }
 }

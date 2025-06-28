@@ -34,6 +34,7 @@ TABELA: students
 - phone_number (varchar)
 - created_at, updated_at
 - status (TEXT)
+- supervisor_id (uuid, FK para supervisors.id)
 
 TABELA: supervisors
 - id (uuid, PK, FK para users.id)
@@ -113,7 +114,8 @@ INSERT INTO public.students (
   weekly_hours_target,
   created_at,
   updated_at,
-  status
+  status,
+  supervisor_id
 )
 VALUES (
   'd941ae1d-e83f-4215-bdc7-da5f9cf139c0', -- Mesmo ID do usuário
@@ -133,7 +135,8 @@ VALUES (
   20.0,
   NOW(),
   NOW(),
-  'active'
+  'active',
+  'd941ae1d-e83f-4215-bdc7-da5f9cf139c0'
 )
 ON CONFLICT (id) DO UPDATE SET
   full_name = EXCLUDED.full_name,
@@ -151,7 +154,8 @@ ON CONFLICT (id) DO UPDATE SET
   total_hours_completed = EXCLUDED.total_hours_completed,
   weekly_hours_target = EXCLUDED.weekly_hours_target,
   updated_at = NOW(),
-  status = EXCLUDED.status;
+  status = EXCLUDED.status,
+  supervisor_id = EXCLUDED.supervisor_id;
 
 -- Inserir alguns logs de tempo de teste (apenas se não existirem)
 INSERT INTO public.time_logs (

@@ -206,20 +206,17 @@ class AuthDatasource implements IAuthDatasource {
     }
   }
 
-  /// Verifica se o usuário tem dados na tabela correspondente e cria se não existir
+  /// Verifica se o usuário tem dados na tabela correspondente
   Future<void> _ensureUserDataExists(User user) async {
     try {
       final role = user.userMetadata?['role'] ?? 'student';
-      final registration = user.userMetadata?['registration'];
-      final internshipShift = user.userMetadata?['internship_shift'];
 
       if (kDebugMode) {
         print('🔍 Verificando dados para usuário ${user.id} com role: $role');
       }
 
       if (role == 'student') {
-        // Remover validação restritiva do turno do estágio
-        // Permitir que o usuário complete o cadastro posteriormente
+        // Apenas verificar se existe, não criar automaticamente
         final studentResponse = await _supabaseClient
             .from('students')
             .select('id')
@@ -229,32 +226,16 @@ class AuthDatasource implements IAuthDatasource {
         if (studentResponse == null) {
           if (kDebugMode) {
             print(
-                '📝 Nenhum dado de estudante encontrado para ${user.id}, criando agora...');
+                '⚠️ Nenhum dado de estudante encontrado para ${user.id} - usuário precisa completar cadastro');
           }
-          await _supabaseClient.from('students').insert({
-            'id': user.id,
-            'full_name':
-                user.userMetadata?['full_name'] ?? user.email ?? 'Estudante',
-            'registration_number': registration ?? 'PENDENTE',
-            'course': 'PENDENTE',
-            'advisor_name': 'PENDENTE',
-            'status': 'active',
-            'is_mandatory_internship': false,
-            'class_shift': 'morning',
-            'internship_shift_1': internshipShift ?? 'morning',
-            'birth_date': null,
-            'contract_start_date': null,
-            'contract_end_date': null,
-            'total_hours_required': 0,
-            'weekly_hours_target': 0,
-            'supervisor_id': null,
-          });
+          // Não criar automaticamente - deixar o usuário completar o cadastro
+        } else {
           if (kDebugMode) {
-            print('✅ Dados de estudante criados para ${user.id}');
+            print('✅ Dados de estudante encontrados para ${user.id}');
           }
         }
       } else if (role == 'supervisor') {
-        // Verificar se já existe na tabela supervisors
+        // Apenas verificar se existe, não criar automaticamente
         final existingSupervisor = await _supabaseClient
             .from('supervisors')
             .select('id')
@@ -264,25 +245,18 @@ class AuthDatasource implements IAuthDatasource {
         if (existingSupervisor == null) {
           if (kDebugMode) {
             print(
-                '📝 Nenhum dado de supervisor encontrado para ${user.id}, criando agora...');
+                '⚠️ Nenhum dado de supervisor encontrado para ${user.id} - usuário precisa completar cadastro');
           }
-          await _supabaseClient.from('supervisors').insert({
-            'id': user.id,
-            'full_name':
-                user.userMetadata?['full_name'] ?? user.email ?? 'Supervisor',
-          });
-          if (kDebugMode) {
-            print('✅ Dados de supervisor criados para ${user.id}');
-          }
+          // Não criar automaticamente - deixar o usuário completar o cadastro
         } else {
           if (kDebugMode) {
-            print('✅ Dados do supervisor já existem para usuário ${user.id}');
+            print('✅ Dados de supervisor encontrados para usuário ${user.id}');
           }
         }
       }
     } catch (e) {
       if (kDebugMode) {
-        print('⚠️ Erro ao verificar/criar dados do usuário: $e');
+        print('⚠️ Erro ao verificar dados do usuário: $e');
       }
       // Não rethrow aqui para não impedir o login
       // Apenas loga o erro para debug

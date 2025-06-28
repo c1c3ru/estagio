@@ -21,6 +21,8 @@ class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _emailFocusNode = FocusNode();
+  final _passwordFocusNode = FocusNode();
 
   late AuthBloc _authBloc;
 
@@ -34,6 +36,8 @@ class _LoginFormState extends State<LoginForm> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
     super.dispose();
   }
 
@@ -48,77 +52,67 @@ class _LoginFormState extends State<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
-      bloc: _authBloc,
-      listener: (context, state) {
-        if (state is AuthFailure) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Theme.of(context).colorScheme.error,
-              ),
-            );
-        }
-      },
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            AppTextField(
-              controller: _emailController,
-              labelText: AppStrings.email,
-              hintText: 'seuemail@exemplo.com',
-              prefixIcon: Icons.email_outlined,
-              keyboardType: TextInputType.emailAddress,
-              validator: Validators.email,
-              textInputAction: TextInputAction.next,
-              suffixIcon: Icons.clear,
-              onSuffixIconPressed: () {
-                _emailController.clear();
+    return Form(
+      key: _formKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          AppTextField(
+            controller: _emailController,
+            focusNode: _emailFocusNode,
+            labelText: AppStrings.email,
+            hintText: 'seuemail@exemplo.com',
+            prefixIcon: Icons.email_outlined,
+            keyboardType: TextInputType.emailAddress,
+            validator: Validators.email,
+            textInputAction: TextInputAction.next,
+            onSubmitted: (_) {
+              _passwordFocusNode.requestFocus();
+            },
+            suffixIcon: Icons.clear,
+            onSuffixIconPressed: () {
+              _emailController.clear();
+            },
+          ),
+          const SizedBox(height: 16),
+          AppTextField(
+            controller: _passwordController,
+            focusNode: _passwordFocusNode,
+            labelText: AppStrings.password,
+            hintText: 'Sua senha',
+            prefixIcon: Icons.lock_outline,
+            obscureText: true,
+            validator: (value) => Validators.password(value, minLength: 6),
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _submitLogin(),
+            suffixIcon: Icons.clear,
+            onSuffixIconPressed: () {
+              _passwordController.clear();
+            },
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () {
+                Modular.to.pushNamed('/auth/forgot-password');
               },
+              child: const Text(AppStrings.forgotPassword),
             ),
-            const SizedBox(height: 16),
-            AppTextField(
-              controller: _passwordController,
-              labelText: AppStrings.password,
-              hintText: 'Sua senha',
-              prefixIcon: Icons.lock_outline,
-              obscureText: true,
-              validator: (value) => Validators.password(value, minLength: 6),
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => _submitLogin(),
-              suffixIcon: Icons.clear,
-              onSuffixIconPressed: () {
-                _passwordController.clear();
-              },
-            ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () {
-                  Modular.to.pushNamed('/auth/forgot-password');
-                },
-                child: const Text(AppStrings.forgotPassword),
-              ),
-            ),
-            const SizedBox(height: 24),
-            BlocBuilder<AuthBloc, AuthState>(
-              bloc: _authBloc,
-              builder: (context, state) {
-                return AppButton(
-                  text: AppStrings.login,
-                  isLoading: state is AuthLoading,
-                  onPressed: state is AuthLoading ? null : _submitLogin,
-                  minWidth: double.infinity,
-                );
-              },
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 24),
+          BlocBuilder<AuthBloc, AuthState>(
+            bloc: _authBloc,
+            builder: (context, state) {
+              return AppButton(
+                text: AppStrings.login,
+                isLoading: state is AuthLoading,
+                onPressed: state is AuthLoading ? null : _submitLogin,
+                minWidth: double.infinity,
+              );
+            },
+          ),
+        ],
       ),
     );
   }

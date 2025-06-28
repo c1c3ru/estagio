@@ -193,8 +193,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) {
     if (event.user != null) {
       if (_isProfileIncomplete(event.user!)) {
-        emit(AuthProfileIncomplete(event.user!));
+        if (kDebugMode) {
+          print(
+              '🟡 AuthBloc: AuthStateChanged - Perfil incompleto detectado, mas permitindo acesso');
+        }
+        emit(AuthSuccess(event.user!, isProfileIncomplete: true));
       } else {
+        if (kDebugMode) {
+          print(
+              '🟡 AuthBloc: AuthStateChanged - Perfil completo, emitindo AuthSuccess');
+        }
         emit(AuthSuccess(event.user!));
       }
     } else {
@@ -240,7 +248,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             print(
                 '🟡 AuthBloc: Usuário atual obtido: ${user?.email ?? 'null'}');
           }
-          emit(user != null ? AuthSuccess(user) : AuthInitial());
+          if (user != null) {
+            if (_isProfileIncomplete(user)) {
+              if (kDebugMode) {
+                print(
+                    '🟡 AuthBloc: Perfil incompleto detectado, mas permitindo acesso');
+              }
+              emit(AuthSuccess(user, isProfileIncomplete: true));
+            } else {
+              if (kDebugMode) {
+                print('🟡 AuthBloc: Perfil completo, emitindo AuthSuccess');
+              }
+              emit(AuthSuccess(user));
+            }
+          } else {
+            emit(AuthInitial());
+          }
         },
       );
     } catch (e) {
@@ -258,7 +281,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await _getCurrentUserUseCase();
     result.fold(
       (failure) => emit(AuthInitial()),
-      (user) => emit(user != null ? AuthSuccess(user) : AuthInitial()),
+      (user) {
+        if (user != null) {
+          if (_isProfileIncomplete(user)) {
+            emit(AuthProfileIncomplete(user));
+          } else {
+            emit(AuthSuccess(user));
+          }
+        } else {
+          emit(AuthInitial());
+        }
+      },
     );
   }
 

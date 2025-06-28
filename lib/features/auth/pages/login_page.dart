@@ -65,7 +65,17 @@ class _LoginPageState extends State<LoginPage> {
               Modular.to.navigate('/supervisor/profile');
             }
           } else if (state is AuthSuccess) {
-            FeedbackService.showSuccess(context, AppStrings.loginSuccess);
+            if (state.isProfileIncomplete) {
+              // Mostrar mensagem informativa sobre perfil incompleto
+              FeedbackService.showInfo(
+                context,
+                'Perfil incompleto. Você pode completar suas informações na página de perfil.',
+                duration: const Duration(seconds: 4),
+              );
+            } else {
+              FeedbackService.showSuccess(context, AppStrings.loginSuccess);
+            }
+
             // Navegar para a página apropriada baseado no papel do usuário
             switch (state.user.role) {
               case UserRole.student:
