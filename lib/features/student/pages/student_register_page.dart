@@ -13,6 +13,7 @@ import '../../../core/enums/user_role.dart';
 import '../../../core/enums/class_shift.dart';
 import '../../../core/enums/internship_shift.dart';
 import '../../../core/utils/validators.dart';
+import '../../shared/animations/lottie_animations.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/utils/feedback_service.dart';
@@ -232,6 +233,9 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        // Animação de estudante no topo
+                        const StudentAnimation(size: 150),
+                        const SizedBox(height: 16),
                         const Text(
                           'Cadastro de Estudante/Bolsista/Estagiário',
                           style: AppTextStyles.h3,

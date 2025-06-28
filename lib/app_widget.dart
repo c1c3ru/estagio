@@ -47,21 +47,24 @@ class AppWidget extends StatelessWidget {
 
             // Garantir que sempre temos algo para renderizar
             final widgetToShow = child ??
-                const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 16),
-                      Text('Carregando...'),
-                    ],
+                const Scaffold(
+                  backgroundColor: Colors.white,
+                  body: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 16),
+                        Text('Carregando aplicação...'),
+                        SizedBox(height: 8),
+                        Text(
+                            'Se esta tela persistir, verifique o console para erros'),
+                      ],
+                    ),
                   ),
                 );
 
-            return Scaffold(
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              body: widgetToShow,
-            );
+            return widgetToShow;
           },
         ),
       );

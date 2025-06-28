@@ -19,6 +19,16 @@ class LottieAssetPaths {
   static const String timeAnimation = 'assets/animations/time_nimation.json';
   static const String passwordReset =
       'assets/animations/Formulario_animation.json';
+  static const String studentAnimation =
+      'assets/animations/student_page_animation .json';
+  static const String supervisorAnimation =
+      'assets/animations/supervisor_page_animation.json';
+  static const String emailConfirmation =
+      'assets/animations/email_confirmations_animation.json';
+  static const String internshipAnimation =
+      'assets/animations/intership_animations.json';
+  static const String loadingAnimation =
+      'assets/animations/Loading_animations.json';
   // Adicione mais conforme necessário
 
   // Previne instanciação
@@ -122,6 +132,77 @@ class SuccessAnimation extends StatelessWidget {
       controller: useAnimationController(
           onComplete: onComplete,
           context: context), // Exemplo de uso de um controller
+    );
+  }
+}
+
+// Widgets específicos para o app
+class StudentAnimation extends StatelessWidget {
+  final double size;
+  final bool repeat;
+
+  const StudentAnimation({super.key, this.size = 150, this.repeat = true});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppLottieAnimation(
+      assetPath: LottieAssetPaths.studentAnimation,
+      width: size,
+      height: size,
+      repeat: repeat,
+    );
+  }
+}
+
+class SupervisorAnimation extends StatelessWidget {
+  final double size;
+  final bool repeat;
+
+  const SupervisorAnimation({super.key, this.size = 150, this.repeat = true});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppLottieAnimation(
+      assetPath: LottieAssetPaths.supervisorAnimation,
+      width: size,
+      height: size,
+      repeat: repeat,
+    );
+  }
+}
+
+class PasswordResetAnimation extends StatelessWidget {
+  final double size;
+  final bool repeat;
+
+  const PasswordResetAnimation(
+      {super.key, this.size = 200, this.repeat = true});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppLottieAnimation(
+      assetPath: LottieAssetPaths.passwordReset,
+      width: size,
+      height: size,
+      repeat: repeat,
+    );
+  }
+}
+
+class EmailConfirmationAnimation extends StatelessWidget {
+  final double size;
+  final bool repeat;
+
+  const EmailConfirmationAnimation(
+      {super.key, this.size = 120, this.repeat = true});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppLottieAnimation(
+      assetPath: LottieAssetPaths.emailConfirmation,
+      width: size,
+      height: size,
+      repeat: repeat,
     );
   }
 }

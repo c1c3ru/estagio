@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -13,6 +14,8 @@ Future<void> main() async {
 
   if (kDebugMode) {
     print('🟡 main: Iniciando aplicação...');
+    print('🟡 main: Platform: ${Platform.operatingSystem}');
+    print('🟡 main: Web: $kIsWeb');
   }
 
   try {
@@ -29,6 +32,13 @@ Future<void> main() async {
   }
 
   try {
+    // Configuração específica para web
+    if (kIsWeb) {
+      if (kDebugMode) {
+        print('🌐 Configurando para web...');
+      }
+    }
+
     // Inicializar Supabase com as constantes
     await Supabase.initialize(
       url: AppConstants.supabaseUrl,
