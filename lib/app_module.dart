@@ -270,6 +270,7 @@ class AppModule extends Module {
           createSupervisorUsecase: i(),
           updateSupervisorUsecase: i(),
           deleteSupervisorUsecase: i(),
+          getSupervisorByUserIdUsecase: i(),
           authBloc: i(),
         ));
 

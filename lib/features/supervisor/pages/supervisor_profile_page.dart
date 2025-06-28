@@ -34,7 +34,7 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
     Modular.get<SupervisorBloc>().add(LoadSupervisorDashboardDataEvent());
 
     // Timeout de segurança para evitar loading infinito
-    Future.delayed(const Duration(seconds: 10), () {
+    Future.delayed(const Duration(seconds: 5), () {
       if (mounted) {
         setState(() {
           // Força a atualização da UI mesmo se o loading continuar
@@ -112,24 +112,6 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
           userEmail = authState.user.email;
         }
 
-        // Mostrar loading apenas se estiver realmente carregando E não tivermos dados
-        if (state is SupervisorLoading) {
-          // Se já temos dados do supervisor, não mostrar loading
-          if (_supervisor != null) {
-            if (kDebugMode) {
-              print(
-                  '🟡 SupervisorProfilePage: Loading mas já temos dados, mostrando UI');
-            }
-          } else {
-            if (kDebugMode) {
-              print('🟡 SupervisorProfilePage: Mostrando loading...');
-            }
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          }
-        }
-
         // Tentar obter dados do supervisor
         SupervisorEntity? supervisor;
         if (state is SupervisorDashboardLoadSuccess) {
@@ -141,15 +123,7 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
           }
         }
 
-        // Se não temos dados do supervisor mas não estamos carregando, mostrar mensagem
-        if (supervisor == null && state is! SupervisorLoading) {
-          if (kDebugMode) {
-            print(
-                '🟡 SupervisorProfilePage: Nenhum supervisor encontrado, mostrando mensagem');
-          }
-        }
-
-        // Sempre mostrar a UI, mesmo sem dados completos
+        // SEMPRE mostrar a UI, nunca ficar em loading infinito
         return Scaffold(
           appBar: AppBar(
             title: const Text('Perfil do Supervisor'),
@@ -172,7 +146,9 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
                 children: [
                   _buildHeader(userName, userEmail, supervisor),
                   const SizedBox(height: 24),
-                  if (supervisor != null) ...[
+                  if (state is SupervisorLoading) ...[
+                    _buildLoadingMessage(),
+                  ] else if (supervisor != null) ...[
                     _isEditMode
                         ? _buildEditableFields()
                         : _buildReadOnlyFields(supervisor),
@@ -371,6 +347,29 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingMessage() {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(width: 16),
+            const Text(
+              'Carregando dados do perfil...',
+              style: AppTextStyles.bodyMedium,
+            ),
+          ],
+        ),
       ),
     );
   }

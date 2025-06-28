@@ -19,6 +19,7 @@ import '../../../../domain/usecases/contract/get_all_contracts_usecase.dart';
 
 // Usecases de Supervisor
 import '../../../../domain/usecases/supervisor/get_supervisor_details_usecase.dart';
+import '../../../../domain/usecases/supervisor/get_supervisor_by_user_id_usecase.dart';
 import '../../../../domain/usecases/supervisor/get_all_students_for_supervisor_usecase.dart';
 import '../../../../domain/usecases/supervisor/get_student_details_for_supervisor_usecase.dart';
 import '../../../../domain/usecases/supervisor/create_student_by_supervisor_usecase.dart';
@@ -69,6 +70,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
   final UpdateSupervisorUsecase _updateSupervisorUsecase;
   final DeleteSupervisorUsecase _deleteSupervisorUsecase;
   final GetSupervisorDetailsUsecase _getSupervisorDetailsUsecase;
+  final GetSupervisorByUserIdUsecase _getSupervisorByUserIdUsecase;
 
   // Auth
   final AuthBloc _authBloc;
@@ -94,6 +96,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
     required UpdateSupervisorUsecase updateSupervisorUsecase,
     required DeleteSupervisorUsecase deleteSupervisorUsecase,
     required AuthBloc authBloc,
+    required GetSupervisorByUserIdUsecase getSupervisorByUserIdUsecase,
   })  : _getAllStudentsForSupervisorUsecase =
             getAllStudentsForSupervisorUsecase,
         _getStudentDetailsForSupervisorUsecase =
@@ -113,6 +116,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
         _updateSupervisorUsecase = updateSupervisorUsecase,
         _deleteSupervisorUsecase = deleteSupervisorUsecase,
         _getSupervisorDetailsUsecase = getSupervisorDetailsUsecase,
+        _getSupervisorByUserIdUsecase = getSupervisorByUserIdUsecase,
         _authBloc = authBloc,
         super(const SupervisorInitial()) {
     on<LoadSupervisorDashboardDataEvent>(_onLoadSupervisorDashboardData);
@@ -178,7 +182,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
         _getAllContractsUsecase.call(const GetAllContractsParams()),
         _getAllTimeLogsForSupervisorUsecase
             .call(const GetAllTimeLogsParams(pendingOnly: true)),
-        _getSupervisorDetailsUsecase.call(supervisorId),
+        _getSupervisorByUserIdUsecase.call(supervisorId),
       ]);
 
       if (kDebugMode) {
@@ -208,7 +212,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
 
       // Carregar perfil do supervisor
       final supervisorProfileResult =
-          results[3] as Either<AppFailure, SupervisorEntity>;
+          results[3] as Either<AppFailure, SupervisorEntity?>;
       final SupervisorEntity? supervisorProfile = supervisorProfileResult.fold(
         (failure) {
           if (kDebugMode) {
@@ -220,7 +224,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
         (supervisor) {
           if (kDebugMode) {
             print(
-                '🟡 SupervisorBloc: Perfil do supervisor carregado: ${supervisor.fullName}');
+                '🟡 SupervisorBloc: Perfil do supervisor carregado: ${supervisor?.fullName ?? 'null'}');
           }
           return supervisor;
         },
