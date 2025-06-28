@@ -123,7 +123,7 @@ class AppModule extends Module {
   @override
   void binds(Injector i) {
     // External Dependencies
-    i.addLazySingleton<SupabaseClient>(() => Supabase.instance.client);
+    // i.addLazySingleton<SupabaseClient>(() => Supabase.instance.client); // Removido para evitar erro de inicialização
 
     // Data Sources
     i.addLazySingleton<IAuthDatasource>(() => AuthDatasource(i()));
