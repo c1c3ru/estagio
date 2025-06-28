@@ -234,7 +234,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         // Animação de estudante no topo
-                        const StudentAnimation(size: 150),
+                        const StudentAnimation(size: 120),
                         const SizedBox(height: 16),
                         const Text(
                           'Cadastro de Estudante/Bolsista/Estagiário',

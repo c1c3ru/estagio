@@ -65,29 +65,34 @@ class AppLottieAnimation extends StatelessWidget {
     // Tenta carregar a animação. Se o asset não existir, Lottie mostrará um erro no console.
     // Você pode adicionar uma verificação de existência do asset se necessário,
     // mas geralmente o Lottie lida bem com isso mostrando um placeholder.
-    return Lottie.asset(
-      assetPath,
+    return SizedBox(
       width: width,
       height: height,
-      fit: fit,
-      repeat: repeat,
-      animate: animate,
-      delegates: delegates,
-      controller: controller,
-      // Otimizações de performance
-      frameRate: frameRate,
-      // Opcional: um errorBuilder para lidar com falhas ao carregar o Lottie
-      errorBuilder: (context, error, stackTrace) {
-        // logger.e('Erro ao carregar animação Lottie: $assetPath', error: error, stackTrace: stackTrace);
-        return Center(
-          child: Icon(
-            Icons.broken_image_outlined,
-            color: Theme.of(context).disabledColor,
-            size:
-                width ?? height ?? 50, // Usa a dimensão fornecida ou um padrão
-          ),
-        );
-      },
+      child: Lottie.asset(
+        assetPath,
+        width: width,
+        height: height,
+        fit: fit,
+        repeat: repeat,
+        animate: animate,
+        delegates: delegates,
+        controller: controller,
+        // Otimizações de performance
+        frameRate: frameRate,
+        // Opcional: um errorBuilder para lidar com falhas ao carregar o Lottie
+        errorBuilder: (context, error, stackTrace) {
+          // logger.e('Erro ao carregar animação Lottie: $assetPath', error: error, stackTrace: stackTrace);
+          return Center(
+            child: Icon(
+              Icons.broken_image_outlined,
+              color: Theme.of(context).disabledColor,
+              size: width ??
+                  height ??
+                  50, // Usa a dimensão fornecida ou um padrão
+            ),
+          );
+        },
+      ),
     );
   }
 }

@@ -15,6 +15,8 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/material.dart';
+import 'package:gestao_de_estagio/features/shared/animations/lottie_animations.dart';
 
 import 'widget_test.mocks.dart';
 
@@ -49,9 +51,129 @@ void main() {
   });
 
   testWidgets('AppWidget smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(const AppWidget());
-    await tester.pump(); // First pump to trigger the initial state
-    await tester.pump(); // Second pump to handle state change from stream
-    expect(find.byType(AppWidget), findsOneWidget);
+    // Build our app and trigger a frame.
+    await tester
+        .pumpWidget(ModularApp(module: AppModule(), child: const AppWidget()));
+    await tester.pumpAndSettle();
+
+    // Verify that the app starts without errors
+    expect(find.byType(MaterialApp), findsOneWidget);
+  });
+
+  testWidgets('Animation widgets should not cause overflow',
+      (WidgetTester tester) async {
+    // Test StudentAnimation
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                const StudentAnimation(size: 120),
+                const SizedBox(height: 20),
+                const Text('Test content'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Should not throw overflow errors
+    expect(find.byType(StudentAnimation), findsOneWidget);
+
+    // Test SupervisorAnimation
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                const SupervisorAnimation(size: 120),
+                const SizedBox(height: 20),
+                const Text('Test content'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SupervisorAnimation), findsOneWidget);
+
+    // Test PasswordResetAnimation
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                const PasswordResetAnimation(size: 200),
+                const SizedBox(height: 20),
+                const Text('Test content'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PasswordResetAnimation), findsOneWidget);
+  });
+
+  testWidgets('Animation widgets should handle different screen sizes',
+      (WidgetTester tester) async {
+    // Test on small screen
+    tester.binding.window.physicalSizeTestValue = const Size(320, 568);
+    tester.binding.window.devicePixelRatioTestValue = 1.0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                const StudentAnimation(size: 120),
+                const SizedBox(height: 20),
+                const Text('Test content on small screen'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(StudentAnimation), findsOneWidget);
+
+    // Test on large screen
+    tester.binding.window.physicalSizeTestValue = const Size(1024, 768);
+    tester.binding.window.devicePixelRatioTestValue = 1.0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                const SupervisorAnimation(size: 120),
+                const SizedBox(height: 20),
+                const Text('Test content on large screen'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SupervisorAnimation), findsOneWidget);
+
+    // Reset window size
+    tester.binding.window.clearPhysicalSizeTestValue();
+    tester.binding.window.clearDevicePixelRatioTestValue();
   });
 }

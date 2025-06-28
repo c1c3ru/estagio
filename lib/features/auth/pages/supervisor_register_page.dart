@@ -99,7 +99,7 @@ class _SupervisorRegisterPageState extends State<SupervisorRegisterPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Animação de supervisor no topo
-                      const SupervisorAnimation(size: 150),
+                      const SupervisorAnimation(size: 120),
                       const SizedBox(height: 16),
                       const Text(
                         'Cadastrar Supervisor',

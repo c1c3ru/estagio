@@ -156,7 +156,7 @@ class _RegisterTypeCardState extends State<_RegisterTypeCard>
                     borderRadius: BorderRadius.circular(16)),
                 color: Theme.of(context).colorScheme.surface,
                 child: Container(
-                  width: MediaQuery.of(context).size.width > 600 ? 250 : 200,
+                  width: MediaQuery.of(context).size.width > 600 ? 250 : 180,
                   padding:
                       const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
                   child: Column(
@@ -168,7 +168,7 @@ class _RegisterTypeCardState extends State<_RegisterTypeCard>
                       Text(widget.title,
                           style: Theme.of(context)
                               .textTheme
-                              .titleLarge
+                              .titleMedium
                               ?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context).colorScheme.onSurface,
@@ -177,7 +177,7 @@ class _RegisterTypeCardState extends State<_RegisterTypeCard>
                       const SizedBox(height: 8),
                       Text(widget.description,
                           style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: Theme.of(context)
                                         .colorScheme
                                         .onSurface
