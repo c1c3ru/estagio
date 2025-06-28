@@ -307,16 +307,8 @@ class AppModule extends Module {
 
   @override
   void routes(RouteManager r) {
-    // Rota inicial simplificada para teste
-    r.child('/',
-        child: (context) => Scaffold(
-              appBar: AppBar(title: const Text('Teste')),
-              body: const Center(
-                child: Text('App funcionando!'),
-              ),
-            ));
-
     // Auth Routes
+    r.child('/', child: (context) => const LoginPage());
     r.child('/login', child: (context) => const LoginPage());
     r.child('/auth/register-type',
         child: (context) => const RegisterTypePage());
