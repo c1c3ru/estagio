@@ -7,7 +7,6 @@ import 'package:gestao_de_estagio/domain/usecases/auth/get_current_user_usecase.
 import 'package:gestao_de_estagio/domain/usecases/auth/login_usecase.dart';
 import 'package:gestao_de_estagio/domain/usecases/auth/logout_usecase.dart';
 import 'package:gestao_de_estagio/domain/usecases/auth/register_usecase.dart';
-import 'package:gestao_de_estagio/domain/usecases/auth/reset_password_usecase.dart';
 import 'package:gestao_de_estagio/domain/usecases/auth/update_profile_usecase.dart';
 import 'package:gestao_de_estagio/features/auth/bloc/auth_bloc.dart';
 import 'package:gestao_de_estagio/features/auth/bloc/auth_event.dart';
@@ -24,7 +23,6 @@ import 'auth_bloc_test.mocks.dart';
   GetCurrentUserUsecase,
   GetAuthStateChangesUsecase,
   UpdateProfileUsecase,
-  ResetPasswordUsecase,
 ])
 void main() {
   late AuthBloc authBloc;
@@ -34,7 +32,6 @@ void main() {
   late MockGetCurrentUserUsecase mockGetCurrentUserUseCase;
   late MockGetAuthStateChangesUsecase mockGetAuthStateChangesUseCase;
   late MockUpdateProfileUsecase mockUpdateProfileUseCase;
-  late MockResetPasswordUsecase mockResetPasswordUseCase;
 
   setUp(() {
     mockLoginUseCase = MockLoginUsecase();
@@ -43,7 +40,6 @@ void main() {
     mockGetCurrentUserUseCase = MockGetCurrentUserUsecase();
     mockGetAuthStateChangesUseCase = MockGetAuthStateChangesUsecase();
     mockUpdateProfileUseCase = MockUpdateProfileUsecase();
-    mockResetPasswordUseCase = MockResetPasswordUsecase();
 
     when(mockGetAuthStateChangesUseCase.call())
         .thenAnswer((_) => const Stream.empty());
@@ -55,7 +51,6 @@ void main() {
       getCurrentUserUseCase: mockGetCurrentUserUseCase,
       getAuthStateChangesUseCase: mockGetAuthStateChangesUseCase,
       updateProfileUseCase: mockUpdateProfileUseCase,
-      resetPasswordUseCase: mockResetPasswordUseCase,
     );
   });
 

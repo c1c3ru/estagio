@@ -8,7 +8,6 @@ import '../../../domain/usecases/auth/logout_usecase.dart';
 import '../../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../../domain/usecases/auth/update_profile_usecase.dart';
 import '../../../domain/usecases/auth/get_auth_state_changes_usecase.dart';
-import '../../../domain/usecases/auth/reset_password_usecase.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 import '../../../domain/entities/user_entity.dart';
@@ -23,7 +22,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final GetCurrentUserUsecase _getCurrentUserUseCase;
   final GetAuthStateChangesUsecase _getAuthStateChangesUseCase;
   final UpdateProfileUsecase _updateProfileUseCase;
-  final ResetPasswordUsecase _resetPasswordUseCase;
   StreamSubscription<UserEntity?>? _authStateSubscription;
 
   AuthBloc({
@@ -33,14 +31,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required GetCurrentUserUsecase getCurrentUserUseCase,
     required GetAuthStateChangesUsecase getAuthStateChangesUseCase,
     required UpdateProfileUsecase updateProfileUseCase,
-    required ResetPasswordUsecase resetPasswordUseCase,
   })  : _loginUseCase = loginUseCase,
         _logoutUseCase = logoutUseCase,
         _registerUseCase = registerUseCase,
         _getCurrentUserUseCase = getCurrentUserUseCase,
         _getAuthStateChangesUseCase = getAuthStateChangesUseCase,
         _updateProfileUseCase = updateProfileUseCase,
-        _resetPasswordUseCase = resetPasswordUseCase,
         super(AuthInitial()) {
     if (kDebugMode) {
       print('🟡 AuthBloc: Construtor chamado');
@@ -55,7 +51,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthStateChanged>(_onAuthStateChanged);
     on<UpdateProfileRequested>(_onUpdateProfileRequested);
     on<AuthCheckRequested>(_onAuthCheckRequested);
-    on<AuthResetPasswordRequested>(_onAuthResetPasswordRequested);
 
     if (kDebugMode) {
       print('🟡 AuthBloc: Handlers registrados');
@@ -219,19 +214,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(const AuthProfileUpdateSuccess('Perfil atualizado com sucesso!'));
         emit(AuthSuccess(user));
       },
-    );
-  }
-
-  Future<void> _onAuthResetPasswordRequested(
-    AuthResetPasswordRequested event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(AuthLoading());
-    final result = await _resetPasswordUseCase(email: event.email);
-    result.fold(
-      (failure) => emit(AuthFailure(failure.message)),
-      (_) => emit(const AuthPasswordResetEmailSent(
-          message: 'E-mail de redefinição enviado!')),
     );
   }
 
