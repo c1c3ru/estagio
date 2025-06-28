@@ -3,9 +3,10 @@ class AppConstants {
   static const String appName = 'Student Supervisor App';
   static const String appVersion = '1.0.0';
 
-  // API
-  static const String supabaseUrl = 'YOUR_SUPABASE_URL';
-  static const String supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
+  // API - Substitua pelos valores reais do seu projeto Supabase
+  // Para desenvolvimento, você pode usar valores temporários
+  static const String supabaseUrl = 'https://demo.supabase.co';
+  static const String supabaseAnonKey = 'demo_key_for_development';
 
   // Storage Keys
   static const String userTokenKey = 'user_token';

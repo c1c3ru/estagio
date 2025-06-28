@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import '../../../core/constants/app_colors.dart';
@@ -24,11 +25,21 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
+    if (kDebugMode) {
+      print('🟡 LoginPage: initState chamado');
+    }
     _authBloc = Modular.get<AuthBloc>();
+    if (kDebugMode) {
+      print('🟡 LoginPage: AuthBloc obtido com sucesso');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (kDebugMode) {
+      print('🟡 LoginPage: build chamado');
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
@@ -40,6 +51,9 @@ class _LoginPageState extends State<LoginPage> {
       body: BlocConsumer<AuthBloc, AuthState>(
         bloc: _authBloc,
         listener: (context, state) {
+          if (kDebugMode) {
+            print('🟡 LoginPage: Estado recebido: ${state.runtimeType}');
+          }
           if (state is AuthFailure) {
             FeedbackService.showError(context, state.message);
           } else if (state is AuthEmailConfirmationRequired) {
@@ -67,6 +81,11 @@ class _LoginPageState extends State<LoginPage> {
           }
         },
         builder: (context, state) {
+          if (kDebugMode) {
+            print(
+                '🟡 LoginPage: Builder chamado, estado: ${state.runtimeType}');
+          }
+
           if (state is AuthLoading) {
             return const Center(child: LoadingAnimation());
           }

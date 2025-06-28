@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/usecases/auth/login_usecase.dart';
 import '../../../domain/usecases/auth/register_usecase.dart';
@@ -41,6 +42,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         _updateProfileUseCase = updateProfileUseCase,
         _resetPasswordUseCase = resetPasswordUseCase,
         super(AuthInitial()) {
+    if (kDebugMode) {
+      print('🟡 AuthBloc: Construtor chamado');
+    }
+
     // Registrar handlers de eventos
     on<AuthInitializeRequested>(_onAuthInitializeRequested);
     on<LoginRequested>(_onLoginRequested);
@@ -52,10 +57,34 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthCheckRequested>(_onAuthCheckRequested);
     on<AuthResetPasswordRequested>(_onAuthResetPasswordRequested);
 
+    if (kDebugMode) {
+      print('🟡 AuthBloc: Handlers registrados');
+    }
+
     // Inicia a escuta das mudanças de estado de autenticação
-    _authStateSubscription = _getAuthStateChangesUseCase().listen(
-      (user) => add(AuthStateChanged(user)),
-    );
+    try {
+      _authStateSubscription = _getAuthStateChangesUseCase().listen(
+        (user) {
+          if (kDebugMode) {
+            print(
+                '🟡 AuthBloc: AuthStateChanged recebido: ${user?.email ?? 'null'}');
+          }
+          add(AuthStateChanged(user));
+        },
+        onError: (error) {
+          if (kDebugMode) {
+            print('🔴 AuthBloc: Erro na escuta de auth state: $error');
+          }
+        },
+      );
+      if (kDebugMode) {
+        print('🟡 AuthBloc: AuthStateSubscription iniciado');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('🔴 AuthBloc: Erro ao iniciar AuthStateSubscription: $e');
+      }
+    }
   }
 
   @override
@@ -210,11 +239,34 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthInitializeRequested event,
     Emitter<AuthState> emit,
   ) async {
-    final result = await _getCurrentUserUseCase();
-    result.fold(
-      (failure) => emit(AuthInitial()),
-      (user) => emit(user != null ? AuthSuccess(user) : AuthInitial()),
-    );
+    if (kDebugMode) {
+      print('🟡 AuthBloc: _onAuthInitializeRequested iniciado');
+    }
+
+    try {
+      final result = await _getCurrentUserUseCase();
+      result.fold(
+        (failure) {
+          if (kDebugMode) {
+            print(
+                '🟡 AuthBloc: Falha ao obter usuário atual: ${failure.message}');
+          }
+          emit(AuthInitial());
+        },
+        (user) {
+          if (kDebugMode) {
+            print(
+                '🟡 AuthBloc: Usuário atual obtido: ${user?.email ?? 'null'}');
+          }
+          emit(user != null ? AuthSuccess(user) : AuthInitial());
+        },
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('🔴 AuthBloc: Erro em _onAuthInitializeRequested: $e');
+      }
+      emit(AuthInitial());
+    }
   }
 
   Future<void> _onAuthCheckRequested(

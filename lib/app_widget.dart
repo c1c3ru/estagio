@@ -14,39 +14,85 @@ class AppWidget extends StatelessWidget {
     if (kDebugMode) {
       print('🟡 AppWidget: BUILD chamado');
     }
-    return BlocProvider(
-      create: (context) {
-        if (kDebugMode) {
-          print('🟡 AppWidget: Criando AuthBloc...');
-        }
-        final authBloc = Modular.get<AuthBloc>();
-        if (kDebugMode) {
-          print('🟡 AppWidget: AuthBloc obtido com sucesso');
-        }
-        // Inicializar o AuthBloc
-        authBloc.add(const AuthInitializeRequested());
-        if (kDebugMode) {
-          print('🟡 AppWidget: AuthInitializeRequested adicionado');
-        }
-        return authBloc;
-      },
-      child: MaterialApp.router(
-        title: 'Student Supervisor App',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        routerConfig: Modular.routerConfig,
-        debugShowCheckedModeBanner: false,
-        builder: (context, child) {
-          return Scaffold(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            body: child ??
-                const Center(
-                  child: CircularProgressIndicator(),
-                ),
-          );
+
+    try {
+      return BlocProvider(
+        create: (context) {
+          if (kDebugMode) {
+            print('🟡 AppWidget: Criando AuthBloc...');
+          }
+          final authBloc = Modular.get<AuthBloc>();
+          if (kDebugMode) {
+            print('🟡 AppWidget: AuthBloc obtido com sucesso');
+          }
+          // Inicializar o AuthBloc
+          authBloc.add(const AuthInitializeRequested());
+          if (kDebugMode) {
+            print('🟡 AppWidget: AuthInitializeRequested adicionado');
+          }
+          return authBloc;
         },
-      ),
-    );
+        child: MaterialApp.router(
+          title: 'Student Supervisor App',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.system,
+          routerConfig: Modular.routerConfig,
+          debugShowCheckedModeBanner: false,
+          builder: (context, child) {
+            if (kDebugMode) {
+              print(
+                  '🟡 AppWidget: Builder chamado, child: ${child != null ? 'presente' : 'null'}');
+            }
+
+            // Garantir que sempre temos algo para renderizar
+            final widgetToShow = child ??
+                const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text('Carregando...'),
+                    ],
+                  ),
+                );
+
+            return Scaffold(
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              body: widgetToShow,
+            );
+          },
+        ),
+      );
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        print('🔴 AppWidget: Erro durante build: $e');
+        print('🔴 Stack trace: $stackTrace');
+      }
+      return MaterialApp(
+        home: Scaffold(
+          backgroundColor: Colors.white,
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error, size: 64, color: Colors.red),
+                const SizedBox(height: 16),
+                Text('Erro ao inicializar app: $e'),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    // Tentar recarregar
+                    Modular.to.navigate('/');
+                  },
+                  child: const Text('Tentar novamente'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
   }
 }

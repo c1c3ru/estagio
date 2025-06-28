@@ -1,4 +1,5 @@
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:flutter/material.dart';
 import 'package:gestao_de_estagio/domain/usecases/contract/get_contracts_for_student_usecase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -303,8 +304,17 @@ class AppModule extends Module {
 
   @override
   void routes(RouteManager r) {
+    // Rota inicial simplificada para teste
+    r.child('/',
+        child: (context) => Scaffold(
+              appBar: AppBar(title: const Text('Teste')),
+              body: const Center(
+                child: Text('App funcionando!'),
+              ),
+            ));
+
     // Auth Routes
-    r.child(Modular.initialRoute, child: (context) => const LoginPage());
+    r.child('/login', child: (context) => const LoginPage());
     r.child('/auth/register-type',
         child: (context) => const RegisterTypePage());
     r.child('/auth/register-student',
@@ -363,7 +373,5 @@ class AppModule extends Module {
         child: const NotificationPage(),
       ),
     );
-
-    r.child('/login', child: (context) => const LoginPage());
   }
 }
