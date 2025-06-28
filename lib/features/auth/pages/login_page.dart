@@ -44,10 +44,6 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Modular.to.navigate('/'),
-        ),
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
         bloc: _authBloc,
