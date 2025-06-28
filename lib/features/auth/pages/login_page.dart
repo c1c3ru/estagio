@@ -84,6 +84,9 @@ class _LoginPageState extends State<LoginPage> {
               case UserRole.supervisor:
                 Modular.to.navigate('/supervisor/');
                 break;
+              case UserRole.admin:
+                Modular.to.navigate('/admin/');
+                break;
             }
           }
         },

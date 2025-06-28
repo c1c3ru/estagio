@@ -1,8 +1,7 @@
 enum InternshipShift {
   morning('morning', 'Manhã'),
   afternoon('afternoon', 'Tarde'),
-  evening('evening', 'Noite'),
-  flexible('flexible', 'Flexível');
+  evening('evening', 'Noite');
 
   const InternshipShift(this.value, this.displayName);
 

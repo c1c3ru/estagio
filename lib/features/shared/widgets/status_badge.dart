@@ -83,28 +83,14 @@ class StatusBadge extends StatelessWidget {
         bgColor = AppColors.statusActive;
         statusIcon = Icons.play_circle_filled_outlined;
         break;
-      case ContractStatus.pending:
-        bgColor = AppColors.statusPending;
-        fgColor = AppColors.textPrimaryLight;
-        statusIcon = Icons.pending_actions_outlined;
-        break;
       case ContractStatus.pendingApproval:
         bgColor = AppColors.statusPending;
         fgColor = AppColors.textPrimaryLight;
         statusIcon = Icons.hourglass_empty_outlined;
         break;
-      case ContractStatus.inactive:
-        bgColor = AppColors.statusInactive;
-        fgColor = AppColors.textPrimaryDark;
-        statusIcon = Icons.pause_circle_outline_outlined;
-        break;
       case ContractStatus.expired:
         bgColor = AppColors.statusExpired;
         statusIcon = Icons.event_busy_outlined;
-        break;
-      case ContractStatus.cancelled:
-        bgColor = AppColors.statusTerminated;
-        statusIcon = Icons.cancel_outlined;
         break;
       case ContractStatus.terminated:
         bgColor = AppColors.statusTerminated;
@@ -113,11 +99,6 @@ class StatusBadge extends StatelessWidget {
       case ContractStatus.completed:
         bgColor = AppColors.statusCompleted;
         statusIcon = Icons.assignment_turned_in_outlined;
-        break;
-      case ContractStatus.unknown:
-        bgColor = Theme.of(context).disabledColor;
-        fgColor = Theme.of(context).colorScheme.onSurface.withOpacity(0.7);
-        statusIcon = Icons.help_outline;
         break;
     }
     return StatusBadge(

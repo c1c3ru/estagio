@@ -1,6 +1,7 @@
 enum UserRole {
   student('student', 'Estudante'),
-  supervisor('supervisor', 'Supervisor');
+  supervisor('supervisor', 'Supervisor'),
+  admin('admin', 'Administrador');
 
   const UserRole(this.value, this.displayName);
 
@@ -17,4 +18,3 @@ enum UserRole {
   @override
   String toString() => value;
 }
-
