@@ -1,12 +1,14 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class AppConstants {
   // App Info
-  static const String appName = 'Student Supervisor App';
+  static const String appName = 'Estágio';
   static const String appVersion = '1.0.0';
 
   // API - Substitua pelos valores reais do seu projeto Supabase
   // Para desenvolvimento, você pode usar valores temporários
-  static const String supabaseUrl = 'https://demo.supabase.co';
-  static const String supabaseAnonKey = 'demo_key_for_development';
+  static String get supabaseUrl => dotenv.env['SUPABASE_URL'] ?? '';
+  static String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
 
   // Storage Keys
   static const String userTokenKey = 'user_token';

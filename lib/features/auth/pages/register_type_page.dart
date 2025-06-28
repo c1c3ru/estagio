@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:lottie/lottie.dart';
 
 class RegisterTypePage extends StatelessWidget {
   const RegisterTypePage({super.key});
@@ -20,17 +19,20 @@ class RegisterTypePage extends StatelessWidget {
       ),
       body: Center(
         child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Lottie.asset(
-                'assets/animations/Formulario_animation.json',
-                height: 160,
-                repeat: true,
+              Icon(
+                Icons.app_registration,
+                size: 80,
+                color: Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                alignment: WrapAlignment.center,
                 children: [
                   _RegisterTypeCard(
                     icon: Icons.school_outlined,
@@ -39,7 +41,6 @@ class RegisterTypePage extends StatelessWidget {
                         'Cadastre-se como estudante para registrar e acompanhar seu estágio.',
                     onTap: () => Modular.to.pushNamed('/auth/register-student'),
                   ),
-                  const SizedBox(width: 24),
                   _RegisterTypeCard(
                     icon: Icons.business_center_outlined,
                     title: 'Sou Supervisor',
@@ -81,8 +82,8 @@ class _RegisterTypeCard extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         color: Theme.of(context).colorScheme.surface,
         child: Container(
-          width: 180,
-          padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+          width: MediaQuery.of(context).size.width > 600 ? 200 : 160,
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -93,7 +94,8 @@ class _RegisterTypeCard extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.onSurface,
-                      )),
+                      ),
+                  textAlign: TextAlign.center),
               const SizedBox(height: 8),
               Text(description,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(

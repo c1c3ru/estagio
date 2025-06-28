@@ -35,6 +35,7 @@ class AppLottieAnimation extends StatelessWidget {
   final bool animate;
   final LottieDelegates? delegates;
   final Animation<double>? controller; // Para controlo externo da animação
+  final FrameRate? frameRate; // Otimização de performance
 
   const AppLottieAnimation({
     super.key,
@@ -46,6 +47,7 @@ class AppLottieAnimation extends StatelessWidget {
     this.animate = true,
     this.delegates,
     this.controller,
+    this.frameRate,
   });
 
   @override
@@ -62,6 +64,8 @@ class AppLottieAnimation extends StatelessWidget {
       animate: animate,
       delegates: delegates,
       controller: controller,
+      // Otimizações de performance
+      frameRate: frameRate,
       // Opcional: um errorBuilder para lidar com falhas ao carregar o Lottie
       errorBuilder: (context, error, stackTrace) {
         // logger.e('Erro ao carregar animação Lottie: $assetPath', error: error, stackTrace: stackTrace);
@@ -111,6 +115,7 @@ class SuccessAnimation extends StatelessWidget {
       width: size,
       height: size,
       repeat: false,
+      frameRate: const FrameRate(30), // Otimização de performance
       onLoaded: (composition) {
         onLoaded?.call();
       },
