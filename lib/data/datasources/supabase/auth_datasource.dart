@@ -189,10 +189,12 @@ class AuthDatasource implements IAuthDatasource {
       // Verificar se o usuário tem dados na tabela correspondente
       await _ensureUserDataExists(user);
 
-      return {
+      // Buscar dados completos do estudante se disponíveis
+      final role = user.userMetadata?['role'] ?? 'student';
+      Map<String, dynamic> userData = {
         'id': user.id,
         'email': user.email,
-        'role': user.userMetadata?['role'] ?? 'student',
+        'role': role,
         'fullName': user.userMetadata?['full_name'],
         'phoneNumber': user.phone,
         'profilePictureUrl': user.userMetadata?['avatar_url'],
@@ -201,6 +203,49 @@ class AuthDatasource implements IAuthDatasource {
             ? DateTime.parse(user.updatedAt!).toIso8601String()
             : null,
       };
+
+      // Se for estudante, buscar dados completos da tabela students
+      if (role == 'student') {
+        try {
+          final studentData = await _supabaseClient
+              .from('students')
+              .select('*')
+              .eq('id', user.id)
+              .maybeSingle();
+
+          if (studentData != null) {
+            // Mesclar dados do auth com dados da tabela students
+            userData.addAll({
+              'fullName': studentData['full_name'] ?? userData['fullName'],
+              'course': studentData['course'],
+              'advisorName': studentData['advisor_name'],
+              'registrationNumber': studentData['registration_number'],
+              'isMandatoryInternship': studentData['is_mandatory_internship'],
+              'classShift': studentData['class_shift'],
+              'internshipShift1': studentData['internship_shift_1'],
+              'internshipShift2': studentData['internship_shift_2'],
+              'birthDate': studentData['birth_date'],
+              'contractStartDate': studentData['contract_start_date'],
+              'contractEndDate': studentData['contract_end_date'],
+              'totalHoursRequired': studentData['total_hours_required'],
+              'totalHoursCompleted': studentData['total_hours_completed'],
+              'weeklyHoursTarget': studentData['weekly_hours_target'],
+              'phoneNumber':
+                  studentData['phone_number'] ?? userData['phoneNumber'],
+              'profilePictureUrl': studentData['profile_picture_url'] ??
+                  userData['profilePictureUrl'],
+              'status': studentData['status'],
+              'supervisorId': studentData['supervisor_id'],
+            });
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            print('⚠️ Erro ao buscar dados completos do estudante: $e');
+          }
+        }
+      }
+
+      return userData;
     } catch (e) {
       throw AuthException('Erro ao buscar usuário atual: $e');
     }

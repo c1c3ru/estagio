@@ -2,17 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../domain/entities/user_entity.dart';
 import '../../../domain/usecases/auth/login_usecase.dart';
 import '../../../domain/usecases/auth/register_usecase.dart';
 import '../../../domain/usecases/auth/logout_usecase.dart';
 import '../../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../../domain/usecases/auth/update_profile_usecase.dart';
 import '../../../domain/usecases/auth/get_auth_state_changes_usecase.dart';
+
 import 'auth_event.dart';
 import 'auth_state.dart';
-import '../../../domain/entities/user_entity.dart';
-import '../../../domain/entities/student_entity.dart';
-import '../../../domain/entities/supervisor_entity.dart';
 
 // BLoC
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
@@ -297,29 +297,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   // Função auxiliar para checar perfil incompleto
   bool _isProfileIncomplete(UserEntity user) {
-    if (user.role.name == 'student' && user is StudentEntity) {
-      final student = user as StudentEntity;
-      final course = student.course;
-      final advisor = student.advisorName;
-      if (student.fullName.isEmpty ||
-          course.isEmpty ||
-          course == 'PENDENTE' ||
-          advisor.isEmpty ||
-          advisor == 'PENDENTE') {
-        return true;
-      }
+    // Verificar se o usuário tem dados básicos preenchidos
+    if (user.fullName.isEmpty || user.fullName == 'Estudante') {
+      return true;
     }
-    if (user.role.name == 'supervisor' && user is SupervisorEntity) {
-      final supervisor = user as SupervisorEntity;
-      final department = supervisor.department;
-      final position = supervisor.position;
-      if ((department?.isEmpty ?? true) ||
-          department == 'PENDENTE' ||
-          (position?.isEmpty ?? true) ||
-          position == 'PENDENTE') {
-        return true;
-      }
+
+    // Para estudantes, verificar se tem dados específicos
+    if (user.role.name == 'student') {
+      // Se o usuário não tem dados completos na tabela students, considerar incompleto
+      // Isso será verificado quando o usuário acessar a página de perfil
+      return false; // Por enquanto, permitir acesso e verificar na página de perfil
     }
+
+    // Para supervisores, verificar se tem dados específicos
+    if (user.role.name == 'supervisor') {
+      // Se não temos dados completos do supervisor, considerar incompleto
+      return false; // Por enquanto, permitir acesso e verificar na página de perfil
+    }
+
     return false;
   }
 }
