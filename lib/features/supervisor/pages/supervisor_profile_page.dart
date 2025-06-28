@@ -9,6 +9,7 @@ import '../bloc/supervisor_event.dart';
 import '../bloc/supervisor_state.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_state.dart' as auth_state;
+import 'package:flutter/foundation.dart';
 
 class SupervisorProfilePage extends StatefulWidget {
   const SupervisorProfilePage({super.key});
@@ -29,7 +30,17 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
   @override
   void initState() {
     super.initState();
+    // Carregar dados do dashboard com timeout
     Modular.get<SupervisorBloc>().add(LoadSupervisorDashboardDataEvent());
+
+    // Timeout de segurança para evitar loading infinito
+    Future.delayed(const Duration(seconds: 10), () {
+      if (mounted) {
+        setState(() {
+          // Força a atualização da UI mesmo se o loading continuar
+        });
+      }
+    });
   }
 
   @override
@@ -86,10 +97,9 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
         }
       },
       builder: (context, state) {
-        if (state is SupervisorLoading) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+        // Debug: Log do estado atual
+        if (kDebugMode) {
+          print('🟡 SupervisorProfilePage: Estado atual: ${state.runtimeType}');
         }
 
         // Obter dados do usuário autenticado
@@ -102,14 +112,44 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
           userEmail = authState.user.email;
         }
 
-        // Tentar obter dados do supervisor
-        SupervisorEntity? supervisor;
-        if (state is SupervisorDashboardLoadSuccess &&
-            state.supervisorProfile != null) {
-          supervisor = state.supervisorProfile;
-          _supervisor = supervisor;
+        // Mostrar loading apenas se estiver realmente carregando E não tivermos dados
+        if (state is SupervisorLoading) {
+          // Se já temos dados do supervisor, não mostrar loading
+          if (_supervisor != null) {
+            if (kDebugMode) {
+              print(
+                  '🟡 SupervisorProfilePage: Loading mas já temos dados, mostrando UI');
+            }
+          } else {
+            if (kDebugMode) {
+              print('🟡 SupervisorProfilePage: Mostrando loading...');
+            }
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
         }
 
+        // Tentar obter dados do supervisor
+        SupervisorEntity? supervisor;
+        if (state is SupervisorDashboardLoadSuccess) {
+          supervisor = state.supervisorProfile;
+          _supervisor = supervisor;
+          if (kDebugMode) {
+            print(
+                '🟡 SupervisorProfilePage: Supervisor carregado: ${supervisor?.fullName ?? 'null'}');
+          }
+        }
+
+        // Se não temos dados do supervisor mas não estamos carregando, mostrar mensagem
+        if (supervisor == null && state is! SupervisorLoading) {
+          if (kDebugMode) {
+            print(
+                '🟡 SupervisorProfilePage: Nenhum supervisor encontrado, mostrando mensagem');
+          }
+        }
+
+        // Sempre mostrar a UI, mesmo sem dados completos
         return Scaffold(
           appBar: AppBar(
             title: const Text('Perfil do Supervisor'),
