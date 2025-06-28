@@ -80,8 +80,8 @@ TABELA: time_logs
 -- Primeiro, vamos verificar se o usuário já existe e inserir se necessário
 INSERT INTO public.users (id, email, role, is_active, created_at, updated_at, matricula)
 VALUES (
-  'd941ae1d-e83f-4215-bdc7-da5f9cf139c0', -- ID do usuário autenticado
-  'cti.maracanau@ifce.edu.br',
+  '4ac134e0-494e-41d6-9972-1d7fc1af0cb1', -- ID do usuário autenticado
+  'cicerosilva.ifce@gmail.com',
   'student',
   true,
   NOW(),
@@ -118,7 +118,7 @@ INSERT INTO public.students (
   supervisor_id
 )
 VALUES (
-  'd941ae1d-e83f-4215-bdc7-da5f9cf139c0', -- Mesmo ID do usuário
+  '4ac134e0-494e-41d6-9972-1d7fc1af0cb1', -- Mesmo ID do usuário
   'Cicero Silva',
   '202300123456',
   'Tecnologia em Sistemas para Internet',
@@ -136,7 +136,7 @@ VALUES (
   NOW(),
   NOW(),
   'active',
-  'd941ae1d-e83f-4215-bdc7-da5f9cf139c0'
+  NULL
 )
 ON CONFLICT (id) DO UPDATE SET
   full_name = EXCLUDED.full_name,
@@ -154,10 +154,9 @@ ON CONFLICT (id) DO UPDATE SET
   total_hours_completed = EXCLUDED.total_hours_completed,
   weekly_hours_target = EXCLUDED.weekly_hours_target,
   updated_at = NOW(),
-  status = EXCLUDED.status,
-  supervisor_id = EXCLUDED.supervisor_id;
+  status = EXCLUDED.status;
 
--- Inserir alguns logs de tempo de teste (apenas se não existirem)
+-- Inserir logs de tempo de exemplo (apenas se não existirem)
 INSERT INTO public.time_logs (
   id,
   student_id,
@@ -172,65 +171,7 @@ INSERT INTO public.time_logs (
 )
 SELECT 
   gen_random_uuid(),
-  'd941ae1d-e83f-4215-bdc7-da5f9cf139c0',
-  CURRENT_DATE - INTERVAL '1 day',
-  '08:00:00',
-  '12:00:00',
-  4.0,
-  'Desenvolvimento de aplicação web',
-  true,
-  NOW(),
-  NOW()
-WHERE NOT EXISTS (
-  SELECT 1 FROM public.time_logs 
-  WHERE student_id = 'd941ae1d-e83f-4215-bdc7-da5f9cf139c0' 
-  AND log_date = CURRENT_DATE - INTERVAL '1 day'
-);
-
-INSERT INTO public.time_logs (
-  id,
-  student_id,
-  log_date,
-  check_in_time,
-  check_out_time,
-  hours_logged,
-  description,
-  approved,
-  created_at,
-  updated_at
-)
-SELECT 
-  gen_random_uuid(),
-  'd941ae1d-e83f-4215-bdc7-da5f9cf139c0',
-  CURRENT_DATE - INTERVAL '2 days',
-  '08:00:00',
-  '12:00:00',
-  4.0,
-  'Estudo de frameworks',
-  true,
-  NOW(),
-  NOW()
-WHERE NOT EXISTS (
-  SELECT 1 FROM public.time_logs 
-  WHERE student_id = 'd941ae1d-e83f-4215-bdc7-da5f9cf139c0' 
-  AND log_date = CURRENT_DATE - INTERVAL '2 days'
-);
-
-INSERT INTO public.time_logs (
-  id,
-  student_id,
-  log_date,
-  check_in_time,
-  check_out_time,
-  hours_logged,
-  description,
-  approved,
-  created_at,
-  updated_at
-)
-SELECT 
-  gen_random_uuid(),
-  'd941ae1d-e83f-4215-bdc7-da5f9cf139c0',
+  '4ac134e0-494e-41d6-9972-1d7fc1af0cb1',
   CURRENT_DATE - INTERVAL '3 days',
   '08:00:00',
   '12:00:00',
@@ -241,7 +182,7 @@ SELECT
   NOW()
 WHERE NOT EXISTS (
   SELECT 1 FROM public.time_logs 
-  WHERE student_id = 'd941ae1d-e83f-4215-bdc7-da5f9cf139c0' 
+  WHERE student_id = '4ac134e0-494e-41d6-9972-1d7fc1af0cb1' 
   AND log_date = CURRENT_DATE - INTERVAL '3 days'
 );
 
@@ -259,7 +200,7 @@ INSERT INTO public.time_logs (
 )
 SELECT 
   gen_random_uuid(),
-  'd941ae1d-e83f-4215-bdc7-da5f9cf139c0',
+  '4ac134e0-494e-41d6-9972-1d7fc1af0cb1',
   CURRENT_DATE,
   '08:00:00',
   0.0,
@@ -269,7 +210,7 @@ SELECT
   NOW()
 WHERE NOT EXISTS (
   SELECT 1 FROM public.time_logs 
-  WHERE student_id = 'd941ae1d-e83f-4215-bdc7-da5f9cf139c0' 
+  WHERE student_id = '4ac134e0-494e-41d6-9972-1d7fc1af0cb1' 
   AND log_date = CURRENT_DATE 
   AND check_out_time IS NULL
 );
@@ -288,7 +229,7 @@ INSERT INTO public.contracts (
 )
 SELECT 
   gen_random_uuid(),
-  'd941ae1d-e83f-4215-bdc7-da5f9cf139c0',
+  '4ac134e0-494e-41d6-9972-1d7fc1af0cb1',
   'internship',
   'active',
   '2024-02-01',
@@ -298,7 +239,7 @@ SELECT
   NOW()
 WHERE NOT EXISTS (
   SELECT 1 FROM public.contracts 
-  WHERE student_id = 'd941ae1d-e83f-4215-bdc7-da5f9cf139c0' 
+  WHERE student_id = '4ac134e0-494e-41d6-9972-1d7fc1af0cb1' 
   AND status = 'active'
 );
 
@@ -310,7 +251,7 @@ SELECT
   role,
   matricula
 FROM public.users 
-WHERE id = 'd941ae1d-e83f-4215-bdc7-da5f9cf139c0'
+WHERE id = '4ac134e0-494e-41d6-9972-1d7fc1af0cb1'
 
 UNION ALL
 
@@ -321,29 +262,29 @@ SELECT
   class_shift as role,
   registration_number as matricula
 FROM public.students 
-WHERE id = 'd941ae1d-e83f-4215-bdc7-da5f9cf139c0'
+WHERE id = '4ac134e0-494e-41d6-9972-1d7fc1af0cb1'
 
 UNION ALL
 
 SELECT 
-  'Time Logs' as tipo,
-  COUNT(*)::text as id,
-  'Total de logs' as email,
-  'student_id' as role,
-  student_id as matricula
-FROM public.time_logs 
-WHERE student_id = 'd941ae1d-e83f-4215-bdc7-da5f9cf139c0'
-
-UNION ALL
-
-SELECT 
-  'Contratos' as tipo,
-  COUNT(*)::text as id,
-  'Total de contratos' as email,
+  'Contrato' as tipo,
+  id,
+  contract_type as email,
   status as role,
-  student_id as matricula
+  description as matricula
 FROM public.contracts 
-WHERE student_id = 'd941ae1d-e83f-4215-bdc7-da5f9cf139c0';
+WHERE student_id = '4ac134e0-494e-41d6-9972-1d7fc1af0cb1'
+
+UNION ALL
+
+SELECT 
+  'Time Log' as tipo,
+  id,
+  log_date::text as email,
+  approved::text as role,
+  description as matricula
+FROM public.time_logs 
+WHERE student_id = '4ac134e0-494e-41d6-9972-1d7fc1af0cb1';
 
 -- ========================================
 -- INSTRUÇÕES PARA TESTAR NOVOS USUÁRIOS
