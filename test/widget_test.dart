@@ -51,12 +51,10 @@ void main() {
   });
 
   testWidgets('AppWidget smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
     await tester
         .pumpWidget(ModularApp(module: AppModule(), child: const AppWidget()));
     await tester.pumpAndSettle();
 
-    // Verify that the app starts without errors
     expect(find.byType(MaterialApp), findsOneWidget);
   });
 
