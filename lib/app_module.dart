@@ -36,7 +36,6 @@ import 'domain/usecases/auth/login_usecase.dart';
 import 'domain/usecases/auth/register_usecase.dart';
 import 'domain/usecases/auth/logout_usecase.dart';
 import 'domain/usecases/auth/get_current_user_usecase.dart';
-import 'domain/usecases/auth/reset_password_usecase.dart';
 import 'domain/usecases/auth/update_profile_usecase.dart';
 import 'domain/usecases/auth/get_auth_state_changes_usecase.dart';
 
@@ -103,7 +102,6 @@ import 'features/shared/bloc/notification_bloc.dart';
 // Pages
 import 'features/auth/pages/login_page.dart';
 import 'features/shared/pages/notification_page.dart';
-import 'features/auth/pages/forgot_password_page.dart';
 import 'features/auth/pages/register_type_page.dart';
 import 'features/auth/pages/supervisor_register_page.dart';
 import 'features/student/pages/student_register_page.dart';
@@ -154,7 +152,6 @@ class AppModule extends Module {
     i.addLazySingleton<RegisterUsecase>(() => RegisterUsecase(i()));
     i.addLazySingleton<LogoutUsecase>(() => LogoutUsecase(i()));
     i.addLazySingleton<GetCurrentUserUsecase>(() => GetCurrentUserUsecase(i()));
-    i.addLazySingleton<ResetPasswordUsecase>(() => ResetPasswordUsecase(i()));
     i.addLazySingleton<UpdateProfileUsecase>(() => UpdateProfileUsecase(i()));
     i.addLazySingleton<GetAuthStateChangesUsecase>(
         () => GetAuthStateChangesUsecase(i()));
@@ -246,7 +243,6 @@ class AppModule extends Module {
           registerUseCase: i(),
           logoutUseCase: i(),
           getCurrentUserUseCase: i(),
-          resetPasswordUseCase: i(),
           updateProfileUseCase: i(),
           getAuthStateChangesUseCase: i(),
         ));
@@ -312,8 +308,6 @@ class AppModule extends Module {
         child: (context) => const StudentRegisterPage());
     r.child('/auth/register-supervisor',
         child: (context) => const SupervisorRegisterPage());
-    r.child('/auth/forgot-password',
-        child: (context) => const ForgotPasswordPage());
     r.child('/auth/unauthorized', child: (context) => const UnauthorizedPage());
 
     // Student Module Routes
