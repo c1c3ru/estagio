@@ -84,7 +84,7 @@ class _SupervisorRegisterPageState extends State<SupervisorRegisterPage> {
           } else if (state is custom_auth.AuthSuccess) {
             FeedbackService.showSuccess(
                 context, 'Cadastro realizado com sucesso!');
-            Modular.to.navigate('/');
+            Modular.to.navigate('/login');
           }
         },
         builder: (context, state) {

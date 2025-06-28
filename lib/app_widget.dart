@@ -69,7 +69,7 @@ class AppWidget extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () {
                     // Tentar recarregar
-                    Modular.to.navigate('/');
+                    Modular.to.navigate('/login');
                   },
                   child: const Text('Tentar novamente'),
                 ),

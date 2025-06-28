@@ -12,6 +12,7 @@ import '../../../../core/errors/app_exceptions.dart';
 import '../../../../domain/entities/student_entity.dart';
 import '../../../../domain/entities/time_log_entity.dart';
 import '../../../../domain/entities/contract_entity.dart';
+import '../../../../domain/entities/supervisor_entity.dart';
 import '../../../../domain/usecases/supervisor/get_all_time_logs_for_supervisor_usecase.dart';
 import '../../../../domain/usecases/supervisor/approve_or_reject_time_log_usecase.dart';
 import '../../../../domain/usecases/contract/get_all_contracts_usecase.dart';
@@ -65,6 +66,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
   final CreateSupervisorUsecase _createSupervisorUsecase;
   final UpdateSupervisorUsecase _updateSupervisorUsecase;
   final DeleteSupervisorUsecase _deleteSupervisorUsecase;
+  final GetSupervisorDetailsUsecase _getSupervisorDetailsUsecase;
 
   // Auth
   final AuthBloc _authBloc;
@@ -108,6 +110,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
         _createSupervisorUsecase = createSupervisorUsecase,
         _updateSupervisorUsecase = updateSupervisorUsecase,
         _deleteSupervisorUsecase = deleteSupervisorUsecase,
+        _getSupervisorDetailsUsecase = getSupervisorDetailsUsecase,
         _authBloc = authBloc,
         super(const SupervisorInitial()) {
     on<LoadSupervisorDashboardDataEvent>(_onLoadSupervisorDashboardData);
@@ -156,6 +159,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
         _getAllContractsUsecase.call(const GetAllContractsParams()),
         _getAllTimeLogsForSupervisorUsecase
             .call(const GetAllTimeLogsParams(pendingOnly: true)),
+        _getSupervisorDetailsUsecase.call(supervisorId),
       ]);
 
       final studentsResult =
@@ -177,6 +181,14 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
       final List<TimeLogEntity> pendingApprovals = timeLogsResult.fold(
         (failure) => throw failure,
         (timeLogList) => timeLogList,
+      );
+
+      // Carregar perfil do supervisor
+      final supervisorProfileResult =
+          results[3] as Either<AppFailure, SupervisorEntity>;
+      final SupervisorEntity? supervisorProfile = supervisorProfileResult.fold(
+        (failure) => null, // Se falhar, continuar sem o perfil
+        (supervisor) => supervisor,
       );
 
       final now = DateTime.now();
@@ -202,6 +214,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
       );
 
       emit(SupervisorDashboardLoadSuccess(
+        supervisorProfile: supervisorProfile,
         students: students,
         contracts: contracts,
         stats: stats,

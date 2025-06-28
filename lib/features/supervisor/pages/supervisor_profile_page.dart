@@ -7,6 +7,8 @@ import '../../../domain/entities/supervisor_entity.dart';
 import '../bloc/supervisor_bloc.dart';
 import '../bloc/supervisor_event.dart';
 import '../bloc/supervisor_state.dart';
+import '../../auth/bloc/auth_bloc.dart';
+import '../../auth/bloc/auth_state.dart' as auth_state;
 
 class SupervisorProfilePage extends StatefulWidget {
   const SupervisorProfilePage({super.key});
@@ -85,23 +87,36 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
       },
       builder: (context, state) {
         if (state is SupervisorLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
+
+        // Obter dados do usuário autenticado
+        final authState = Modular.get<AuthBloc>().state;
+        String userName = 'Supervisor';
+        String userEmail = '';
+
+        if (authState is auth_state.AuthSuccess) {
+          userName = authState.user.fullName;
+          userEmail = authState.user.email;
+        }
+
+        // Tentar obter dados do supervisor
         SupervisorEntity? supervisor;
         if (state is SupervisorDashboardLoadSuccess &&
             state.supervisorProfile != null) {
           supervisor = state.supervisorProfile;
           _supervisor = supervisor;
         }
-        if (supervisor == null) {
-          return const Center(
-              child: Text('Dados do supervisor não encontrados.'));
-        }
+
         return Scaffold(
           appBar: AppBar(
             title: const Text('Perfil do Supervisor'),
+            backgroundColor: AppColors.primary,
+            foregroundColor: AppColors.white,
             actions: [
-              if (!_isEditMode)
+              if (!_isEditMode && supervisor != null)
                 IconButton(
                   icon: const Icon(Icons.edit),
                   onPressed: _toggleEditMode,
@@ -115,13 +130,17 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildHeader(supervisor),
+                  _buildHeader(userName, userEmail, supervisor),
                   const SizedBox(height: 24),
-                  _isEditMode
-                      ? _buildEditableFields()
-                      : _buildReadOnlyFields(supervisor),
-                  const SizedBox(height: 24),
-                  if (_isEditMode) _buildActionButtons(),
+                  if (supervisor != null) ...[
+                    _isEditMode
+                        ? _buildEditableFields()
+                        : _buildReadOnlyFields(supervisor),
+                    const SizedBox(height: 24),
+                    if (_isEditMode) _buildActionButtons(),
+                  ] else ...[
+                    _buildNoProfileMessage(),
+                  ],
                 ],
               ),
             ),
@@ -131,7 +150,8 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
     );
   }
 
-  Widget _buildHeader(SupervisorEntity supervisor) {
+  Widget _buildHeader(
+      String userName, String userEmail, SupervisorEntity? supervisor) {
     return Center(
       child: Column(
         children: [
@@ -142,16 +162,72 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
           ),
           const SizedBox(height: 16),
           Text(
-            supervisor.position ?? '',
+            userName,
             style: AppTextStyles.h6,
           ),
           const SizedBox(height: 4),
           Text(
-            supervisor.department ?? '',
+            userEmail,
             style: AppTextStyles.bodyMedium
                 .copyWith(color: AppColors.textSecondary),
           ),
+          if (supervisor != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              supervisor.position ?? '',
+              style: AppTextStyles.bodyMedium,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              supervisor.department ?? '',
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
+            ),
+          ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildNoProfileMessage() {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            const Icon(
+              Icons.info_outline,
+              size: 48,
+              color: AppColors.warning,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Perfil do Supervisor não encontrado',
+              style: AppTextStyles.h6,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Os dados do perfil do supervisor não foram carregados. Tente recarregar a página ou entre em contato com o suporte.',
+              style: AppTextStyles.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                Modular.get<SupervisorBloc>()
+                    .add(LoadSupervisorDashboardDataEvent());
+              },
+              icon: const Icon(Icons.refresh),
+              label: const Text('Recarregar'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.white,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

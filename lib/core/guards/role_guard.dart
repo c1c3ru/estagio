@@ -38,7 +38,7 @@ class RoleGuard extends RouteGuard {
     } else {
       // Não autenticado, redireciona para login (o AuthGuard já faria isso se aplicado antes)
       // Mas é bom ter a verificação aqui também como segurança.
-      Modular.to.navigate('/auth/login');
+      Modular.to.navigate('/login');
       return false;
     }
   }

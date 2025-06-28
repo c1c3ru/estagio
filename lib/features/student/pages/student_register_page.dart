@@ -137,7 +137,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
   }
 
   void _onLoginPressed() {
-    Modular.to.navigate('/');
+    Modular.to.navigate('/login');
   }
 
   Future<void> _selectDate(
@@ -219,7 +219,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
             } else if (state is custom_auth.AuthSuccess) {
               FeedbackService.showSuccess(
                   context, 'Cadastro realizado com sucesso!');
-              Modular.to.navigate('/');
+              Modular.to.navigate('/login');
             }
           },
           builder: (context, state) {
