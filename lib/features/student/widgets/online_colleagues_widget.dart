@@ -61,7 +61,7 @@ class OnlineColleaguesWidget extends StatefulWidget {
 }
 
 class _OnlineColleaguesWidgetState extends State<OnlineColleaguesWidget> {
-  final SupabaseClient _supabaseClient = Modular.get<SupabaseClient>();
+  final SupabaseClient _supabaseClient = Supabase.instance.client;
   final AuthBloc _authBloc = Modular.get<AuthBloc>();
   String? _currentUserId;
 

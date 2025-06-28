@@ -60,7 +60,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
   Future<void> _fetchSupervisors() async {
     setState(() => _loadingSupervisors = true);
     try {
-      final supabase = Modular.get<SupabaseClient>();
+      final supabase = Supabase.instance.client;
       final response = await supabase
           .from('supervisors')
           .select('id, full_name')
