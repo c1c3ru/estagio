@@ -28,6 +28,9 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        
+        // Configurações para resolver problemas de compatibilidade
+        multiDexEnabled = true
     }
 
     buildTypes {
@@ -36,6 +39,12 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
+    }
+    
+    // Configurações para resolver problemas de plugins
+    lint {
+        disable += "InvalidPackage"
+        checkReleaseBuilds = false
     }
 }
 

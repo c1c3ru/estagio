@@ -13,6 +13,7 @@ import 'data/datasources/supabase/contract_datasource.dart';
 import 'data/datasources/supabase/notification_datasource.dart';
 import 'data/datasources/local/preferences_manager.dart';
 import 'data/datasources/local/cache_manager.dart';
+import 'data/datasources/local/local_storage_service.dart';
 import 'domain/repositories/i_auth_datasource.dart';
 
 // Repositories
@@ -136,6 +137,8 @@ class AppModule extends Module {
         () => NotificationDatasource(i()));
     i.addLazySingleton<PreferencesManager>(() => PreferencesManager(null));
     i.addLazySingleton<CacheManager>(() => CacheManager());
+    i.addLazySingleton<LocalStorageService>(
+        () => LocalStorageService(i(), i()));
 
     // Repositories
     i.addLazySingleton<IAuthRepository>(() => AuthRepository(
