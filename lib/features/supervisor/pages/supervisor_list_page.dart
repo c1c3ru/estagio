@@ -6,6 +6,8 @@ import '../bloc/supervisor_bloc.dart';
 import '../bloc/supervisor_event.dart';
 import '../bloc/supervisor_state.dart';
 import '../widgets/supervisor_form_dialog.dart';
+import '../../auth/bloc/auth_bloc.dart';
+import '../../auth/bloc/auth_event.dart';
 
 class SupervisorListPage extends StatefulWidget {
   const SupervisorListPage({super.key});
@@ -26,17 +28,6 @@ class _SupervisorListPageState extends State<SupervisorListPage> {
   Widget build(BuildContext context) {
     return BlocListener<SupervisorBloc, SupervisorState>(
       listener: (context, state) {
-        if (state is SupervisorLoading) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) =>
-                const Center(child: CircularProgressIndicator()),
-          );
-        } else {
-          Navigator.of(context, rootNavigator: true)
-              .popUntil((route) => route.isFirst);
-        }
         if (state is SupervisorOperationSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
@@ -50,9 +41,17 @@ class _SupervisorListPageState extends State<SupervisorListPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Supervisores'),
+          title: const Text('Gerenciar Supervisores'),
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.white,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () {
+                Modular.get<AuthBloc>().add(LogoutRequested());
+              },
+            ),
+          ],
         ),
         body: BlocBuilder<SupervisorBloc, SupervisorState>(
           builder: (context, state) {

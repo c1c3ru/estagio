@@ -50,7 +50,7 @@ class _LoginPageState extends State<LoginPage> {
             } else if (state.user.role == UserRole.supervisor) {
               Modular.to.navigate('/supervisor/profile');
             } else if (state.user.role == UserRole.admin) {
-              Modular.to.navigate('/admin/');
+              Modular.to.navigate('/supervisor/list');
             }
           } else if (state is AuthSuccess) {
             // Navegar para a página apropriada baseado no papel do usuário
@@ -62,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
                 Modular.to.navigate('/supervisor/');
                 break;
               case UserRole.admin:
-                Modular.to.navigate('/admin/');
+                Modular.to.navigate('/supervisor/list');
                 break;
             }
           }

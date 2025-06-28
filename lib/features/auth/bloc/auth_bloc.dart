@@ -189,14 +189,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           if (kDebugMode) {
             print(
                 '🟡 AuthBloc: Usuário atual obtido: ${user?.email ?? 'null'}');
+            if (user != null) {
+              print('🟡 AuthBloc: Role do usuário: ${user.role.name}');
+              print('🟡 AuthBloc: Nome do usuário: ${user.fullName}');
+            }
           }
           if (user != null) {
             if (_isProfileIncomplete(user)) {
               if (kDebugMode) {
                 print(
-                    '🟡 AuthBloc: Perfil incompleto detectado, mas permitindo acesso');
+                    '🟡 AuthBloc: Perfil incompleto detectado, emitindo AuthProfileIncomplete');
               }
-              emit(AuthSuccess(user, isProfileIncomplete: true));
+              emit(AuthProfileIncomplete(user));
             } else {
               if (kDebugMode) {
                 print('🟡 AuthBloc: Perfil completo, emitindo AuthSuccess');
@@ -204,6 +208,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               emit(AuthSuccess(user));
             }
           } else {
+            if (kDebugMode) {
+              print(
+                  '🟡 AuthBloc: Nenhum usuário encontrado, emitindo AuthInitial');
+            }
             emit(AuthInitial());
           }
         },
@@ -234,21 +242,35 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   // Função auxiliar para checar perfil incompleto
   bool _isProfileIncomplete(UserEntity user) {
     // Verificar se o usuário tem dados básicos preenchidos
-    if (user.fullName.isEmpty || user.fullName == 'Estudante') {
+    if (user.fullName.isEmpty ||
+        user.fullName == 'Estudante' ||
+        user.fullName == 'Student' ||
+        user.fullName == 'Usuário' ||
+        user.fullName == 'User') {
+      if (kDebugMode) {
+        print('🟡 AuthBloc: Nome inválido detectado: "${user.fullName}"');
+      }
       return true;
     }
 
     // Para estudantes, verificar se tem dados específicos
     if (user.role.name == 'student') {
-      // Se o usuário não tem dados completos na tabela students, considerar incompleto
-      // Isso será verificado quando o usuário acessar a página de perfil
-      return false; // Por enquanto, permitir acesso e verificar na página de perfil
+      // Verificar se tem dados essenciais do estudante
+      // Por enquanto, considerar completo se tem nome válido
+      return false;
     }
 
     // Para supervisores, verificar se tem dados específicos
     if (user.role.name == 'supervisor') {
-      // Se não temos dados completos do supervisor, considerar incompleto
-      return false; // Por enquanto, permitir acesso e verificar na página de perfil
+      // Verificar se tem dados essenciais do supervisor
+      // Por enquanto, considerar completo se tem nome válido
+      return false;
+    }
+
+    // Para admin, verificar se tem dados essenciais
+    if (user.role.name == 'admin') {
+      // Admin precisa apenas ter nome válido
+      return false;
     }
 
     return false;
