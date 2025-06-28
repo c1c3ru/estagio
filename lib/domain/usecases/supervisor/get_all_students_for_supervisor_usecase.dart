@@ -11,8 +11,9 @@ class GetAllStudentsForSupervisorUsecase {
   GetAllStudentsForSupervisorUsecase(this._repository);
 
   Future<Either<AppFailure, List<StudentEntity>>> call(
-      FilterStudentsParams? params) async {
+      {FilterStudentsParams? params, String? supervisorId}) async {
     // Nenhuma validação complexa nos parâmetros aqui, o repositório pode lidar com params nulos.
-    return await _repository.getAllStudents(filters: params);
+    return await _repository.getAllStudents(
+        supervisorId: supervisorId, filters: params);
   }
 }

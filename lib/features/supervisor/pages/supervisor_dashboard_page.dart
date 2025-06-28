@@ -105,7 +105,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
 
     try {
       final results = await Future.wait([
-        _getAllStudentsForSupervisorUsecase.call(null),
+        _getAllStudentsForSupervisorUsecase.call(),
         _getAllContractsUsecase.call(const GetAllContractsParams()),
         _getAllTimeLogsForSupervisorUsecase
             .call(const GetAllTimeLogsParams(pendingOnly: true)),
@@ -181,7 +181,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
       emit(currentState.copyWith(isLoading: true));
 
       final result =
-          await _getAllStudentsForSupervisorUsecase.call(event.params);
+          await _getAllStudentsForSupervisorUsecase.call(params: event.params);
 
       result.fold(
         (failure) => emit(SupervisorOperationFailure(message: failure.message)),

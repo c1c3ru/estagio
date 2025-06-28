@@ -38,7 +38,7 @@ class SupervisorDatasource {
       final response = await _supabaseClient
           .from('supervisors')
           .select('*, users(*)')
-          .eq('user_id', userId)
+          .eq('id', userId)
           .maybeSingle();
 
       return response;

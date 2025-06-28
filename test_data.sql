@@ -314,4 +314,57 @@ Para testar se novos usuários aparecem na lista de colegas online:
    - Verifique se ele tem status 'active' na tabela students
    - Verifique se o user_id está correto
    - Verifique os logs do aplicativo para erros
-*/ 
+*/
+
+-- Inserir um usuário supervisor de teste (apenas se não existir)
+INSERT INTO public.users (
+  id,
+  email,
+  role,
+  full_name,
+  matricula,
+  created_at,
+  updated_at
+)
+SELECT 
+  '5bd245f1-5a5f-42e7-9a8b-2e8fc2bf1dc2', -- ID único para o supervisor
+  'supervisor@ifce.edu.br',
+  'supervisor',
+  'Dr. João Silva',
+  'SIAPE123456',
+  NOW(),
+  NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.users 
+  WHERE id = '5bd245f1-5a5f-42e7-9a8b-2e8fc2bf1dc2'
+);
+
+-- Inserir dados do supervisor (apenas se não existir)
+INSERT INTO public.supervisors (
+  id,
+  full_name,
+  department,
+  position,
+  job_code,
+  created_at,
+  updated_at
+)
+SELECT 
+  '5bd245f1-5a5f-42e7-9a8b-2e8fc2bf1dc2', -- Mesmo ID do usuário
+  'Dr. João Silva',
+  'Tecnologia da Informação',
+  'Professor Coordenador',
+  'SIAPE123456',
+  NOW(),
+  NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.supervisors 
+  WHERE id = '5bd245f1-5a5f-42e7-9a8b-2e8fc2bf1dc2'
+);
+
+-- Atualizar o estudante para ter o supervisor
+UPDATE public.students 
+SET supervisor_id = '5bd245f1-5a5f-42e7-9a8b-2e8fc2bf1dc2'
+WHERE id = '4ac134e0-494e-41d6-9972-1d7fc1af0cb1';
+
+-- Inserir um usuário estudante de teste (apenas se não existir) 
