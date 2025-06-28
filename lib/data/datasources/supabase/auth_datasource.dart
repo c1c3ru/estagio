@@ -218,10 +218,8 @@ class AuthDatasource implements IAuthDatasource {
       }
 
       if (role == 'student') {
-        if (internshipShift == null || internshipShift.isEmpty) {
-          throw AuthException(
-              'Turno do estágio obrigatório não informado. Complete o cadastro.');
-        }
+        // Remover validação restritiva do turno do estágio
+        // Permitir que o usuário complete o cadastro posteriormente
         final studentResponse = await _supabaseClient
             .from('students')
             .select('id')
@@ -235,14 +233,21 @@ class AuthDatasource implements IAuthDatasource {
           }
           await _supabaseClient.from('students').insert({
             'id': user.id,
-            'full_name': '',
+            'full_name':
+                user.userMetadata?['full_name'] ?? user.email ?? 'Estudante',
             'registration_number': registration ?? 'PENDENTE',
             'course': 'PENDENTE',
             'advisor_name': 'PENDENTE',
             'status': 'active',
             'is_mandatory_internship': false,
             'class_shift': 'morning',
-            'internship_shift_1': internshipShift,
+            'internship_shift_1': internshipShift ?? 'morning',
+            'birth_date': null,
+            'contract_start_date': null,
+            'contract_end_date': null,
+            'total_hours_required': 0,
+            'weekly_hours_target': 0,
+            'supervisor_id': null,
           });
           if (kDebugMode) {
             print('✅ Dados de estudante criados para ${user.id}');

@@ -294,7 +294,7 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
         title: const Text(AppStrings.timeLog),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Modular.to.navigate('/student'),
+          onPressed: () => Modular.to.navigate('/student/'),
         ),
         actions: [
           IconButton(

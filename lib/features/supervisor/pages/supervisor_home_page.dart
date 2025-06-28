@@ -400,7 +400,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
           onTap: (index) {
             switch (index) {
               case 0: // Início
-                Modular.to.navigate('/supervisor');
+                Modular.to.navigate('/supervisor/');
                 break;
               case 1: // Aprovar Horas
                 Modular.to.navigate('/supervisor/time-approval');
