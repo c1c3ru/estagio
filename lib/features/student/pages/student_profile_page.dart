@@ -620,8 +620,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
           controller: _registrationNumberController,
           labelText: 'Nº de Matrícula',
           prefixIcon: Icons.badge_outlined,
-          validator: (value) =>
-              Validators.required(value, fieldName: 'Nº de Matrícula'),
+          validator: Validators.studentRegistration,
         ),
         const SizedBox(height: 16),
         AppTextField(

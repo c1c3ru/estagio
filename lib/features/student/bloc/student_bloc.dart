@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/usecases/student/get_student_dashboard_usecase.dart';
 import '../../../domain/entities/contract_entity.dart';
 import '../../../domain/entities/time_log_entity.dart';
+import '../../../domain/usecases/time_log/get_time_logs_by_student_usecase.dart';
 
 import '../../../data/models/student_model.dart';
 
@@ -12,10 +13,13 @@ import 'student_state.dart';
 // BLoC
 class StudentBloc extends Bloc<StudentEvent, StudentState> {
   final GetStudentDashboardUsecase _getStudentDashboardUsecase;
+  final GetTimeLogsByStudentUsecase _getTimeLogsByStudentUsecase;
 
   StudentBloc({
     required GetStudentDashboardUsecase getStudentDashboardUsecase,
+    required GetTimeLogsByStudentUsecase getTimeLogsByStudentUsecase,
   })  : _getStudentDashboardUsecase = getStudentDashboardUsecase,
+        _getTimeLogsByStudentUsecase = getTimeLogsByStudentUsecase,
         super(const StudentInitial()) {
     // Registrar handlers para os eventos
     on<LoadStudentDashboardDataEvent>(_onLoadStudentDashboardData);
@@ -107,14 +111,8 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
   ) async {
     emit(const StudentLoading());
     try {
-      // Aqui você deve chamar o usecase real para buscar os logs do estudante
-      // Exemplo fictício:
-      // final result = await _getStudentTimeLogsUsecase(event.userId);
-      // result.fold(
-      //   (failure) => emit(StudentOperationFailure(message: failure.message)),
-      //   (logs) => emit(StudentTimeLogsLoadSuccess(timeLogs: logs)),
-      // );
-      emit(const StudentTimeLogsLoadSuccess(timeLogs: [])); // Remover depois
+      final timeLogs = await _getTimeLogsByStudentUsecase(event.userId);
+      emit(StudentTimeLogsLoadSuccess(timeLogs: timeLogs));
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
     }

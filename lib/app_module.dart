@@ -251,6 +251,7 @@ class AppModule extends Module {
 
     i.addLazySingleton<StudentBloc>(() => StudentBloc(
           getStudentDashboardUsecase: i(),
+          getTimeLogsByStudentUsecase: i(),
         ));
 
     i.add<SupervisorBloc>(() => SupervisorBloc(

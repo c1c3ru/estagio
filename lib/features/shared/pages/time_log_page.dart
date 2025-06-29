@@ -6,31 +6,6 @@ import '../../shared/bloc/time_log_bloc.dart';
 import '../../../domain/entities/time_log_entity.dart';
 import '../../shared/animations/lottie_animations.dart';
 
-// Funções auxiliares para converter checkInTime/checkOutTime em DateTime
-DateTime? getCheckInDateTime(TimeLogEntity log) {
-  if (log.checkInTime.isEmpty) return null;
-  final parts = log.checkInTime.split(':');
-  return DateTime(
-    log.logDate.year,
-    log.logDate.month,
-    log.logDate.day,
-    int.parse(parts[0]),
-    int.parse(parts[1]),
-  );
-}
-
-DateTime? getCheckOutDateTime(TimeLogEntity log) {
-  if (log.checkOutTime == null || log.checkOutTime!.isEmpty) return null;
-  final parts = log.checkOutTime!.split(':');
-  return DateTime(
-    log.logDate.year,
-    log.logDate.month,
-    log.logDate.day,
-    int.parse(parts[0]),
-    int.parse(parts[1]),
-  );
-}
-
 class TimeLogPage extends StatefulWidget {
   final String studentId;
 
@@ -219,12 +194,11 @@ class _TimeLogPageState extends State<TimeLogPage> {
                                         color: AppColors.success,
                                       ),
                                     ),
-                                    if (getCheckInDateTime(
-                                            state.activeTimeLog!) !=
+                                    if (state.activeTimeLog!.checkInDateTime !=
                                         null)
                                       Text(
-                                        _formatDateTime(getCheckInDateTime(
-                                            state.activeTimeLog!)!),
+                                        _formatDateTime(state
+                                            .activeTimeLog!.checkInDateTime!),
                                         style: AppTextStyles.bodySmall,
                                       ),
                                   ],
@@ -502,11 +476,11 @@ class _TimeLogPageState extends State<TimeLogPage> {
     final daysWithLogs = <DateTime>{};
 
     for (final log in timeLogs) {
-      final checkIn = getCheckInDateTime(log);
+      final checkIn = log.checkInDateTime;
       if (checkIn != null &&
           checkIn.isAfter(startOfWeek.subtract(const Duration(days: 1))) &&
           checkIn.isBefore(endOfWeek.add(const Duration(days: 1)))) {
-        final checkOut = getCheckOutDateTime(log);
+        final checkOut = log.checkOutDateTime;
         if (checkOut != null) {
           final duration = checkOut.difference(checkIn);
           totalHours += duration.inMinutes / 60.0;
@@ -530,11 +504,11 @@ class _TimeLogPageState extends State<TimeLogPage> {
     final daysWithLogs = <DateTime>{};
 
     for (final log in timeLogs) {
-      final checkIn = getCheckInDateTime(log);
+      final checkIn = log.checkInDateTime;
       if (checkIn != null &&
           checkIn.isAfter(startOfMonth.subtract(const Duration(days: 1))) &&
           checkIn.isBefore(endOfMonth.add(const Duration(days: 1)))) {
-        final checkOut = getCheckOutDateTime(log);
+        final checkOut = log.checkOutDateTime;
         if (checkOut != null) {
           final duration = checkOut.difference(checkIn);
           totalHours += duration.inMinutes / 60.0;
@@ -554,7 +528,7 @@ class _TimeLogPageState extends State<TimeLogPage> {
     final grouped = <DateTime, List<TimeLogEntity>>{};
 
     for (final log in timeLogs) {
-      final checkIn = getCheckInDateTime(log);
+      final checkIn = log.checkInDateTime;
       if (checkIn != null) {
         final date = DateTime(checkIn.year, checkIn.month, checkIn.day);
         grouped.putIfAbsent(date, () => []).add(log);
@@ -563,8 +537,8 @@ class _TimeLogPageState extends State<TimeLogPage> {
 
     for (final logs in grouped.values) {
       logs.sort((a, b) {
-        final checkInA = getCheckInDateTime(a);
-        final checkInB = getCheckInDateTime(b);
+        final checkInA = a.checkInDateTime;
+        final checkInB = b.checkInDateTime;
         if (checkInA != null && checkInB != null) {
           return checkInA.compareTo(checkInB);
         }
@@ -756,8 +730,8 @@ class _DateGroupCard extends StatelessWidget {
   double _calculateTotalHoursForDate() {
     double totalHours = 0;
     for (final log in timeLogs) {
-      final checkIn = getCheckInDateTime(log);
-      final checkOut = getCheckOutDateTime(log);
+      final checkIn = log.checkInDateTime;
+      final checkOut = log.checkOutDateTime;
       if (checkIn != null && checkOut != null) {
         final duration = checkOut.difference(checkIn);
         totalHours += duration.inMinutes / 60;
@@ -774,8 +748,8 @@ class _TimeLogItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final checkIn = getCheckInDateTime(timeLog);
-    final checkOut = getCheckOutDateTime(timeLog);
+    final checkIn = timeLog.checkInDateTime;
+    final checkOut = timeLog.checkOutDateTime;
     final isActive = checkOut == null;
 
     final duration = (checkIn != null && checkOut != null)

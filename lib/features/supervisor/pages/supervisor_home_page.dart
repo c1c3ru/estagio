@@ -43,10 +43,6 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Dashboard do Supervisor'),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => Modular.to.pop(),
-          ),
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.white,
           actions: [
