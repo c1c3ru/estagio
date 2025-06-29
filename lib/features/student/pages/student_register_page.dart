@@ -385,11 +385,17 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                                 style: const TextStyle(
                                     color: AppColors.textPrimaryDark,
                                     fontSize: 16),
+                                dropdownColor: AppColors.white,
+                                iconEnabledColor: AppColors.primary,
                                 items: _supervisors
                                     .map((supervisor) => DropdownMenuItem(
                                           value: supervisor['id'] as String,
-                                          child: Text(supervisor['full_name']
-                                              as String),
+                                          child: Text(
+                                            supervisor['full_name'] as String,
+                                            style: const TextStyle(
+                                                color:
+                                                    AppColors.textPrimaryDark),
+                                          ),
                                         ))
                                     .toList(),
                                 onChanged: (id) {
