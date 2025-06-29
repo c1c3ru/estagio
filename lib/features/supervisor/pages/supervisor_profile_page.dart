@@ -81,7 +81,6 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<SupervisorBloc, SupervisorState>(
-      bloc: Modular.get<SupervisorBloc>(),
       listener: (context, state) {
         if (state is SupervisorOperationSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -137,7 +136,7 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
                     _isEditMode = false;
                   });
                 } else {
-                  Modular.to.navigate('/supervisor');
+                  Modular.to.pushReplacementNamed('/supervisor');
                 }
               },
             ),
