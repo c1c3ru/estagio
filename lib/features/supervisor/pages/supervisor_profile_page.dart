@@ -136,7 +136,7 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
                     _isEditMode = false;
                   });
                 } else {
-                  Modular.to.pushReplacementNamed('/supervisor');
+                  Modular.to.pushReplacementNamed('/supervisor/');
                 }
               },
             ),
