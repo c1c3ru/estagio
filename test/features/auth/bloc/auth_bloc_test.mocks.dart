@@ -21,6 +21,8 @@ import 'package:gestao_de_estagio/domain/usecases/auth/logout_usecase.dart'
     as _i7;
 import 'package:gestao_de_estagio/domain/usecases/auth/register_usecase.dart'
     as _i8;
+import 'package:gestao_de_estagio/domain/usecases/auth/reset_password_usecase.dart'
+    as _i15;
 import 'package:gestao_de_estagio/domain/usecases/auth/update_profile_usecase.dart'
     as _i14;
 import 'package:mockito/mockito.dart' as _i1;
@@ -262,4 +264,33 @@ class MockUpdateProfileUsecase extends _i1.Mock
           ),
         )),
       ) as _i4.Future<_i2.Either<_i5.AppFailure, _i6.UserEntity>>);
+}
+
+/// A class which mocks [ResetPasswordUsecase].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockResetPasswordUsecase extends _i1.Mock
+    implements _i15.ResetPasswordUsecase {
+  MockResetPasswordUsecase() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i4.Future<_i2.Either<_i5.AppFailure, void>> call({required String? email}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [],
+          {#email: email},
+        ),
+        returnValue: _i4.Future<_i2.Either<_i5.AppFailure, void>>.value(
+            _FakeEither_0<_i5.AppFailure, void>(
+          this,
+          Invocation.method(
+            #call,
+            [],
+            {#email: email},
+          ),
+        )),
+      ) as _i4.Future<_i2.Either<_i5.AppFailure, void>>);
 }

@@ -38,6 +38,7 @@ import 'domain/usecases/auth/logout_usecase.dart';
 import 'domain/usecases/auth/get_current_user_usecase.dart';
 import 'domain/usecases/auth/update_profile_usecase.dart';
 import 'domain/usecases/auth/get_auth_state_changes_usecase.dart';
+import 'domain/usecases/auth/reset_password_usecase.dart';
 
 // Use Cases - Student
 import 'domain/usecases/student/get_all_students_usecase.dart';
@@ -157,6 +158,7 @@ class AppModule extends Module {
     i.addLazySingleton<UpdateProfileUsecase>(() => UpdateProfileUsecase(i()));
     i.addLazySingleton<GetAuthStateChangesUsecase>(
         () => GetAuthStateChangesUsecase(i()));
+    i.addLazySingleton<ResetPasswordUsecase>(() => ResetPasswordUsecase(i()));
 
     // Use Cases - Student
     i.addLazySingleton<GetAllStudentsUsecase>(() => GetAllStudentsUsecase(i()));
@@ -247,6 +249,7 @@ class AppModule extends Module {
           getCurrentUserUseCase: i(),
           updateProfileUseCase: i(),
           getAuthStateChangesUseCase: i(),
+          resetPasswordUseCase: i(),
         ));
 
     i.addLazySingleton<StudentBloc>(() => StudentBloc(
