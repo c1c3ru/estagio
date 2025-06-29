@@ -254,7 +254,6 @@ class AppModule extends Module {
         ));
 
     i.add<SupervisorBloc>(() => SupervisorBloc(
-          getSupervisorDetailsUsecase: i(),
           getAllStudentsForSupervisorUsecase: i(),
           getStudentDetailsForSupervisorUsecase: i(),
           createStudentBySupervisorUsecase: i(),

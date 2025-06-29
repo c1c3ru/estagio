@@ -18,7 +18,6 @@ import '../../../../domain/usecases/supervisor/approve_or_reject_time_log_usecas
 import '../../../../domain/usecases/contract/get_all_contracts_usecase.dart';
 
 // Usecases de Supervisor
-import '../../../../domain/usecases/supervisor/get_supervisor_details_usecase.dart';
 import '../../../../domain/usecases/supervisor/get_supervisor_by_user_id_usecase.dart';
 import '../../../../domain/usecases/supervisor/get_all_students_for_supervisor_usecase.dart';
 import '../../../../domain/usecases/supervisor/get_student_details_for_supervisor_usecase.dart';
@@ -69,14 +68,12 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
   final CreateSupervisorUsecase _createSupervisorUsecase;
   final UpdateSupervisorUsecase _updateSupervisorUsecase;
   final DeleteSupervisorUsecase _deleteSupervisorUsecase;
-  final GetSupervisorDetailsUsecase _getSupervisorDetailsUsecase;
   final GetSupervisorByUserIdUsecase _getSupervisorByUserIdUsecase;
 
   // Auth
   final AuthBloc _authBloc;
 
   SupervisorBloc({
-    required GetSupervisorDetailsUsecase getSupervisorDetailsUsecase,
     required GetAllStudentsForSupervisorUsecase
         getAllStudentsForSupervisorUsecase,
     required GetStudentDetailsForSupervisorUsecase
@@ -115,7 +112,6 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
         _createSupervisorUsecase = createSupervisorUsecase,
         _updateSupervisorUsecase = updateSupervisorUsecase,
         _deleteSupervisorUsecase = deleteSupervisorUsecase,
-        _getSupervisorDetailsUsecase = getSupervisorDetailsUsecase,
         _getSupervisorByUserIdUsecase = getSupervisorByUserIdUsecase,
         _authBloc = authBloc,
         super(const SupervisorInitial()) {
