@@ -101,4 +101,25 @@ class TimeLogEntity extends Equatable {
   String toString() {
     return 'TimeLogEntity(id: $id, studentId: $studentId, logDate: $logDate, checkInTime: $checkInTime, checkOutTime: $checkOutTime, hoursLogged: $hoursLogged, description: $description, approved: $approved, supervisorId: $supervisorId, approvedAt: $approvedAt, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
+
+  DateTime? get checkInDateTime {
+    try {
+      final parts = checkInTime.split(':');
+      return DateTime(logDate.year, logDate.month, logDate.day,
+          int.parse(parts[0]), int.parse(parts[1]));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  DateTime? get checkOutDateTime {
+    if (checkOutTime == null) return null;
+    try {
+      final parts = checkOutTime!.split(':');
+      return DateTime(logDate.year, logDate.month, logDate.day,
+          int.parse(parts[0]), int.parse(parts[1]));
+    } catch (_) {
+      return null;
+    }
+  }
 }

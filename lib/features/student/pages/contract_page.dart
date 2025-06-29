@@ -646,6 +646,7 @@ class _ContractEditFormState extends State<_ContractEditForm> {
                           initialDate: _startDate ?? DateTime.now(),
                           firstDate: DateTime(2000),
                           lastDate: DateTime(2100),
+                          locale: const Locale('pt', 'BR'),
                         );
                         if (picked != null) setState(() => _startDate = picked);
                       },
@@ -671,6 +672,7 @@ class _ContractEditFormState extends State<_ContractEditForm> {
                           initialDate: _endDate ?? DateTime.now(),
                           firstDate: DateTime(2000),
                           lastDate: DateTime(2100),
+                          locale: const Locale('pt', 'BR'),
                         );
                         if (picked != null) setState(() => _endDate = picked);
                       },
@@ -702,7 +704,7 @@ class _ContractEditFormState extends State<_ContractEditForm> {
                               strokeWidth: 2, color: Colors.white),
                         )
                       : const Icon(Icons.save),
-                  label: const Text('Salvar'),
+                  label: Text(widget.contract == null ? 'Salvar' : 'Atualizar'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: AppColors.white,

@@ -745,16 +745,13 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
       {IconData? icon}) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(
-          vertical: 10.0), // Aumentado o padding vertical
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (icon != null) ...[
-            Icon(icon,
-                size: 22,
-                color: theme.colorScheme.primary), // Ícone um pouco maior
-            const SizedBox(width: 16), // Espaçamento aumentado
+            Icon(icon, size: 22, color: theme.colorScheme.primary),
+            const SizedBox(width: 16),
           ] else ...[
             const SizedBox(width: 38),
           ],
@@ -764,15 +761,13 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
               children: [
                 Text(
                   label,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.hintColor,
-                      fontSize: 12), // Fonte menor para o label
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.hintColor, fontSize: 12),
                 ),
-                const SizedBox(height: 3), // Espaçamento ajustado
+                const SizedBox(height: 3),
                 Text(
                   value,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                      fontSize: 15), // Fonte um pouco menor para o valor
+                  style: theme.textTheme.bodyLarge?.copyWith(fontSize: 15),
                 ),
               ],
             ),
