@@ -84,22 +84,14 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
     switch (status) {
       case ContractStatus.active:
         return AppColors.statusActive;
-      case ContractStatus.pending:
-        return AppColors.statusPending;
-      case ContractStatus.cancelled:
-        return AppColors.statusTerminated;
-      case ContractStatus.completed:
-        return AppColors.statusCompleted;
-      case ContractStatus.inactive:
-        return Theme.of(context).disabledColor;
-      case ContractStatus.expired:
-        return AppColors.statusTerminated;
-      case ContractStatus.terminated:
-        return AppColors.statusTerminated;
       case ContractStatus.pendingApproval:
         return AppColors.statusPending;
-      case ContractStatus.unknown:
-        return Theme.of(context).disabledColor;
+      case ContractStatus.completed:
+        return AppColors.statusCompleted;
+      case ContractStatus.expired:
+        return AppColors.statusExpired;
+      case ContractStatus.terminated:
+        return AppColors.statusTerminated;
     }
   }
 

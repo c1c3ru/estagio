@@ -2,17 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../domain/entities/user_entity.dart';
 import '../../../domain/usecases/auth/login_usecase.dart';
 import '../../../domain/usecases/auth/register_usecase.dart';
 import '../../../domain/usecases/auth/logout_usecase.dart';
 import '../../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../../domain/usecases/auth/update_profile_usecase.dart';
 import '../../../domain/usecases/auth/get_auth_state_changes_usecase.dart';
+
 import 'auth_event.dart';
 import 'auth_state.dart';
-import '../../../domain/entities/user_entity.dart';
-import '../../../domain/entities/student_entity.dart';
-import '../../../domain/entities/supervisor_entity.dart';
 
 // BLoC
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
@@ -38,48 +38,50 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         _getAuthStateChangesUseCase = getAuthStateChangesUseCase,
         _updateProfileUseCase = updateProfileUseCase,
         super(AuthInitial()) {
-    if (kDebugMode) {
-      print('🟡 AuthBloc: Construtor chamado');
-    }
-
-    // Registrar handlers de eventos
-    on<AuthInitializeRequested>(_onAuthInitializeRequested);
     on<LoginRequested>(_onLoginRequested);
-    on<RegisterRequested>(_onRegisterRequested);
     on<LogoutRequested>(_onLogoutRequested);
-    on<GetCurrentUserRequested>(_onGetCurrentUserRequested);
-    on<AuthStateChanged>(_onAuthStateChanged);
+    on<RegisterRequested>(_onRegisterRequested);
+    on<AuthInitializeRequested>(_onAuthInitializeRequested);
     on<UpdateProfileRequested>(_onUpdateProfileRequested);
-    on<AuthCheckRequested>(_onAuthCheckRequested);
+    on<AuthStateChanged>(_onAuthStateChanged);
 
-    if (kDebugMode) {
-      print('🟡 AuthBloc: Handlers registrados');
-    }
+    // Iniciar a escuta de mudanças de estado de autenticação
+    _authStateSubscription = _getAuthStateChangesUseCase.call().listen(
+      (user) {
+        if (kDebugMode) {
+          print('🟡 AuthBloc: AuthStateChanged recebido: ${user?.email}');
+        }
 
-    // Inicia a escuta das mudanças de estado de autenticação
-    try {
-      _authStateSubscription = _getAuthStateChangesUseCase().listen(
-        (user) {
+        if (user != null) {
+          // Verificar se o perfil está completo
+          if (_isProfileComplete(user)) {
+            if (kDebugMode) {
+              print(
+                  '🟡 AuthBloc: AuthStateChanged - Perfil completo, emitindo AuthSuccess');
+            }
+            add(AuthStateChanged(user));
+          } else {
+            if (kDebugMode) {
+              print(
+                  '🟡 AuthBloc: AuthStateChanged - Perfil incompleto, emitindo AuthProfileIncomplete');
+            }
+            add(AuthStateChanged(user));
+          }
+        } else {
           if (kDebugMode) {
             print(
-                '🟡 AuthBloc: AuthStateChanged recebido: ${user?.email ?? 'null'}');
+                '🟡 AuthBloc: AuthStateChanged - Usuário nulo, emitindo AuthUnauthenticated');
           }
-          add(AuthStateChanged(user));
-        },
-        onError: (error) {
-          if (kDebugMode) {
-            print('🔴 AuthBloc: Erro na escuta de auth state: $error');
-          }
-        },
-      );
-      if (kDebugMode) {
-        print('🟡 AuthBloc: AuthStateSubscription iniciado');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('🔴 AuthBloc: Erro ao iniciar AuthStateSubscription: $e');
-      }
-    }
+          add(const AuthStateChanged(null));
+        }
+      },
+      onError: (error) {
+        if (kDebugMode) {
+          print('🔴 AuthBloc: Erro na escuta de auth state: $error');
+        }
+        // Log do erro apenas, sem emitir estado
+      },
+    );
   }
 
   @override
@@ -165,58 +167,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
-  Future<void> _onGetCurrentUserRequested(
-    GetCurrentUserRequested event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(AuthLoading());
-    final result = await _getCurrentUserUseCase();
-    result.fold(
-      (failure) => emit(AuthFailure(failure.message)),
-      (user) {
-        if (user != null) {
-          if (_isProfileIncomplete(user)) {
-            emit(AuthProfileIncomplete(user));
-          } else {
-            emit(AuthSuccess(user));
-          }
-        } else {
-          emit(AuthInitial());
-        }
-      },
-    );
-  }
-
-  void _onAuthStateChanged(
-    AuthStateChanged event,
-    Emitter<AuthState> emit,
-  ) {
-    if (event.user != null) {
-      if (_isProfileIncomplete(event.user!)) {
-        emit(AuthProfileIncomplete(event.user!));
-      } else {
-        emit(AuthSuccess(event.user!));
-      }
-    } else {
-      emit(AuthInitial());
-    }
-  }
-
-  Future<void> _onUpdateProfileRequested(
-    UpdateProfileRequested event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(AuthLoading());
-    final result = await _updateProfileUseCase(params: event.params);
-    result.fold(
-      (failure) => emit(AuthFailure(failure.message)),
-      (user) {
-        emit(const AuthProfileUpdateSuccess('Perfil atualizado com sucesso!'));
-        emit(AuthSuccess(user));
-      },
-    );
-  }
-
   Future<void> _onAuthInitializeRequested(
     AuthInitializeRequested event,
     Emitter<AuthState> emit,
@@ -239,8 +189,31 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           if (kDebugMode) {
             print(
                 '🟡 AuthBloc: Usuário atual obtido: ${user?.email ?? 'null'}');
+            if (user != null) {
+              print('🟡 AuthBloc: Role do usuário: ${user.role.name}');
+              print('🟡 AuthBloc: Nome do usuário: ${user.fullName}');
+            }
           }
-          emit(user != null ? AuthSuccess(user) : AuthInitial());
+          if (user != null) {
+            if (_isProfileIncomplete(user)) {
+              if (kDebugMode) {
+                print(
+                    '🟡 AuthBloc: Perfil incompleto detectado, emitindo AuthProfileIncomplete');
+              }
+              emit(AuthProfileIncomplete(user));
+            } else {
+              if (kDebugMode) {
+                print('🟡 AuthBloc: Perfil completo, emitindo AuthSuccess');
+              }
+              emit(AuthSuccess(user));
+            }
+          } else {
+            if (kDebugMode) {
+              print(
+                  '🟡 AuthBloc: Nenhum usuário encontrado, emitindo AuthInitial');
+            }
+            emit(AuthInitial());
+          }
         },
       );
     } catch (e) {
@@ -251,42 +224,76 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onAuthCheckRequested(
-    AuthCheckRequested event,
+  Future<void> _onUpdateProfileRequested(
+    UpdateProfileRequested event,
     Emitter<AuthState> emit,
   ) async {
-    final result = await _getCurrentUserUseCase();
+    emit(AuthLoading());
+    final result = await _updateProfileUseCase(params: event.params);
     result.fold(
-      (failure) => emit(AuthInitial()),
-      (user) => emit(user != null ? AuthSuccess(user) : AuthInitial()),
+      (failure) => emit(AuthFailure(failure.message)),
+      (user) {
+        emit(const AuthProfileUpdateSuccess('Perfil atualizado com sucesso!'));
+        emit(AuthSuccess(user));
+      },
     );
   }
 
   // Função auxiliar para checar perfil incompleto
   bool _isProfileIncomplete(UserEntity user) {
-    if (user.role.name == 'student' && user is StudentEntity) {
-      final student = user as StudentEntity;
-      final course = student.course;
-      final advisor = student.advisorName;
-      if (student.fullName.isEmpty ||
-          course.isEmpty ||
-          course == 'PENDENTE' ||
-          advisor.isEmpty ||
-          advisor == 'PENDENTE') {
-        return true;
+    // Verificar se o usuário tem dados básicos preenchidos
+    if (user.fullName.isEmpty ||
+        user.fullName == 'Estudante' ||
+        user.fullName == 'Student' ||
+        user.fullName == 'Usuário' ||
+        user.fullName == 'User') {
+      if (kDebugMode) {
+        print('🟡 AuthBloc: Nome inválido detectado: "${user.fullName}"');
       }
+      return true;
     }
-    if (user.role.name == 'supervisor' && user is SupervisorEntity) {
-      final supervisor = user as SupervisorEntity;
-      final department = supervisor.department;
-      final position = supervisor.position;
-      if ((department?.isEmpty ?? true) ||
-          department == 'PENDENTE' ||
-          (position?.isEmpty ?? true) ||
-          position == 'PENDENTE') {
-        return true;
-      }
+
+    // Para estudantes, verificar se tem dados específicos
+    if (user.role.name == 'student') {
+      // Verificar se tem dados essenciais do estudante
+      // Por enquanto, considerar completo se tem nome válido
+      return false;
     }
+
+    // Para supervisores, verificar se tem dados específicos
+    if (user.role.name == 'supervisor') {
+      // Verificar se tem dados essenciais do supervisor
+      // Por enquanto, considerar completo se tem nome válido
+      return false;
+    }
+
+    // Para admin, verificar se tem dados essenciais
+    if (user.role.name == 'admin') {
+      // Admin precisa apenas ter nome válido
+      return false;
+    }
+
     return false;
+  }
+
+  bool _isProfileComplete(UserEntity user) {
+    // Implemente a lógica para verificar se o perfil é completo
+    // Esta é uma implementação básica e pode ser expandida conforme necessário
+    return !_isProfileIncomplete(user);
+  }
+
+  void _onAuthStateChanged(
+    AuthStateChanged event,
+    Emitter<AuthState> emit,
+  ) {
+    if (event.user != null) {
+      if (_isProfileComplete(event.user!)) {
+        emit(AuthSuccess(event.user!));
+      } else {
+        emit(AuthProfileIncomplete(event.user!));
+      }
+    } else {
+      emit(const AuthUnauthenticated());
+    }
   }
 }

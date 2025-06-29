@@ -20,6 +20,7 @@ import '../../../../domain/entities/contract_entity.dart';
 import '../../../../domain/entities/supervisor_entity.dart';
 import '../../../../domain/usecases/contract/get_active_contract_by_student_usecase.dart';
 import '../../../../domain/usecases/supervisor/get_supervisor_by_id_usecase.dart';
+import '../../../../domain/usecases/student/create_student_usecase.dart';
 
 import '../bloc/student_bloc.dart' as student_bloc;
 import '../bloc/student_event.dart' as student_event;
@@ -106,34 +107,116 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   void _toggleEditMode() {
     setState(() {
       _isEditMode = !_isEditMode;
-      if (_isEditMode && _currentStudent != null) {
-        _populateFields(_currentStudent!);
+      if (_isEditMode) {
+        if (_currentStudent != null) {
+          _populateFields(_currentStudent!);
+        } else {
+          // Se não há dados do estudante, preencher com dados básicos do usuário
+          final authState = _authBloc.state;
+          if (authState is auth_state.AuthSuccess) {
+            _fullNameController.text = authState.user.fullName;
+            _registrationNumberController.text = '';
+            _courseController.text = '';
+            _advisorNameController.text = '';
+            _phoneNumberController.text = authState.user.phoneNumber ?? '';
+            _profilePictureUrlController.text =
+                authState.user.profilePictureUrl ?? '';
+            _selectedBirthDate = null;
+            _selectedClassShift = null;
+            _selectedInternshipShift = null;
+            _selectedIsMandatoryInternship = false;
+          }
+        }
       }
     });
   }
 
   void _saveChanges() {
     if (_formKey.currentState?.validate() ?? false) {
-      if (_currentStudent != null && _currentUserId != null) {
-        _studentBloc.add(student_event.UpdateStudentProfileInfoEvent(
-          userId: _currentUserId!,
-          params: student_event.UpdateStudentProfileEventParams(
+      if (_currentUserId != null) {
+        if (_currentStudent != null) {
+          // Atualizar perfil existente
+          _studentBloc.add(student_event.UpdateStudentProfileInfoEvent(
+            userId: _currentUserId!,
+            params: student_event.UpdateStudentProfileEventParams(
+              fullName: _fullNameController.text.trim(),
+              registrationNumber: _registrationNumberController.text.trim(),
+              course: _courseController.text.trim(),
+              advisorName: _advisorNameController.text.trim(),
+              phoneNumber: _phoneNumberController.text.trim().isEmpty
+                  ? null
+                  : _phoneNumberController.text.trim(),
+              profilePictureUrl:
+                  _profilePictureUrlController.text.trim().isEmpty
+                      ? null
+                      : _profilePictureUrlController.text.trim(),
+              birthDate: _selectedBirthDate,
+              classShift: _selectedClassShift,
+              internshipShift: _selectedInternshipShift,
+              isMandatoryInternship: _selectedIsMandatoryInternship ?? false,
+            ),
+          ));
+        } else {
+          // Criar novo perfil
+          final student = StudentEntity(
+            id: _currentUserId!,
             fullName: _fullNameController.text.trim(),
             registrationNumber: _registrationNumberController.text.trim(),
             course: _courseController.text.trim(),
             advisorName: _advisorNameController.text.trim(),
-            phoneNumber: _phoneNumberController.text.trim().isEmpty
-                ? null
-                : _phoneNumberController.text.trim(),
+            isMandatoryInternship: _selectedIsMandatoryInternship ?? false,
+            classShift: _selectedClassShift?.name ?? ClassShift.morning.name,
+            internshipShift1:
+                _selectedInternshipShift?.name ?? InternshipShift.morning.name,
+            internshipShift2: null,
+            birthDate: _selectedBirthDate ?? DateTime(2000, 1, 1),
+            contractStartDate: DateTime.now(),
+            contractEndDate: DateTime.now().add(const Duration(days: 365)),
+            totalHoursRequired: 0.0,
+            totalHoursCompleted: 0.0,
+            weeklyHoursTarget: 0.0,
             profilePictureUrl: _profilePictureUrlController.text.trim().isEmpty
                 ? null
                 : _profilePictureUrlController.text.trim(),
-            birthDate: _selectedBirthDate,
-            classShift: _selectedClassShift,
-            internshipShift: _selectedInternshipShift,
-            isMandatoryInternship: _selectedIsMandatoryInternship,
-          ),
-        ));
+            phoneNumber: _phoneNumberController.text.trim().isEmpty
+                ? null
+                : _phoneNumberController.text.trim(),
+            createdAt: DateTime.now(),
+            updatedAt: null,
+            status: 'active',
+            supervisorId: null,
+          );
+
+          // Usar o use case diretamente
+          final createStudentUsecase = Modular.get<CreateStudentUsecase>();
+          createStudentUsecase(student).then((createdStudent) {
+            if (mounted) {
+              setState(() {
+                _currentStudent = createdStudent;
+                _isEditMode = false;
+              });
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  SnackBar(
+                    content: const Text('Perfil criado com sucesso!'),
+                    backgroundColor: AppColors.success,
+                  ),
+                );
+            }
+          }).catchError((error) {
+            if (mounted) {
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  SnackBar(
+                    content: Text('Erro ao criar perfil: $error'),
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                );
+            }
+          });
+        }
       }
 
       setState(() {
@@ -145,6 +228,19 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   void _cancelEdit() {
     if (_currentStudent != null) {
       _populateFields(_currentStudent!);
+    } else {
+      // Se não há dados, limpar os campos
+      _fullNameController.clear();
+      _registrationNumberController.clear();
+      _courseController.clear();
+      _advisorNameController.clear();
+      _phoneNumberController.clear();
+      _birthDateController.clear();
+      _profilePictureUrlController.clear();
+      _selectedBirthDate = null;
+      _selectedClassShift = null;
+      _selectedInternshipShift = null;
+      _selectedIsMandatoryInternship = false;
     }
     setState(() {
       _isEditMode = false;
@@ -265,7 +361,43 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                   userId: _currentUserId!));
               return const LoadingIndicator();
             }
-            return const Center(child: Text('Nenhum estudante encontrado'));
+
+            // Mostrar mensagem informativa quando não há dados do estudante
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      size: 64,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Perfil Incompleto',
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Para continuar usando o aplicativo, precisamos de algumas informações adicionais. Clique em "Completar Perfil" para adicionar seus dados.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 32),
+                    AppButton(
+                      text: 'Completar Perfil',
+                      onPressed: _toggleEditMode,
+                      icon: Icons.edit,
+                    ),
+                  ],
+                ),
+              ),
+            );
           }
 
           return SingleChildScrollView(

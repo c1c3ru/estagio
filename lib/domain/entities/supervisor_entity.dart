@@ -1,4 +1,6 @@
-class SupervisorEntity {
+import 'package:equatable/equatable.dart';
+
+class SupervisorEntity extends Equatable {
   final String id;
   final String fullName;
   final String? department;
@@ -20,6 +22,19 @@ class SupervisorEntity {
     required this.createdAt,
     this.updatedAt,
   });
+
+  @override
+  List<Object?> get props => [
+        id,
+        fullName,
+        department,
+        position,
+        jobCode,
+        profilePictureUrl,
+        phoneNumber,
+        createdAt,
+        updatedAt,
+      ];
 
   @override
   bool operator ==(Object other) {

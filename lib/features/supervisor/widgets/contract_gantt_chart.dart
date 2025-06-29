@@ -33,14 +33,11 @@ class ContractGanttChart extends StatelessWidget {
       case ContractStatus.pendingApproval:
         return AppColors.statusPending;
       case ContractStatus.expired:
-        return AppColors.statusInactive; // Ou uma cor específica para expirado
+        return AppColors.statusExpired;
       case ContractStatus.terminated:
         return AppColors.statusTerminated;
       case ContractStatus.completed:
         return AppColors.statusCompleted;
-      case ContractStatus.unknown:
-      default:
-        return Theme.of(context).disabledColor;
     }
   }
 
@@ -176,7 +173,7 @@ class ContractGanttChart extends StatelessWidget {
                               child: Tooltip(
                                 message: '$studentName\n'
                                     'Contrato: ${contract.contractType}\n'
-                                    'Status: ${ContractStatus.values.firstWhere((e) => e.name == contract.status, orElse: () => ContractStatus.unknown).displayName}\n'
+                                    'Status: ${ContractStatus.values.firstWhere((e) => e.name == contract.status, orElse: () => ContractStatus.pendingApproval).displayName}\n'
                                     'Início: ${DateFormat('dd/MM/yyyy').format(contract.startDate)}\n'
                                     'Término: ${DateFormat('dd/MM/yyyy').format(contract.endDate)}',
                                 child: Container(
@@ -187,8 +184,8 @@ class ContractGanttChart extends StatelessWidget {
                                       color: _getContractStatusColor(
                                           ContractStatus.values.firstWhere(
                                               (e) => e.name == contract.status,
-                                              orElse: () =>
-                                                  ContractStatus.unknown),
+                                              orElse: () => ContractStatus
+                                                  .pendingApproval),
                                           context),
                                       borderRadius: BorderRadius.circular(4),
                                       border: Border.all(

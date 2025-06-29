@@ -6,7 +6,7 @@ import 'package:gestao_de_estagio/features/auth/bloc/auth_event.dart';
 // É uma boa prática gerir as suas rotas num ficheiro dedicado.
 // Exemplo: lib/core/routes/app_routes.dart
 class SupervisorRoutes {
-  static const String dashboard = '/supervisor';
+  static const String dashboard = '/supervisor/';
   static const String team = '/supervisor/team';
   static const String reports = '/supervisor/reports';
   static const String login = '/login';
@@ -69,7 +69,7 @@ class SupervisorAppDrawer extends StatelessWidget {
             icon: Icons.dashboard_outlined,
             title: 'Dashboard',
             isSelected: currentIndex == 0,
-            onTap: () => Modular.to.navigate('/supervisor'),
+            onTap: () => Modular.to.navigate('/supervisor/'),
           ),
           _buildDrawerItem(
             icon: Icons.person,
@@ -130,7 +130,7 @@ class SupervisorBottomNavBar extends StatelessWidget {
       onTap: (index) {
         switch (index) {
           case 0:
-            Modular.to.navigate('/supervisor');
+            Modular.to.navigate('/supervisor/');
             break;
           case 1:
             Modular.to.navigate('/supervisor/profile');

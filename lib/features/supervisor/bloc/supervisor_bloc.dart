@@ -12,12 +12,13 @@ import '../../../../core/errors/app_exceptions.dart';
 import '../../../../domain/entities/student_entity.dart';
 import '../../../../domain/entities/time_log_entity.dart';
 import '../../../../domain/entities/contract_entity.dart';
+import '../../../../domain/entities/supervisor_entity.dart';
 import '../../../../domain/usecases/supervisor/get_all_time_logs_for_supervisor_usecase.dart';
 import '../../../../domain/usecases/supervisor/approve_or_reject_time_log_usecase.dart';
 import '../../../../domain/usecases/contract/get_all_contracts_usecase.dart';
 
 // Usecases de Supervisor
-import '../../../../domain/usecases/supervisor/get_supervisor_details_usecase.dart';
+import '../../../../domain/usecases/supervisor/get_supervisor_by_user_id_usecase.dart';
 import '../../../../domain/usecases/supervisor/get_all_students_for_supervisor_usecase.dart';
 import '../../../../domain/usecases/supervisor/get_student_details_for_supervisor_usecase.dart';
 import '../../../../domain/usecases/supervisor/create_student_by_supervisor_usecase.dart';
@@ -40,8 +41,14 @@ import '../../../../domain/usecases/auth/register_usecase.dart';
 
 import 'package:gestao_de_estagio/core/enums/user_role.dart';
 
+// Auth
+import '../../auth/bloc/auth_bloc.dart';
+import '../../auth/bloc/auth_state.dart' as auth_state;
+
 // import '../../../../domain/repositories/i_contract_repository.dart'
 //     show UpsertContractParams;
+
+import 'package:flutter/foundation.dart';
 
 class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
   // Usecases
@@ -61,9 +68,12 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
   final CreateSupervisorUsecase _createSupervisorUsecase;
   final UpdateSupervisorUsecase _updateSupervisorUsecase;
   final DeleteSupervisorUsecase _deleteSupervisorUsecase;
+  final GetSupervisorByUserIdUsecase _getSupervisorByUserIdUsecase;
+
+  // Auth
+  final AuthBloc _authBloc;
 
   SupervisorBloc({
-    required GetSupervisorDetailsUsecase getSupervisorDetailsUsecase,
     required GetAllStudentsForSupervisorUsecase
         getAllStudentsForSupervisorUsecase,
     required GetStudentDetailsForSupervisorUsecase
@@ -82,6 +92,8 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
     required CreateSupervisorUsecase createSupervisorUsecase,
     required UpdateSupervisorUsecase updateSupervisorUsecase,
     required DeleteSupervisorUsecase deleteSupervisorUsecase,
+    required AuthBloc authBloc,
+    required GetSupervisorByUserIdUsecase getSupervisorByUserIdUsecase,
   })  : _getAllStudentsForSupervisorUsecase =
             getAllStudentsForSupervisorUsecase,
         _getStudentDetailsForSupervisorUsecase =
@@ -100,6 +112,8 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
         _createSupervisorUsecase = createSupervisorUsecase,
         _updateSupervisorUsecase = updateSupervisorUsecase,
         _deleteSupervisorUsecase = deleteSupervisorUsecase,
+        _getSupervisorByUserIdUsecase = getSupervisorByUserIdUsecase,
+        _authBloc = authBloc,
         super(const SupervisorInitial()) {
     on<LoadSupervisorDashboardDataEvent>(_onLoadSupervisorDashboardData);
     on<FilterStudentsEvent>(_onFilterStudents);
@@ -124,18 +138,52 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
     LoadSupervisorDashboardDataEvent event,
     Emitter<SupervisorState> emit,
   ) async {
+    if (kDebugMode) {
+      print('🟡 SupervisorBloc: _onLoadSupervisorDashboardData iniciado');
+    }
+
     if (state is! SupervisorDashboardLoadSuccess) {
+      if (kDebugMode) {
+        print('🟡 SupervisorBloc: Emitindo SupervisorLoading');
+      }
       emit(const SupervisorLoading(
           loadingMessage: 'A carregar dados do dashboard...'));
     }
 
     try {
+      // Obter o supervisor logado
+      final currentAuthState = _authBloc.state;
+      String? supervisorId;
+
+      if (currentAuthState is auth_state.AuthSuccess) {
+        supervisorId = currentAuthState.user.id;
+        if (kDebugMode) {
+          print('🟡 SupervisorBloc: Supervisor ID: $supervisorId');
+        }
+      } else {
+        if (kDebugMode) {
+          print('🟡 SupervisorBloc: Usuário não autenticado');
+        }
+        emit(const SupervisorOperationFailure(
+            message: 'Utilizador não autenticado'));
+        return;
+      }
+
+      if (kDebugMode) {
+        print('🟡 SupervisorBloc: Iniciando carregamento de dados...');
+      }
+
       final results = await Future.wait([
-        _getAllStudentsForSupervisorUsecase.call(null),
+        _getAllStudentsForSupervisorUsecase.call(supervisorId: supervisorId),
         _getAllContractsUsecase.call(const GetAllContractsParams()),
         _getAllTimeLogsForSupervisorUsecase
             .call(const GetAllTimeLogsParams(pendingOnly: true)),
+        _getSupervisorByUserIdUsecase.call(supervisorId),
       ]);
+
+      if (kDebugMode) {
+        print('🟡 SupervisorBloc: Dados carregados, processando resultados...');
+      }
 
       final studentsResult =
           results[0] as Either<AppFailure, List<StudentEntity>>;
@@ -156,6 +204,26 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
       final List<TimeLogEntity> pendingApprovals = timeLogsResult.fold(
         (failure) => throw failure,
         (timeLogList) => timeLogList,
+      );
+
+      // Carregar perfil do supervisor
+      final supervisorProfileResult =
+          results[3] as Either<AppFailure, SupervisorEntity?>;
+      final SupervisorEntity? supervisorProfile = supervisorProfileResult.fold(
+        (failure) {
+          if (kDebugMode) {
+            print(
+                '🟡 SupervisorBloc: Falha ao carregar perfil do supervisor: ${failure.message}');
+          }
+          return null; // Se falhar, continuar sem o perfil
+        },
+        (supervisor) {
+          if (kDebugMode) {
+            print(
+                '🟡 SupervisorBloc: Perfil do supervisor carregado: ${supervisor?.fullName ?? 'null'}');
+          }
+          return supervisor;
+        },
       );
 
       final now = DateTime.now();
@@ -180,7 +248,12 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
         expiringContractsSoon: expiringContractsSoon,
       );
 
+      if (kDebugMode) {
+        print('🟡 SupervisorBloc: Emitindo SupervisorDashboardLoadSuccess');
+      }
+
       emit(SupervisorDashboardLoadSuccess(
+        supervisorProfile: supervisorProfile,
         students: students,
         contracts: contracts,
         stats: stats,
@@ -190,8 +263,14 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
             : false,
       ));
     } on AppFailure catch (e) {
+      if (kDebugMode) {
+        print('🟡 SupervisorBloc: AppFailure: ${e.message}');
+      }
       emit(SupervisorOperationFailure(message: e.message));
     } catch (e) {
+      if (kDebugMode) {
+        print('🟡 SupervisorBloc: Erro inesperado: ${e.toString()}');
+      }
       emit(SupervisorOperationFailure(
           message:
               'Ocorreu um erro inesperado ao carregar o dashboard: ${e.toString()}'));
@@ -206,8 +285,22 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
     if (currentState is SupervisorDashboardLoadSuccess) {
       emit(currentState.copyWith(isLoading: true));
 
-      final result =
-          await _getAllStudentsForSupervisorUsecase.call(event.params);
+      // Obter o supervisor logado
+      final currentAuthState = _authBloc.state;
+      String? supervisorId;
+
+      if (currentAuthState is auth_state.AuthSuccess) {
+        supervisorId = currentAuthState.user.id;
+      } else {
+        emit(const SupervisorOperationFailure(
+            message: 'Utilizador não autenticado'));
+        return;
+      }
+
+      final result = await _getAllStudentsForSupervisorUsecase.call(
+        params: event.params,
+        supervisorId: supervisorId,
+      );
 
       result.fold(
         (failure) => emit(SupervisorOperationFailure(message: failure.message)),

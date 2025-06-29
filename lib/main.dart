@@ -14,7 +14,11 @@ Future<void> main() async {
 
   if (kDebugMode) {
     print('🟡 main: Iniciando aplicação...');
-    print('🟡 main: Platform: ${Platform.operatingSystem}');
+    if (!kIsWeb) {
+      print('🟡 main: Platform: ${Platform.operatingSystem}');
+    } else {
+      print('🟡 main: Platform: Web');
+    }
     print('🟡 main: Web: $kIsWeb');
   }
 

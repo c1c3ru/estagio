@@ -85,6 +85,10 @@ class _AppTextFieldState extends State<AppTextField> {
       minLines: widget.minLines,
       readOnly: widget.readOnly,
       onTap: widget.onTap,
+      // Propriedades específicas para Android
+      autocorrect: false,
+      enableSuggestions: false,
+      enableInteractiveSelection: true,
       style: theme.textTheme.bodyLarge?.copyWith(
         color: isDark ? AppColors.white : AppColors.textPrimary,
         fontSize: 17,

@@ -9,6 +9,7 @@ import 'pages/supervisor_time_approval_page.dart';
 import 'pages/supervisor_profile_page.dart';
 import 'pages/student_details_page.dart';
 import 'pages/student_edit_page.dart';
+import 'pages/supervisor_list_page.dart';
 
 // BLoCs
 import 'bloc/supervisor_bloc.dart';
@@ -42,6 +43,14 @@ class SupervisorModule extends Module {
       child: (_) => BlocProvider(
         create: (_) => Modular.get<SupervisorBloc>(),
         child: const SupervisorProfilePage(),
+      ),
+      transition: TransitionType.fadeIn,
+    );
+    r.child(
+      '/list',
+      child: (_) => BlocProvider(
+        create: (_) => Modular.get<SupervisorBloc>(),
+        child: const SupervisorListPage(),
       ),
       transition: TransitionType.fadeIn,
     );

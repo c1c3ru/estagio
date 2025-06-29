@@ -1,4 +1,5 @@
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:flutter/material.dart';
 import 'package:gestao_de_estagio/domain/usecases/contract/get_contracts_for_student_usecase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -106,6 +107,7 @@ import 'features/auth/pages/register_type_page.dart';
 import 'features/auth/pages/supervisor_register_page.dart';
 import 'features/student/pages/student_register_page.dart';
 import 'features/auth/pages/unauthorized_page.dart';
+import 'features/auth/pages/email_confirmation_page.dart';
 
 // Modules
 import 'features/student/student_module.dart';
@@ -252,7 +254,6 @@ class AppModule extends Module {
         ));
 
     i.add<SupervisorBloc>(() => SupervisorBloc(
-          getSupervisorDetailsUsecase: i(),
           getAllStudentsForSupervisorUsecase: i(),
           getStudentDetailsForSupervisorUsecase: i(),
           createStudentBySupervisorUsecase: i(),
@@ -268,6 +269,8 @@ class AppModule extends Module {
           createSupervisorUsecase: i(),
           updateSupervisorUsecase: i(),
           deleteSupervisorUsecase: i(),
+          getSupervisorByUserIdUsecase: i(),
+          authBloc: i(),
         ));
 
     i.addLazySingleton<TimeLogBloc>(() => TimeLogBloc(
@@ -309,6 +312,17 @@ class AppModule extends Module {
     r.child('/auth/register-supervisor',
         child: (context) => const SupervisorRegisterPage());
     r.child('/auth/unauthorized', child: (context) => const UnauthorizedPage());
+    r.child('/auth/email-confirmation',
+        child: (context) => EmailConfirmationPage(
+              email: r.args.data as String,
+            ));
+    r.child('/auth/forgot-password',
+        child: (context) => const Scaffold(
+              body: Center(
+                child:
+                    Text('Página de recuperação de senha em desenvolvimento'),
+              ),
+            ));
 
     // Student Module Routes
     r.module('/student', module: StudentModule());

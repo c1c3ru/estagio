@@ -13,7 +13,7 @@ class UnauthorizedPage extends StatelessWidget {
         title: const Text('Acesso Negado'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Modular.to.navigate('/'),
+          onPressed: () => Modular.to.navigate('/login'),
         ),
       ),
       body: Center(
@@ -45,7 +45,7 @@ class UnauthorizedPage extends StatelessWidget {
               ElevatedButton.icon(
                 icon: const Icon(Icons.login),
                 label: const Text('Voltar ao Login'),
-                onPressed: () => Modular.to.navigate('/'),
+                onPressed: () => Modular.to.navigate('/login'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,

@@ -20,8 +20,8 @@ class EmailConfirmationPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Modular.to.navigate('/'),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Modular.to.navigate('/login'),
         ),
       ),
       body: SafeArea(
@@ -79,7 +79,7 @@ class EmailConfirmationPage extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: () => Modular.to.navigate('/'),
+                onPressed: () => Modular.to.navigate('/login'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),

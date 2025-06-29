@@ -11,25 +11,12 @@ class AppWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (kDebugMode) {
-      print('🟡 AppWidget: BUILD chamado');
-    }
-
     try {
       return BlocProvider(
         create: (context) {
-          if (kDebugMode) {
-            print('🟡 AppWidget: Criando AuthBloc...');
-          }
           final authBloc = Modular.get<AuthBloc>();
-          if (kDebugMode) {
-            print('🟡 AppWidget: AuthBloc obtido com sucesso');
-          }
           // Inicializar o AuthBloc
           authBloc.add(const AuthInitializeRequested());
-          if (kDebugMode) {
-            print('🟡 AppWidget: AuthInitializeRequested adicionado');
-          }
           return authBloc;
         },
         child: MaterialApp.router(
@@ -40,11 +27,6 @@ class AppWidget extends StatelessWidget {
           routerConfig: Modular.routerConfig,
           debugShowCheckedModeBanner: false,
           builder: (context, child) {
-            if (kDebugMode) {
-              print(
-                  '🟡 AppWidget: Builder chamado, child: ${child != null ? 'presente' : 'null'}');
-            }
-
             // Garantir que sempre temos algo para renderizar
             final widgetToShow = child ??
                 const Scaffold(
@@ -87,7 +69,7 @@ class AppWidget extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () {
                     // Tentar recarregar
-                    Modular.to.navigate('/');
+                    Modular.to.navigate('/login');
                   },
                   child: const Text('Tentar novamente'),
                 ),

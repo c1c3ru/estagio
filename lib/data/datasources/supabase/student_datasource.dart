@@ -38,7 +38,7 @@ class StudentDatasource {
       final response = await _supabaseClient
           .from('students')
           .select('*, users(*)')
-          .eq('user_id', userId)
+          .eq('id', userId)
           .maybeSingle();
 
       return response;
@@ -108,7 +108,7 @@ class StudentDatasource {
             '🟢 StudentDatasource: Buscando dashboard para studentId: $studentId');
       }
 
-      // Buscar dados do estudante
+      // Buscar dados do estudante pelo ID
       final studentResponse = await _supabaseClient
           .from('students')
           .select('*, users(*)')
@@ -118,7 +118,7 @@ class StudentDatasource {
       if (studentResponse == null) {
         if (kDebugMode) {
           print(
-              '🟡 StudentDatasource: Estudante não encontrado no banco, usando dados mock');
+              '⚠️ Nenhum dado de estudante encontrado para $studentId - usuário precisa completar cadastro');
         }
         // Retornar dados mock para permitir testes
         return _getMockDashboardData(studentId);
@@ -134,7 +134,7 @@ class StudentDatasource {
       final timeLogsResponse = await _supabaseClient
           .from('time_logs')
           .select('*')
-          .eq('student_id', studentId)
+          .eq('student_id', studentResponse['id'])
           .gte('log_date', thirtyDaysAgo.toIso8601String().split('T')[0])
           .order('log_date', ascending: false);
 
@@ -147,7 +147,7 @@ class StudentDatasource {
       final contractsResponse = await _supabaseClient
           .from('contracts')
           .select('*')
-          .eq('student_id', studentId)
+          .eq('student_id', studentResponse['id'])
           .eq('status', 'active')
           .order('created_at', ascending: false);
 

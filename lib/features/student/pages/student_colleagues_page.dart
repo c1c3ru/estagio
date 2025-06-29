@@ -156,7 +156,7 @@ class _StudentColleaguesPageState extends State<StudentColleaguesPage> {
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () {
-                              Navigator.pushNamed(context, '/student/time-log');
+                              Modular.to.pushNamed('/student/time-log');
                             },
                             icon: const Icon(Icons.access_time),
                             label: const Text('Registrar Horário'),

@@ -189,10 +189,12 @@ class AuthDatasource implements IAuthDatasource {
       // Verificar se o usuário tem dados na tabela correspondente
       await _ensureUserDataExists(user);
 
-      return {
+      // Buscar dados completos do estudante se disponíveis
+      final role = user.userMetadata?['role'] ?? 'student';
+      Map<String, dynamic> userData = {
         'id': user.id,
         'email': user.email,
-        'role': user.userMetadata?['role'] ?? 'student',
+        'role': role,
         'fullName': user.userMetadata?['full_name'],
         'phoneNumber': user.phone,
         'profilePictureUrl': user.userMetadata?['avatar_url'],
@@ -201,27 +203,65 @@ class AuthDatasource implements IAuthDatasource {
             ? DateTime.parse(user.updatedAt!).toIso8601String()
             : null,
       };
+
+      // Se for estudante, buscar dados completos da tabela students
+      if (role == 'student') {
+        try {
+          final studentData = await _supabaseClient
+              .from('students')
+              .select('*')
+              .eq('id', user.id)
+              .maybeSingle();
+
+          if (studentData != null) {
+            // Mesclar dados do auth com dados da tabela students
+            userData.addAll({
+              'fullName': studentData['full_name'] ?? userData['fullName'],
+              'course': studentData['course'],
+              'advisorName': studentData['advisor_name'],
+              'registrationNumber': studentData['registration_number'],
+              'isMandatoryInternship': studentData['is_mandatory_internship'],
+              'classShift': studentData['class_shift'],
+              'internshipShift1': studentData['internship_shift_1'],
+              'internshipShift2': studentData['internship_shift_2'],
+              'birthDate': studentData['birth_date'],
+              'contractStartDate': studentData['contract_start_date'],
+              'contractEndDate': studentData['contract_end_date'],
+              'totalHoursRequired': studentData['total_hours_required'],
+              'totalHoursCompleted': studentData['total_hours_completed'],
+              'weeklyHoursTarget': studentData['weekly_hours_target'],
+              'phoneNumber':
+                  studentData['phone_number'] ?? userData['phoneNumber'],
+              'profilePictureUrl': studentData['profile_picture_url'] ??
+                  userData['profilePictureUrl'],
+              'status': studentData['status'],
+              'supervisorId': studentData['supervisor_id'],
+            });
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            print('⚠️ Erro ao buscar dados completos do estudante: $e');
+          }
+        }
+      }
+
+      return userData;
     } catch (e) {
       throw AuthException('Erro ao buscar usuário atual: $e');
     }
   }
 
-  /// Verifica se o usuário tem dados na tabela correspondente e cria se não existir
+  /// Verifica se o usuário tem dados na tabela correspondente
   Future<void> _ensureUserDataExists(User user) async {
     try {
       final role = user.userMetadata?['role'] ?? 'student';
-      final registration = user.userMetadata?['registration'];
-      final internshipShift = user.userMetadata?['internship_shift'];
 
       if (kDebugMode) {
         print('🔍 Verificando dados para usuário ${user.id} com role: $role');
       }
 
       if (role == 'student') {
-        if (internshipShift == null || internshipShift.isEmpty) {
-          throw AuthException(
-              'Turno do estágio obrigatório não informado. Complete o cadastro.');
-        }
+        // Apenas verificar se existe, não criar automaticamente
         final studentResponse = await _supabaseClient
             .from('students')
             .select('id')
@@ -231,25 +271,16 @@ class AuthDatasource implements IAuthDatasource {
         if (studentResponse == null) {
           if (kDebugMode) {
             print(
-                '📝 Nenhum dado de estudante encontrado para ${user.id}, criando agora...');
+                '⚠️ Nenhum dado de estudante encontrado para ${user.id} - usuário precisa completar cadastro');
           }
-          await _supabaseClient.from('students').insert({
-            'id': user.id,
-            'full_name': '',
-            'registration_number': registration ?? 'PENDENTE',
-            'course': 'PENDENTE',
-            'advisor_name': 'PENDENTE',
-            'status': 'active',
-            'is_mandatory_internship': false,
-            'class_shift': 'morning',
-            'internship_shift_1': internshipShift,
-          });
+          // Não criar automaticamente - deixar o usuário completar o cadastro
+        } else {
           if (kDebugMode) {
-            print('✅ Dados de estudante criados para ${user.id}');
+            print('✅ Dados de estudante encontrados para ${user.id}');
           }
         }
       } else if (role == 'supervisor') {
-        // Verificar se já existe na tabela supervisors
+        // Apenas verificar se existe, não criar automaticamente
         final existingSupervisor = await _supabaseClient
             .from('supervisors')
             .select('id')
@@ -259,25 +290,18 @@ class AuthDatasource implements IAuthDatasource {
         if (existingSupervisor == null) {
           if (kDebugMode) {
             print(
-                '📝 Nenhum dado de supervisor encontrado para ${user.id}, criando agora...');
+                '⚠️ Nenhum dado de supervisor encontrado para ${user.id} - usuário precisa completar cadastro');
           }
-          await _supabaseClient.from('supervisors').insert({
-            'id': user.id,
-            'full_name':
-                user.userMetadata?['full_name'] ?? user.email ?? 'Supervisor',
-          });
-          if (kDebugMode) {
-            print('✅ Dados de supervisor criados para ${user.id}');
-          }
+          // Não criar automaticamente - deixar o usuário completar o cadastro
         } else {
           if (kDebugMode) {
-            print('✅ Dados do supervisor já existem para usuário ${user.id}');
+            print('✅ Dados de supervisor encontrados para usuário ${user.id}');
           }
         }
       }
     } catch (e) {
       if (kDebugMode) {
-        print('⚠️ Erro ao verificar/criar dados do usuário: $e');
+        print('⚠️ Erro ao verificar dados do usuário: $e');
       }
       // Não rethrow aqui para não impedir o login
       // Apenas loga o erro para debug

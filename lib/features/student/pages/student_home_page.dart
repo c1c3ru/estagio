@@ -453,7 +453,7 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
         studentId: widget.studentId,
         supervisorId: _supervisorSelecionado!.id,
         contractType: 'estagio', // ou outro valor conforme sua lógica
-        status: ContractStatus.pending.name,
+        status: ContractStatus.pendingApproval.name,
         startDate: _startDate!,
         endDate: _endDate!,
         createdAt: DateTime.now(),

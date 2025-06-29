@@ -21,6 +21,7 @@ class StudentEntity extends Equatable {
   final DateTime createdAt;
   final DateTime? updatedAt;
   final String? status;
+  final String? supervisorId;
 
   const StudentEntity({
     required this.id,
@@ -43,6 +44,7 @@ class StudentEntity extends Equatable {
     required this.createdAt,
     this.updatedAt,
     this.status,
+    this.supervisorId,
   });
 
   @override
@@ -67,6 +69,7 @@ class StudentEntity extends Equatable {
         createdAt,
         updatedAt,
         status,
+        supervisorId,
       ];
 
   StudentEntity copyWith({
@@ -90,6 +93,7 @@ class StudentEntity extends Equatable {
     DateTime? createdAt,
     DateTime? updatedAt,
     String? status,
+    String? supervisorId,
   }) {
     return StudentEntity(
       id: id ?? this.id,
@@ -113,11 +117,12 @@ class StudentEntity extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       status: status ?? this.status,
+      supervisorId: supervisorId ?? this.supervisorId,
     );
   }
 
   @override
   String toString() {
-    return 'StudentEntity(id: $id, fullName: $fullName, registrationNumber: $registrationNumber, course: $course, advisorName: $advisorName, isMandatoryInternship: $isMandatoryInternship, classShift: $classShift, internshipShift1: $internshipShift1, internshipShift2: $internshipShift2, birthDate: $birthDate, contractStartDate: $contractStartDate, contractEndDate: $contractEndDate, totalHoursRequired: $totalHoursRequired, totalHoursCompleted: $totalHoursCompleted, weeklyHoursTarget: $weeklyHoursTarget, profilePictureUrl: $profilePictureUrl, phoneNumber: $phoneNumber, createdAt: $createdAt, updatedAt: $updatedAt, status: $status)';
+    return 'StudentEntity(id: $id, fullName: $fullName, registrationNumber: $registrationNumber, course: $course, advisorName: $advisorName, isMandatoryInternship: $isMandatoryInternship, classShift: $classShift, internshipShift1: $internshipShift1, internshipShift2: $internshipShift2, birthDate: $birthDate, contractStartDate: $contractStartDate, contractEndDate: $contractEndDate, totalHoursRequired: $totalHoursRequired, totalHoursCompleted: $totalHoursCompleted, weeklyHoursTarget: $weeklyHoursTarget, profilePictureUrl: $profilePictureUrl, phoneNumber: $phoneNumber, createdAt: $createdAt, updatedAt: $updatedAt, status: $status, supervisorId: $supervisorId)';
   }
 }
