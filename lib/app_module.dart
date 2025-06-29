@@ -1,5 +1,4 @@
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:flutter/material.dart';
 import 'package:gestao_de_estagio/domain/usecases/contract/get_contracts_for_student_usecase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -108,6 +107,7 @@ import 'features/auth/pages/supervisor_register_page.dart';
 import 'features/student/pages/student_register_page.dart';
 import 'features/auth/pages/unauthorized_page.dart';
 import 'features/auth/pages/email_confirmation_page.dart';
+import 'features/auth/pages/forgot_password_page.dart';
 
 // Modules
 import 'features/student/student_module.dart';
@@ -317,12 +317,7 @@ class AppModule extends Module {
               email: r.args.data as String,
             ));
     r.child('/auth/forgot-password',
-        child: (context) => const Scaffold(
-              body: Center(
-                child:
-                    Text('Página de recuperação de senha em desenvolvimento'),
-              ),
-            ));
+        child: (context) => const ForgotPasswordPage());
 
     // Student Module Routes
     r.module('/student', module: StudentModule());
