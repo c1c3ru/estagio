@@ -317,10 +317,16 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                               'Turno das Aulas', Icons.schedule_outlined),
                           style: const TextStyle(
                               color: AppColors.textPrimaryDark, fontSize: 16),
+                          dropdownColor: AppColors.white,
+                          iconEnabledColor: AppColors.primary,
                           items: ClassShift.values
                               .map((shift) => DropdownMenuItem(
                                     value: shift,
-                                    child: Text(shift.displayName),
+                                    child: Text(
+                                      shift.displayName,
+                                      style: const TextStyle(
+                                          color: AppColors.textPrimaryDark),
+                                    ),
                                   ))
                               .toList(),
                           onChanged: (value) {
@@ -336,10 +342,16 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                               'Turno do Estágio', Icons.work_history_outlined),
                           style: const TextStyle(
                               color: AppColors.textPrimaryDark, fontSize: 16),
+                          dropdownColor: AppColors.white,
+                          iconEnabledColor: AppColors.primary,
                           items: InternshipShift.values
                               .map((shift) => DropdownMenuItem(
                                     value: shift,
-                                    child: Text(shift.displayName),
+                                    child: Text(
+                                      shift.displayName,
+                                      style: const TextStyle(
+                                          color: AppColors.textPrimaryDark),
+                                    ),
                                   ))
                               .toList(),
                           onChanged: (value) {
