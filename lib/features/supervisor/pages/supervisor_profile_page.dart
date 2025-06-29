@@ -129,6 +129,18 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
             title: const Text('Perfil do Supervisor'),
             backgroundColor: AppColors.primary,
             foregroundColor: AppColors.white,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                if (_isEditMode) {
+                  setState(() {
+                    _isEditMode = false;
+                  });
+                } else {
+                  Modular.to.pop();
+                }
+              },
+            ),
             actions: [
               if (!_isEditMode && supervisor != null)
                 IconButton(

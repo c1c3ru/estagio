@@ -337,7 +337,7 @@ class _NotificationCard extends StatelessWidget {
     } else if (difference.inDays < 7) {
       return '${difference.inDays}d atrás';
     } else {
-      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+      return '${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.year}';
     }
   }
 }

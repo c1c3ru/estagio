@@ -313,10 +313,14 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
               state is StudentTimeLogDeleteSuccess) {
             String message = 'Operação realizada com sucesso!';
             if (state is StudentTimeLogOperationSuccess) {
-              message = state.message;
+              message = state.message.isNotEmpty
+                  ? state.message
+                  : 'Registro salvo com sucesso!';
             }
             if (state is StudentTimeLogDeleteSuccess) {
-              message = state.message;
+              message = state.message.isNotEmpty
+                  ? state.message
+                  : 'Registro removido com sucesso!';
             }
             FeedbackService.showSuccess(context, message);
             _refreshTimeLogs();
@@ -417,9 +421,6 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
 
   Widget _buildTimeLogCard(BuildContext context, TimeLogEntity log) {
     final theme = Theme.of(context);
-    final String checkInStr = log.checkInTime;
-    final String checkOutStr =
-        log.checkOutTime != null ? log.checkOutTime! : 'Pendente';
     final String hoursStr = log.hoursLogged != null
         ? '${log.hoursLogged!.toStringAsFixed(1)}h'
         : '-';
@@ -474,10 +475,14 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Entrada: $checkInStr  |  Saída: $checkOutStr',
-                      style: theme.textTheme.bodyMedium
-                          ?.copyWith(fontWeight: FontWeight.w500),
+                      'Entrada: ${log.checkInDateTime != null ? DateFormat('HH:mm', 'pt_BR').format(log.checkInDateTime!) : '-'}',
+                      style: theme.textTheme.bodyMedium,
                     ),
+                    if (log.checkOutDateTime != null)
+                      Text(
+                        'Saída: ${DateFormat('HH:mm', 'pt_BR').format(log.checkOutDateTime!)}',
+                        style: theme.textTheme.bodyMedium,
+                      ),
                     if (log.description != null &&
                         log.description!.isNotEmpty) ...[
                       const SizedBox(height: 4),

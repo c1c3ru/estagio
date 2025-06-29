@@ -435,6 +435,12 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
         _startDate == null ||
         _endDate == null ||
         _supervisorSelecionado == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Preencha todos os campos obrigatórios!'),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
     if (widget.studentId.isEmpty || _supervisorSelecionado!.id.isEmpty) {
@@ -452,7 +458,7 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
         id: '',
         studentId: widget.studentId,
         supervisorId: _supervisorSelecionado!.id,
-        contractType: 'estagio', // ou outro valor conforme sua lógica
+        contractType: 'estágio',
         status: ContractStatus.pendingApproval.name,
         startDate: _startDate!,
         endDate: _endDate!,
@@ -470,6 +476,10 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
                 content: Text('Contrato criado com sucesso!'),
                 backgroundColor: Colors.green),
           );
+          // Recarregar dashboard e contratos
+          final studentBloc = BlocProvider.of<StudentBloc>(context);
+          studentBloc
+              .add(LoadStudentDashboardDataEvent(userId: widget.studentId));
           break;
         } else if (state is ContractInsertError) {
           if (!mounted) return;
@@ -554,7 +564,7 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
                       },
                       child: Text(_startDate == null
                           ? 'Data Início'
-                          : 'Início: ${_startDate!.toLocal().toString().split(' ')[0]}'),
+                          : 'Início: ${_formatDatePtBr(_startDate!)}'),
                     ),
                   ),
                   Expanded(
@@ -571,7 +581,7 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
                       },
                       child: Text(_endDate == null
                           ? 'Data Fim'
-                          : 'Fim: ${_endDate!.toLocal().toString().split(' ')[0]}'),
+                          : 'Fim: ${_formatDatePtBr(_endDate!)}'),
                     ),
                   ),
                 ],
@@ -602,5 +612,9 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
         ),
       ),
     );
+  }
+
+  String _formatDatePtBr(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 }
