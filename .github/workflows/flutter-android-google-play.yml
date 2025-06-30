@@ -18,7 +18,12 @@ jobs:
         with:
           flutter-version: '3.22.1'
 
-      - name: Install dependencies
+      - name: Verificar versão do Flutter/Dart
+        run: |
+          flutter --version
+          dart --version
+
+      - name: Instalar dependências
         run: flutter pub get
 
       - name: Run analyzer
