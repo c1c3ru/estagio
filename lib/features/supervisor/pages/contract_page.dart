@@ -231,6 +231,7 @@ class _ContractPageState extends State<ContractPage> {
     String status = contract.status;
     DateTime startDate = contract.startDate;
     DateTime endDate = contract.endDate;
+    final bloc = BlocProvider.of<SupervisorBloc>(context, listen: false);
 
     await showDialog(
       context: context,
@@ -337,7 +338,7 @@ class _ContractPageState extends State<ContractPage> {
           ElevatedButton(
             onPressed: () {
               if (!(formKey.currentState?.validate() ?? false)) return;
-              BlocProvider.of<SupervisorBloc>(context, listen: false).add(
+              bloc.add(
                 UpdateContractBySupervisorEvent(
                   contract: contract.copyWith(
                     description: descriptionController.text.trim(),
@@ -363,6 +364,8 @@ class _ContractPageState extends State<ContractPage> {
   }
 
   void _terminateContract(BuildContext context, dynamic contract) async {
+    final bloc = BlocProvider.of<SupervisorBloc>(context, listen: false);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -381,14 +384,13 @@ class _ContractPageState extends State<ContractPage> {
         ],
       ),
     );
-    if (!mounted) return;
     if (confirm == true) {
-      BlocProvider.of<SupervisorBloc>(context, listen: false).add(
+      bloc.add(
         UpdateContractBySupervisorEvent(
           contract: contract.copyWith(status: 'terminated'),
         ),
       );
-      ScaffoldMessenger.of(context).showSnackBar(
+      scaffoldMessenger.showSnackBar(
         const SnackBar(content: Text('Contrato encerrado!')),
       );
     }

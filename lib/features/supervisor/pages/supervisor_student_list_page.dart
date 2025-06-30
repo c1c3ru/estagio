@@ -72,6 +72,9 @@ class _SupervisorStudentListPageState extends State<SupervisorStudentListPage> {
                               const Icon(Icons.delete, color: Colors.redAccent),
                           tooltip: 'Remover',
                           onPressed: () async {
+                            final bloc = BlocProvider.of<SupervisorBloc>(
+                                context,
+                                listen: false);
                             final confirm = await showDialog<bool>(
                               context: context,
                               builder: (context) => AlertDialog(
@@ -93,12 +96,9 @@ class _SupervisorStudentListPageState extends State<SupervisorStudentListPage> {
                                 ],
                               ),
                             );
-                            if (!mounted) return;
                             if (confirm == true) {
-                              BlocProvider.of<SupervisorBloc>(context,
-                                      listen: false)
-                                  .add(DeleteStudentBySupervisorEvent(
-                                      studentId: student.id));
+                              bloc.add(DeleteStudentBySupervisorEvent(
+                                  studentId: student.id));
                             }
                           },
                         ),
