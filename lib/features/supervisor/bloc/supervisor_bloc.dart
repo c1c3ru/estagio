@@ -507,9 +507,32 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
     LoadAllTimeLogsForApprovalEvent event,
     Emitter<SupervisorState> emit,
   ) async {
-    if (state is SupervisorDashboardLoadSuccess) {
-      final currentState = state as SupervisorDashboardLoadSuccess;
-      emit(currentState.copyWith(isLoading: true));
+    if (kDebugMode) {
+      print('🟡 SupervisorBloc: _onLoadAllTimeLogsForApproval iniciado');
+    }
+
+    emit(const SupervisorLoading(
+        loadingMessage: 'A carregar registos pendentes...'));
+
+    try {
+      // Obter o supervisor logado
+      final currentAuthState = _authBloc.state;
+      String? supervisorId;
+
+      if (currentAuthState is auth_state.AuthSuccess) {
+        supervisorId = currentAuthState.user.id;
+        if (kDebugMode) {
+          print(
+              '🟡 SupervisorBloc: Supervisor ID para aprovações: $supervisorId');
+        }
+      } else {
+        if (kDebugMode) {
+          print('🟡 SupervisorBloc: Usuário não autenticado para aprovações');
+        }
+        emit(const SupervisorOperationFailure(
+            message: 'Utilizador não autenticado'));
+        return;
+      }
 
       final result = await _getAllTimeLogsForSupervisorUsecase.call(
         GetAllTimeLogsParams(
@@ -519,14 +542,29 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
       );
 
       result.fold(
-        (failure) => emit(SupervisorOperationFailure(message: failure.message)),
+        (failure) {
+          if (kDebugMode) {
+            print(
+                '🟡 SupervisorBloc: Falha ao carregar time logs: ${failure.message}');
+          }
+          emit(SupervisorOperationFailure(message: failure.message));
+        },
         (timeLogs) {
-          emit(currentState.copyWith(
-            pendingApprovals: timeLogs,
-            isLoading: false,
-          ));
+          if (kDebugMode) {
+            print(
+                '🟡 SupervisorBloc: Time logs carregados: ${timeLogs.length} logs');
+          }
+          emit(SupervisorTimeLogsForApprovalLoadSuccess(timeLogs: timeLogs));
         },
       );
+    } catch (e) {
+      if (kDebugMode) {
+        print(
+            '🟡 SupervisorBloc: Erro inesperado ao carregar time logs: ${e.toString()}');
+      }
+      emit(SupervisorOperationFailure(
+          message:
+              'Ocorreu um erro inesperado ao carregar os registos: ${e.toString()}'));
     }
   }
 
