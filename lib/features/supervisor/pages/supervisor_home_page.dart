@@ -34,6 +34,8 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final supervisorBloc = Modular.get<SupervisorBloc>();
+
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthUnauthenticated) {
@@ -62,6 +64,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
           ],
         ),
         body: BlocListener<SupervisorBloc, SupervisorState>(
+          bloc: supervisorBloc,
           listener: (context, state) {
             if (state is SupervisorOperationSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -76,6 +79,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
             }
           },
           child: BlocBuilder<SupervisorBloc, SupervisorState>(
+            bloc: supervisorBloc,
             builder: (context, state) {
               if (kDebugMode) {
                 print(
@@ -295,9 +299,8 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                                 isScrollControlled: true,
                                 builder: (context) => _StudentFilterSheet(
                                   onApply: (params) {
-                                    BlocProvider.of<SupervisorBloc>(context)
-                                        .add(FilterStudentsEvent(
-                                            params: params));
+                                    supervisorBloc.add(
+                                        FilterStudentsEvent(params: params));
                                   },
                                 ),
                               );
@@ -310,14 +313,13 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                         students: state.students,
                         onEdit: (student) async {
                           if (!mounted) return;
-                          final bloc = BlocProvider.of<SupervisorBloc>(context);
                           await showDialog(
                             context: context,
                             builder: (context) => StudentFormDialog(
                               isEdit: true,
                               initialStudent: student,
                               onSubmit: (editedStudent, _, __) {
-                                bloc.add(
+                                supervisorBloc.add(
                                   UpdateStudentBySupervisorEvent(
                                       studentData: editedStudent),
                                 );
@@ -327,7 +329,6 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                         },
                         onDelete: (student) async {
                           if (!mounted) return;
-                          final bloc = BlocProvider.of<SupervisorBloc>(context);
                           final confirm = await showDialog<bool>(
                             context: context,
                             builder: (context) => AlertDialog(
@@ -350,7 +351,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                             ),
                           );
                           if (confirm == true) {
-                            bloc.add(DeleteStudentBySupervisorEvent(
+                            supervisorBloc.add(DeleteStudentBySupervisorEvent(
                                 studentId: student.id));
                           }
                         },
@@ -372,7 +373,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
               builder: (context) => StudentFormDialog(
                 isEdit: false,
                 onSubmit: (student, email, password) {
-                  BlocProvider.of<SupervisorBloc>(context).add(
+                  supervisorBloc.add(
                     CreateStudentBySupervisorEvent(
                       studentData: student,
                       initialEmail: email,
