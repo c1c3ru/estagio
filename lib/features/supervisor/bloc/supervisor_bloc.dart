@@ -173,42 +173,67 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
         print('🟡 SupervisorBloc: Iniciando carregamento de dados...');
       }
 
-      final results = await Future.wait([
-        _getAllStudentsForSupervisorUsecase.call(supervisorId: supervisorId),
-        _getAllContractsUsecase.call(const GetAllContractsParams()),
-        _getAllTimeLogsForSupervisorUsecase
-            .call(const GetAllTimeLogsParams(pendingOnly: true)),
-        _getSupervisorByUserIdUsecase.call(supervisorId),
-      ]);
+      // Carregar dados um por vez para identificar qual está falhando
+      if (kDebugMode) {
+        print('🟡 SupervisorBloc: Carregando estudantes...');
+      }
+      final studentsResult = await _getAllStudentsForSupervisorUsecase.call(
+          supervisorId: supervisorId);
 
       if (kDebugMode) {
-        print('🟡 SupervisorBloc: Dados carregados, processando resultados...');
+        print(
+            '🟡 SupervisorBloc: Estudantes carregados: ${studentsResult.fold((l) => 'Erro: ${l.message}', (r) => '${r.length} estudantes')}');
       }
 
-      final studentsResult =
-          results[0] as Either<AppFailure, List<StudentEntity>>;
+      if (kDebugMode) {
+        print('🟡 SupervisorBloc: Carregando contratos...');
+      }
+      final contractsResult =
+          await _getAllContractsUsecase.call(const GetAllContractsParams());
+
+      if (kDebugMode) {
+        print(
+            '🟡 SupervisorBloc: Contratos carregados: ${contractsResult.fold((l) => 'Erro: ${l.message}', (r) => '${r.length} contratos')}');
+      }
+
+      if (kDebugMode) {
+        print('🟡 SupervisorBloc: Carregando time logs...');
+      }
+      final timeLogsResult = await _getAllTimeLogsForSupervisorUsecase
+          .call(const GetAllTimeLogsParams(pendingOnly: true));
+
+      if (kDebugMode) {
+        print(
+            '🟡 SupervisorBloc: Time logs carregados: ${timeLogsResult.fold((l) => 'Erro: ${l.message}', (r) => '${r.length} logs')}');
+      }
+
+      if (kDebugMode) {
+        print('🟡 SupervisorBloc: Carregando perfil do supervisor...');
+      }
+      final supervisorProfileResult =
+          await _getSupervisorByUserIdUsecase.call(supervisorId);
+
+      if (kDebugMode) {
+        print(
+            '🟡 SupervisorBloc: Perfil do supervisor carregado: ${supervisorProfileResult.fold((l) => 'Erro: ${l.message}', (r) => r?.fullName ?? 'null')}');
+      }
+
       final List<StudentEntity> students = studentsResult.fold(
         (failure) => throw failure,
         (studentList) => studentList,
       );
 
-      final contractsResult =
-          results[1] as Either<AppFailure, List<ContractEntity>>;
       final List<ContractEntity> contracts = contractsResult.fold(
         (failure) => throw failure,
         (contractList) => contractList,
       );
 
-      final timeLogsResult =
-          results[2] as Either<AppFailure, List<TimeLogEntity>>;
       final List<TimeLogEntity> pendingApprovals = timeLogsResult.fold(
         (failure) => throw failure,
         (timeLogList) => timeLogList,
       );
 
       // Carregar perfil do supervisor
-      final supervisorProfileResult =
-          results[3] as Either<AppFailure, SupervisorEntity?>;
       final SupervisorEntity? supervisorProfile = supervisorProfileResult.fold(
         (failure) {
           if (kDebugMode) {
