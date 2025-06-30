@@ -15,6 +15,7 @@ import '../widgets/student_form_dialog.dart';
 import '../../../domain/entities/filter_students_params.dart';
 import '../../../core/enums/student_status.dart';
 import '../../../r.dart';
+import 'package:flutter/foundation.dart';
 
 class SupervisorHomePage extends StatefulWidget {
   const SupervisorHomePage({super.key});
@@ -62,17 +63,6 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
         ),
         body: BlocListener<SupervisorBloc, SupervisorState>(
           listener: (context, state) {
-            if (state is SupervisorLoading) {
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (context) =>
-                    const Center(child: CircularProgressIndicator()),
-              );
-            } else {
-              Navigator.of(context, rootNavigator: true)
-                  .popUntil((route) => route.isFirst);
-            }
             if (state is SupervisorOperationSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(state.message)),
@@ -87,11 +77,20 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
           },
           child: BlocBuilder<SupervisorBloc, SupervisorState>(
             builder: (context, state) {
+              if (kDebugMode) {
+                print(
+                    '🟡 SupervisorHomePage: Estado atual: ${state.runtimeType}');
+              }
+
               if (state is SupervisorLoading) {
                 return const Center(child: CircularProgressIndicator());
               }
 
               if (state is SupervisorDashboardLoadSuccess) {
+                if (kDebugMode) {
+                  print(
+                      '🟡 SupervisorHomePage: Renderizando dashboard com ${state.students.length} estudantes');
+                }
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
