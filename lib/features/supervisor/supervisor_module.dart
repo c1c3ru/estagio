@@ -10,6 +10,7 @@ import 'pages/supervisor_profile_page.dart';
 import 'pages/student_details_page.dart';
 import 'pages/student_edit_page.dart';
 import 'pages/supervisor_list_page.dart';
+import 'pages/contract_page.dart';
 
 // BLoCs
 import 'bloc/supervisor_bloc.dart';
@@ -70,6 +71,22 @@ class SupervisorModule extends Module {
       '/student-create',
       child: (_) => const StudentEditPage(),
       transition: TransitionType.rightToLeft,
+    );
+    r.child(
+      '/students',
+      child: (_) => BlocProvider.value(
+        value: Modular.get<SupervisorBloc>(),
+        child: SupervisorListPage(),
+      ),
+      transition: TransitionType.fadeIn,
+    );
+    r.child(
+      '/contracts',
+      child: (_) => BlocProvider.value(
+        value: Modular.get<SupervisorBloc>(),
+        child: ContractPage(),
+      ),
+      transition: TransitionType.fadeIn,
     );
   }
 }
