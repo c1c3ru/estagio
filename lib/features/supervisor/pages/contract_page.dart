@@ -102,8 +102,7 @@ class _ContractPageState extends State<ContractPage> {
                           ]
                               .map((status) => DropdownMenuItem<String>(
                                     value: status,
-                                    child:
-                                        Text(status == null ? 'Todos' : status),
+                                    child: Text(status ?? 'Todos'),
                                   ))
                               .toList(),
                           onChanged: (v) => setState(() => _statusFilter = v),
@@ -228,13 +227,13 @@ class _ContractPageState extends State<ContractPage> {
   }
 
   void _editContract(BuildContext context, dynamic contract) async {
-    final _formKey = GlobalKey<FormState>();
-    final _descriptionController =
+    final formKey = GlobalKey<FormState>();
+    final descriptionController =
         TextEditingController(text: contract.description ?? '');
-    String _contractType = contract.contractType;
-    String _status = contract.status;
-    DateTime _startDate = contract.startDate;
-    DateTime _endDate = contract.endDate;
+    String contractType = contract.contractType;
+    String status = contract.status;
+    DateTime startDate = contract.startDate;
+    DateTime endDate = contract.endDate;
 
     await showDialog(
       context: context,
@@ -242,18 +241,18 @@ class _ContractPageState extends State<ContractPage> {
         title: const Text('Editar Contrato'),
         content: StatefulBuilder(
           builder: (context, setState) => Form(
-            key: _formKey,
+            key: formKey,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextFormField(
-                    controller: _descriptionController,
+                    controller: descriptionController,
                     decoration: const InputDecoration(labelText: 'Descrição'),
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: _contractType,
+                    value: contractType,
                     decoration: const InputDecoration(labelText: 'Tipo'),
                     items: ['Obrigatório', 'Não obrigatório']
                         .map((type) => DropdownMenuItem(
@@ -261,11 +260,11 @@ class _ContractPageState extends State<ContractPage> {
                               child: Text(type),
                             ))
                         .toList(),
-                    onChanged: (v) => setState(() => _contractType = v!),
+                    onChanged: (v) => setState(() => contractType = v!),
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: _status,
+                    value: status,
                     decoration: const InputDecoration(labelText: 'Status'),
                     items: [
                       'active',
@@ -279,7 +278,7 @@ class _ContractPageState extends State<ContractPage> {
                               child: Text(status),
                             ))
                         .toList(),
-                    onChanged: (v) => setState(() => _status = v!),
+                    onChanged: (v) => setState(() => status = v!),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -290,16 +289,18 @@ class _ContractPageState extends State<ContractPage> {
                           decoration:
                               const InputDecoration(labelText: 'Início'),
                           controller: TextEditingController(
-                              text: _formatDate(_startDate)),
+                              text: _formatDate(startDate)),
                           onTap: () async {
                             final picked = await showDatePicker(
                               context: context,
-                              initialDate: _startDate,
+                              initialDate: startDate,
                               firstDate: DateTime(2000),
                               lastDate: DateTime(2100),
                             );
-                            if (picked != null)
-                              setState(() => _startDate = picked);
+                            if (!mounted) return;
+                            if (picked != null) {
+                              setState(() => startDate = picked);
+                            }
                           },
                         ),
                       ),
@@ -308,17 +309,19 @@ class _ContractPageState extends State<ContractPage> {
                         child: TextFormField(
                           readOnly: true,
                           decoration: const InputDecoration(labelText: 'Fim'),
-                          controller: TextEditingController(
-                              text: _formatDate(_endDate)),
+                          controller:
+                              TextEditingController(text: _formatDate(endDate)),
                           onTap: () async {
                             final picked = await showDatePicker(
                               context: context,
-                              initialDate: _endDate,
+                              initialDate: endDate,
                               firstDate: DateTime(2000),
                               lastDate: DateTime(2100),
                             );
-                            if (picked != null)
-                              setState(() => _endDate = picked);
+                            if (!mounted) return;
+                            if (picked != null) {
+                              setState(() => endDate = picked);
+                            }
                           },
                         ),
                       ),
@@ -336,22 +339,24 @@ class _ContractPageState extends State<ContractPage> {
           ),
           ElevatedButton(
             onPressed: () {
-              if (!(_formKey.currentState?.validate() ?? false)) return;
+              if (!(formKey.currentState?.validate() ?? false)) return;
               BlocProvider.of<SupervisorBloc>(context, listen: false).add(
                 UpdateContractBySupervisorEvent(
                   contract: contract.copyWith(
-                    description: _descriptionController.text.trim(),
-                    contractType: _contractType,
-                    status: _status,
-                    startDate: _startDate,
-                    endDate: _endDate,
+                    description: descriptionController.text.trim(),
+                    contractType: contractType,
+                    status: status,
+                    startDate: startDate,
+                    endDate: endDate,
                   ),
                 ),
               );
               Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Contrato atualizado!')),
-              );
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Contrato atualizado!')),
+                );
+              }
             },
             child: const Text('Salvar'),
           ),
@@ -379,8 +384,8 @@ class _ContractPageState extends State<ContractPage> {
         ],
       ),
     );
+    if (!mounted) return;
     if (confirm == true) {
-      // Disparar evento para encerrar contrato
       BlocProvider.of<SupervisorBloc>(context, listen: false).add(
         UpdateContractBySupervisorEvent(
           contract: contract.copyWith(status: 'terminated'),
