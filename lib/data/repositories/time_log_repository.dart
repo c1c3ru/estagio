@@ -40,9 +40,10 @@ class TimeLogRepository implements ITimeLogRepository {
     try {
       final timeLogsData =
           await _timeLogDatasource.getTimeLogsByStudent(studentId);
-      return timeLogsData
+      final timeLogs = timeLogsData
           .map((data) => TimeLogModel.fromJson(data).toEntity())
           .toList();
+      return timeLogs;
     } catch (e) {
       throw Exception(
           'Erro no repositório ao buscar registros do estudante: $e');

@@ -5,6 +5,7 @@ import '../../../../core/enums/class_shift.dart';
 import '../../../../core/enums/internship_shift.dart';
 import '../../../../core/enums/student_status.dart';
 import 'package:gestao_de_estagio/features/shared/animations/lottie_animations.dart';
+import 'package:gestao_de_estagio/core/utils/validators.dart';
 
 class StudentFormDialog extends StatefulWidget {
   final StudentEntity? initialStudent;
@@ -132,13 +133,7 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
               TextFormField(
                 controller: _registrationController,
                 decoration: const InputDecoration(labelText: 'Matrícula'),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Informe a matrícula';
-                  if (!RegExp(r'^\d{7}\$').hasMatch(v)) {
-                    return 'A matrícula deve ter exatamente 7 dígitos';
-                  }
-                  return null;
-                },
+                validator: Validators.studentRegistration,
               ),
               TextFormField(
                 controller: _courseController,

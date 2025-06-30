@@ -284,13 +284,7 @@ class _StudentEditPageState extends State<StudentEditPage> {
             controller: _registrationNumberController,
             labelText: 'Matrícula',
             hintText: 'Digite a matrícula',
-            validator: (value) {
-              if (value == null || value.isEmpty) return 'Informe a matrícula';
-              if (!RegExp(r'^\d{7}\$').hasMatch(value)) {
-                return 'A matrícula deve ter exatamente 7 dígitos';
-              }
-              return null;
-            },
+            validator: Validators.studentRegistration,
           ),
           const SizedBox(height: 16),
           AppTextField(

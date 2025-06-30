@@ -18,7 +18,7 @@ class AssetAnimations {
   static const String loadingDotsAnimation =
       'assets/animations/loading_dots_animation.json';
   static const String passwordResetAnimation =
-      'assets/animations/password_reset_animation.json';
+      'assets/animations/email_confirmations_animation.json';
   static const String studentPageAnimation =
       'assets/animations/student_page_animation .json';
   static const String successCheckAnimation =

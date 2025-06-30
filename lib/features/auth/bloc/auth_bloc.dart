@@ -10,6 +10,7 @@ import '../../../domain/usecases/auth/logout_usecase.dart';
 import '../../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../../domain/usecases/auth/update_profile_usecase.dart';
 import '../../../domain/usecases/auth/get_auth_state_changes_usecase.dart';
+import '../../../domain/usecases/auth/reset_password_usecase.dart';
 
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -22,6 +23,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final GetCurrentUserUsecase _getCurrentUserUseCase;
   final GetAuthStateChangesUsecase _getAuthStateChangesUseCase;
   final UpdateProfileUsecase _updateProfileUseCase;
+  final ResetPasswordUsecase _resetPasswordUseCase;
   StreamSubscription<UserEntity?>? _authStateSubscription;
 
   AuthBloc({
@@ -31,12 +33,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required GetCurrentUserUsecase getCurrentUserUseCase,
     required GetAuthStateChangesUsecase getAuthStateChangesUseCase,
     required UpdateProfileUsecase updateProfileUseCase,
+    required ResetPasswordUsecase resetPasswordUseCase,
   })  : _loginUseCase = loginUseCase,
         _logoutUseCase = logoutUseCase,
         _registerUseCase = registerUseCase,
         _getCurrentUserUseCase = getCurrentUserUseCase,
         _getAuthStateChangesUseCase = getAuthStateChangesUseCase,
         _updateProfileUseCase = updateProfileUseCase,
+        _resetPasswordUseCase = resetPasswordUseCase,
         super(AuthInitial()) {
     on<LoginRequested>(_onLoginRequested);
     on<LogoutRequested>(_onLogoutRequested);
@@ -44,6 +48,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthInitializeRequested>(_onAuthInitializeRequested);
     on<UpdateProfileRequested>(_onUpdateProfileRequested);
     on<AuthStateChanged>(_onAuthStateChanged);
+    on<AuthResetPasswordRequested>(_onResetPasswordRequested);
 
     // Iniciar a escuta de mudanças de estado de autenticação
     _authStateSubscription = _getAuthStateChangesUseCase.call().listen(
@@ -295,5 +300,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } else {
       emit(const AuthUnauthenticated());
     }
+  }
+
+  Future<void> _onResetPasswordRequested(
+    AuthResetPasswordRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    final result = await _resetPasswordUseCase(email: event.email);
+    result.fold(
+      (failure) => emit(AuthFailure(failure.message)),
+      (_) => emit(const AuthPasswordResetEmailSent(
+          message: 'Email de redefinição de senha enviado com sucesso!')),
+    );
   }
 }
