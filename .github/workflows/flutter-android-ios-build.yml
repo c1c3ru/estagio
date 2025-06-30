@@ -1,0 +1,62 @@
+name: Build Android & iOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ desenvolvimento, main ]
+  pull_request:
+    branches: [ desenvolvimento, main ]
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Instalar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.1'
+      - name: Instalar dependências
+        run: flutter pub get
+      - name: Rodar testes
+        run: flutter test
+      - name: Build APK release
+        run: flutter build apk --release
+      - name: Upload APK como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      - name: Instalar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.1'
+      - name: Instalar dependências
+        run: flutter pub get
+      - name: Rodar testes
+        run: flutter test
+      - name: Build IPA release
+        run: |
+          flutter build ios --release --no-codesign
+          mkdir -p build/ios/ipa
+          cd build/ios/iphoneos
+          for app in *.app; do
+            /usr/bin/xcrun -sdk iphoneos PackageApplication -v "$app" -o "../../ipa/${app%.app}.ipa";
+          done
+      - name: Upload IPA como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-ipa
+          path: build/ios/ipa/*.ipa 

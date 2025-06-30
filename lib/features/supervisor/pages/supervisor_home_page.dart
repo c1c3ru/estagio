@@ -225,14 +225,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                                   const Text('Visualizar e editar estudantes'),
                               trailing: const Icon(Icons.arrow_forward_ios),
                               onTap: () {
-                                // Navegar para lista de estudantes
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                        'Funcionalidade em desenvolvimento'),
-                                    backgroundColor: AppColors.warning,
-                                  ),
-                                );
+                                Modular.to.pushNamed('/supervisor/students');
                               },
                             ),
                             const Divider(),
@@ -268,14 +261,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                                   '${state.contracts.length} contratos ativos'),
                               trailing: const Icon(Icons.arrow_forward_ios),
                               onTap: () {
-                                // Navegar para contratos
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                        'Funcionalidade em desenvolvimento'),
-                                    backgroundColor: AppColors.warning,
-                                  ),
-                                );
+                                Modular.to.pushNamed('/supervisor/contracts');
                               },
                             ),
                           ],

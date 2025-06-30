@@ -445,6 +445,22 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                       icon: Icons.edit,
                     ),
                   ],
+                  const SizedBox(height: 24),
+                  Center(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.supervisor_account),
+                      label: const Text('Ver Supervisores'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                      ),
+                      onPressed: () {
+                        Modular.to.pushNamed('/supervisor/list');
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
