@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:gestao_de_estagio/core/enums/contract_status.dart';
 import 'package:gestao_de_estagio/core/enums/student_status.dart'
     as student_status_enum;
@@ -354,7 +355,9 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
                 child: AppButton(
                   text: 'Ver Documento',
                   icon: Icons.link_outlined,
-                  onPressed: () {/* TODO: Abrir URL do documento */},
+                  onPressed: () {
+                    _launchUrl(contract.documentUrl!);
+                  },
                   type: AppButtonType.text,
                 ),
               ),
@@ -468,5 +471,32 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
               ))
           .toList(),
     );
+  }
+
+  Future<void> _launchUrl(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Não foi possível abrir o documento.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao abrir documento: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
