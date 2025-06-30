@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gestao_de_estagio/core/widgets/empty_data_widget.dart';
 import '../bloc/supervisor_bloc.dart';
 import '../bloc/supervisor_event.dart';
 import '../bloc/supervisor_state.dart';
@@ -38,7 +39,9 @@ class _SupervisorStudentListPageState extends State<SupervisorStudentListPage> {
           if (state is SupervisorDashboardLoadSuccess) {
             final students = state.students;
             if (students.isEmpty) {
-              return const Center(child: Text('Nenhum estudante cadastrado.'));
+              return const EmptyDataWidget(
+                message: 'Nenhum estudante está atualmente sob sua supervisão.',
+              );
             }
             return ListView.separated(
               padding: const EdgeInsets.all(16.0),

@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gestao_de_estagio/core/enums/user_role.dart';
 import 'package:gestao_de_estagio/domain/entities/user_entity.dart';
 import 'package:gestao_de_estagio/domain/usecases/auth/get_auth_state_changes_usecase.dart';
 import 'package:gestao_de_estagio/domain/usecases/auth/get_current_user_usecase.dart';
@@ -64,7 +65,13 @@ void main() {
   });
 
   group('AuthBloc', () {
-    final mockUser = UserEntity.empty;
+    final tUser = UserEntity(
+      id: '1',
+      email: 'test@test.com',
+      fullName: 'Test User',
+      role: UserRole.student,
+      createdAt: DateTime.now(),
+    );
 
     test('initial state is AuthInitial', () {
       expect(authBloc.state, equals(AuthInitial()));
@@ -76,14 +83,39 @@ void main() {
         when(mockLoginUseCase.call(
           email: anyNamed('email'),
           password: anyNamed('password'),
-        )).thenAnswer((_) async => Right(mockUser));
+        )).thenAnswer((_) async => Right(tUser));
         return authBloc;
       },
       act: (bloc) => bloc.add(
           const LoginRequested(email: 'test@test.com', password: 'password')),
       expect: () => <AuthState>[
         AuthLoading(),
-        AuthSuccess(mockUser),
+        AuthSuccess(tUser),
+      ],
+    );
+
+    final tUserIncomplete = UserEntity(
+      id: '1',
+      email: 'test@test.com',
+      fullName: '',
+      role: UserRole.student,
+      createdAt: DateTime.now(),
+    );
+
+    blocTest<AuthBloc, AuthState>(
+      'emits [AuthLoading, AuthProfileIncomplete] when user has empty name',
+      build: () {
+        when(mockLoginUseCase.call(
+          email: anyNamed('email'),
+          password: anyNamed('password'),
+        )).thenAnswer((_) async => Right(tUserIncomplete));
+        return authBloc;
+      },
+      act: (bloc) => bloc.add(
+          const LoginRequested(email: 'test@test.com', password: 'password')),
+      expect: () => <AuthState>[
+        AuthLoading(),
+        AuthProfileIncomplete(tUserIncomplete),
       ],
     );
   });

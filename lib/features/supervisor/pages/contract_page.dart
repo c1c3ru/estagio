@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gestao_de_estagio/core/widgets/empty_data_widget.dart';
 import '../bloc/supervisor_bloc.dart';
 import '../bloc/supervisor_event.dart';
 import '../bloc/supervisor_state.dart';
@@ -112,13 +113,9 @@ class _ContractPageState extends State<ContractPage> {
                   ),
                   Expanded(
                     child: filtered.isEmpty
-                        ? const Center(
-                            child: Text(
-                              'Nenhum contrato encontrado para este supervisor.',
-                              style:
-                                  TextStyle(fontSize: 18, color: Colors.grey),
-                              textAlign: TextAlign.center,
-                            ),
+                        ? const EmptyDataWidget(
+                            message:
+                                'Nenhum contrato corresponde aos filtros selecionados.',
                           )
                         : ListView.separated(
                             padding: const EdgeInsets.all(16),
