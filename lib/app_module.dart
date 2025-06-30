@@ -109,6 +109,7 @@ import 'features/student/pages/student_register_page.dart';
 import 'features/auth/pages/unauthorized_page.dart';
 import 'features/auth/pages/email_confirmation_page.dart';
 import 'features/auth/pages/forgot_password_page.dart';
+import 'features/shared/pages/not_found_page.dart';
 
 // Modules
 import 'features/student/student_module.dart';
@@ -337,5 +338,8 @@ class AppModule extends Module {
         child: const NotificationPage(),
       ),
     );
+
+    // Rota coringa para páginas não encontradas
+    r.wildcard(child: (_) => const NotFoundPage());
   }
 }

@@ -15,6 +15,7 @@ import '../widgets/student_form_dialog.dart';
 import '../../../domain/entities/filter_students_params.dart';
 import '../../../core/enums/student_status.dart';
 import '../../../r.dart';
+import 'package:flutter/foundation.dart';
 
 class SupervisorHomePage extends StatefulWidget {
   const SupervisorHomePage({super.key});
@@ -28,7 +29,8 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
   void initState() {
     super.initState();
     // Carregar dados do dashboard
-    Modular.get<SupervisorBloc>().add(LoadSupervisorDashboardDataEvent());
+    BlocProvider.of<SupervisorBloc>(context, listen: false)
+        .add(LoadSupervisorDashboardDataEvent());
   }
 
   @override
@@ -62,17 +64,6 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
         ),
         body: BlocListener<SupervisorBloc, SupervisorState>(
           listener: (context, state) {
-            if (state is SupervisorLoading) {
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (context) =>
-                    const Center(child: CircularProgressIndicator()),
-              );
-            } else {
-              Navigator.of(context, rootNavigator: true)
-                  .popUntil((route) => route.isFirst);
-            }
             if (state is SupervisorOperationSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(state.message)),
@@ -87,11 +78,20 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
           },
           child: BlocBuilder<SupervisorBloc, SupervisorState>(
             builder: (context, state) {
+              if (kDebugMode) {
+                print(
+                    '🟡 SupervisorHomePage: Estado atual: ${state.runtimeType}');
+              }
+
               if (state is SupervisorLoading) {
                 return const Center(child: CircularProgressIndicator());
               }
 
               if (state is SupervisorDashboardLoadSuccess) {
+                if (kDebugMode) {
+                  print(
+                      '🟡 SupervisorHomePage: Renderizando dashboard com ${state.students.length} estudantes');
+                }
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -296,7 +296,8 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                                 isScrollControlled: true,
                                 builder: (context) => _StudentFilterSheet(
                                   onApply: (params) {
-                                    BlocProvider.of<SupervisorBloc>(context)
+                                    BlocProvider.of<SupervisorBloc>(context,
+                                            listen: false)
                                         .add(FilterStudentsEvent(
                                             params: params));
                                   },
@@ -311,14 +312,15 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                         students: state.students,
                         onEdit: (student) async {
                           if (!mounted) return;
-                          final bloc = BlocProvider.of<SupervisorBloc>(context);
                           await showDialog(
                             context: context,
                             builder: (context) => StudentFormDialog(
                               isEdit: true,
                               initialStudent: student,
                               onSubmit: (editedStudent, _, __) {
-                                bloc.add(
+                                BlocProvider.of<SupervisorBloc>(context,
+                                        listen: false)
+                                    .add(
                                   UpdateStudentBySupervisorEvent(
                                       studentData: editedStudent),
                                 );
@@ -328,7 +330,6 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                         },
                         onDelete: (student) async {
                           if (!mounted) return;
-                          final bloc = BlocProvider.of<SupervisorBloc>(context);
                           final confirm = await showDialog<bool>(
                             context: context,
                             builder: (context) => AlertDialog(
@@ -350,9 +351,12 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                               ],
                             ),
                           );
+                          if (!mounted) return;
                           if (confirm == true) {
-                            bloc.add(DeleteStudentBySupervisorEvent(
-                                studentId: student.id));
+                            BlocProvider.of<SupervisorBloc>(context,
+                                    listen: false)
+                                .add(DeleteStudentBySupervisorEvent(
+                                    studentId: student.id));
                           }
                         },
                       ),
@@ -373,7 +377,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
               builder: (context) => StudentFormDialog(
                 isEdit: false,
                 onSubmit: (student, email, password) {
-                  BlocProvider.of<SupervisorBloc>(context).add(
+                  BlocProvider.of<SupervisorBloc>(context, listen: false).add(
                     CreateStudentBySupervisorEvent(
                       studentData: student,
                       initialEmail: email,

@@ -24,32 +24,32 @@ class SupervisorModule extends Module {
   void routes(RouteManager r) {
     r.child(
       Modular.initialRoute,
-      child: (_) => BlocProvider(
-        create: (_) => Modular.get<SupervisorBloc>(),
+      child: (_) => BlocProvider.value(
+        value: Modular.get<SupervisorBloc>(),
         child: const SupervisorHomePage(),
       ),
       transition: TransitionType.fadeIn,
     );
     r.child(
       '/time-approval',
-      child: (_) => BlocProvider(
-        create: (_) => Modular.get<SupervisorBloc>(),
+      child: (_) => BlocProvider.value(
+        value: Modular.get<SupervisorBloc>(),
         child: const SupervisorTimeApprovalPage(),
       ),
       transition: TransitionType.fadeIn,
     );
     r.child(
       '/profile',
-      child: (_) => BlocProvider(
-        create: (_) => Modular.get<SupervisorBloc>(),
+      child: (_) => BlocProvider.value(
+        value: Modular.get<SupervisorBloc>(),
         child: const SupervisorProfilePage(),
       ),
       transition: TransitionType.fadeIn,
     );
     r.child(
       '/list',
-      child: (_) => BlocProvider(
-        create: (_) => Modular.get<SupervisorBloc>(),
+      child: (_) => BlocProvider.value(
+        value: Modular.get<SupervisorBloc>(),
         child: const SupervisorListPage(),
       ),
       transition: TransitionType.fadeIn,

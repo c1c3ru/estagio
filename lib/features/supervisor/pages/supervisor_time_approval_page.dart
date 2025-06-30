@@ -1,6 +1,7 @@
 // lib/features/supervisor/presentation/pages/supervisor_time_approval_page.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:intl/intl.dart';
@@ -60,12 +61,18 @@ class _SupervisorTimeApprovalPageState
       }
     });
 
+    // Carregar dados do dashboard primeiro se necessário
+    if (_supervisorBloc.state
+        is! supervisor_state.SupervisorDashboardLoadSuccess) {
+      _supervisorBloc.add(event.LoadSupervisorDashboardDataEvent());
+    }
+
     _loadPendingApprovals();
   }
 
   Future<void> _loadPendingApprovals() async {
     // Carrega apenas os logs pendentes por padrão
-    _supervisorBloc
+    BlocProvider.of<bloc.SupervisorBloc>(context, listen: false)
         .add(const event.LoadAllTimeLogsForApprovalEvent(pendingOnly: true));
   }
 
@@ -136,7 +143,9 @@ class _SupervisorTimeApprovalPageState
               backgroundColor: Theme.of(pageContext).colorScheme.error,
               onPressed: () {
                 if (_supervisorId != null) {
-                  _supervisorBloc.add(event.ApproveOrRejectTimeLogEvent(
+                  BlocProvider.of<bloc.SupervisorBloc>(pageContext,
+                          listen: false)
+                      .add(event.ApproveOrRejectTimeLogEvent(
                     timeLogId: timeLogId,
                     approved: false,
                     supervisorId: _supervisorId!,
@@ -171,7 +180,6 @@ class _SupervisorTimeApprovalPageState
       bottomNavigationBar: const SupervisorBottomNavBar(
           currentIndex: 2), // Ajuste o currentIndex
       body: BlocConsumer<bloc.SupervisorBloc, supervisor_state.SupervisorState>(
-        bloc: _supervisorBloc,
         listener: (context, currentState) {
           if (currentState is supervisor_state.SupervisorOperationFailure) {
             FeedbackService.showError(context, currentState.message);
@@ -183,17 +191,22 @@ class _SupervisorTimeApprovalPageState
           }
         },
         builder: (context, currentState) {
-          if (currentState is supervisor_state.SupervisorLoading &&
-              currentState is! supervisor_state
-                  .SupervisorTimeLogsForApprovalLoadSuccess) {
-            if (_supervisorBloc.state
-                is! supervisor_state.SupervisorTimeLogsForApprovalLoadSuccess) {
-              return const LoadingIndicator();
-            }
+          if (kDebugMode) {
+            print(
+                '🟡 SupervisorTimeApprovalPage: Estado atual: ${currentState.runtimeType}');
+          }
+
+          if (currentState is supervisor_state.SupervisorLoading) {
+            return const LoadingIndicator();
           }
 
           if (currentState
               is supervisor_state.SupervisorTimeLogsForApprovalLoadSuccess) {
+            if (kDebugMode) {
+              print(
+                  '🟡 SupervisorTimeApprovalPage: Renderizando ${currentState.timeLogs.length} logs');
+            }
+
             if (currentState.timeLogs.isEmpty) {
               return Center(
                 child: Padding(
@@ -252,7 +265,8 @@ class _SupervisorTimeApprovalPageState
           }
 
           if (currentState is supervisor_state.SupervisorOperationFailure &&
-              _supervisorBloc.state is! supervisor_state
+              BlocProvider.of<bloc.SupervisorBloc>(context, listen: false).state
+                  is! supervisor_state
                   .SupervisorTimeLogsForApprovalLoadSuccess) {
             return _buildErrorStatePage(context, currentState.message);
           }
@@ -351,7 +365,6 @@ class _SupervisorTimeApprovalPageState
                 _supervisorId!.isNotEmpty)
               BlocBuilder<bloc.SupervisorBloc,
                   supervisor_state.SupervisorState>(
-                bloc: _supervisorBloc, // Usa o BLoC da página
                 builder: (context, state) {
                   bool isLoadingAction =
                       state is supervisor_state.SupervisorLoading;
@@ -366,9 +379,7 @@ class _SupervisorTimeApprovalPageState
                             : () => _showRejectionReasonDialog(context, log.id),
                         type: AppButtonType.text,
                         foregroundColor: theme.colorScheme.error,
-                        isLoading: isLoadingAction &&
-                            _supervisorBloc.state is supervisor_state
-                                .SupervisorLoading, // Verifica se este log específico está a ser processado
+                        isLoading: isLoadingAction,
                       ),
                       const SizedBox(width: 8),
                       AppButton(
@@ -379,7 +390,8 @@ class _SupervisorTimeApprovalPageState
                                 final supervisorId = _supervisorId;
                                 if (supervisorId != null &&
                                     supervisorId.isNotEmpty) {
-                                  _supervisorBloc
+                                  BlocProvider.of<bloc.SupervisorBloc>(context,
+                                          listen: false)
                                       .add(event.ApproveOrRejectTimeLogEvent(
                                     timeLogId: log.id,
                                     approved: true,
@@ -387,9 +399,7 @@ class _SupervisorTimeApprovalPageState
                                   ));
                                 }
                               },
-                        isLoading: isLoadingAction &&
-                            _supervisorBloc.state
-                                is supervisor_state.SupervisorLoading,
+                        isLoading: isLoadingAction,
                       ),
                     ],
                   );

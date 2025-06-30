@@ -5,6 +5,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'app_module.dart';
 import 'app_widget.dart';
 import 'core/constants/app_constants.dart';
@@ -72,6 +73,18 @@ Future<void> main() async {
   } catch (e) {
     if (kDebugMode) {
       print('⚠️ Erro ao inicializar SharedPreferences: $e');
+    }
+  }
+
+  try {
+    // Initialize date formatting
+    await initializeDateFormatting('pt_BR', null);
+    if (kDebugMode) {
+      print('✅ Formatação de data inicializada com sucesso');
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('⚠️ Erro ao inicializar formatação de data: $e');
     }
   }
 

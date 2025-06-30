@@ -5,6 +5,9 @@ import 'package:gestao_de_estagio/core/theme/app_text_styles.dart';
 import 'package:gestao_de_estagio/features/shared/bloc/contract_bloc.dart';
 import 'package:gestao_de_estagio/domain/entities/contract_entity.dart';
 import 'package:gestao_de_estagio/features/shared/animations/lottie_animations.dart';
+import 'package:flutter_modular/flutter_modular.dart';
+import 'package:gestao_de_estagio/domain/usecases/supervisor/get_all_supervisors_usecase.dart';
+import 'package:flutter_bloc/flutter_bloc.dart' as flutter_bloc;
 
 class ContractPage extends StatefulWidget {
   final String? studentId;
@@ -28,7 +31,7 @@ class _ContractPageState extends State<ContractPage> {
 
   void _loadContracts() {
     if (widget.studentId != null) {
-      context.read<ContractBloc>().add(
+      flutter_bloc.ReadContext(context).read<ContractBloc>().add(
             ContractLoadByStudentRequested(studentId: widget.studentId!),
           );
     }
@@ -36,7 +39,7 @@ class _ContractPageState extends State<ContractPage> {
 
   void _loadActiveContract() {
     if (widget.studentId != null) {
-      context.read<ContractBloc>().add(
+      flutter_bloc.ReadContext(context).read<ContractBloc>().add(
             ContractGetActiveByStudentRequested(studentId: widget.studentId!),
           );
     }
@@ -230,8 +233,8 @@ class _ContractPageState extends State<ContractPage> {
   }
 
   void _showEditContractModal({dynamic contract}) {
-    String? supervisorId;
-    final contractBloc = context.read<ContractBloc>();
+    String? supervisorId = contract?.supervisorId;
+    final contractBloc = flutter_bloc.ReadContext(context).read<ContractBloc>();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -519,6 +522,10 @@ class _ContractEditFormState extends State<_ContractEditForm> {
   DateTime? _endDate;
   bool _isSaving = false;
 
+  List<dynamic> _supervisores = [];
+  String? _supervisorId;
+  bool _loadingSupervisores = true;
+
   final List<String> _contractTypes = [
     'Obrigatório',
     'Não obrigatório',
@@ -533,12 +540,40 @@ class _ContractEditFormState extends State<_ContractEditForm> {
   @override
   void initState() {
     super.initState();
+    _loadSupervisores();
     if (widget.contract != null) {
       _contractType = widget.contract.contractType;
       _status = widget.contract.status;
       _descriptionController.text = widget.contract.description ?? '';
       _startDate = widget.contract.startDate;
       _endDate = widget.contract.endDate;
+      _supervisorId = widget.contract.supervisorId;
+    } else {
+      _supervisorId = widget.supervisorId;
+    }
+  }
+
+  Future<void> _loadSupervisores() async {
+    setState(() => _loadingSupervisores = true);
+    try {
+      final usecase = Modular.get<GetAllSupervisorsUsecase>();
+      final result = await usecase();
+      result.fold(
+        (failure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content:
+                    Text('Erro ao buscar supervisores: ${failure.message}'),
+                backgroundColor: Colors.red),
+          );
+          setState(() => _supervisores = []);
+        },
+        (list) => setState(() => _supervisores = list),
+      );
+    } catch (e) {
+      setState(() => _supervisores = []);
+    } finally {
+      setState(() => _loadingSupervisores = false);
     }
   }
 
@@ -591,6 +626,31 @@ class _ContractEditFormState extends State<_ContractEditForm> {
                     : 'Editar Contrato',
                 style: AppTextStyles.h6,
               ),
+              const SizedBox(height: 16),
+              if (_loadingSupervisores)
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else
+                DropdownButtonFormField<String>(
+                  value: _supervisorId,
+                  decoration: const InputDecoration(
+                    labelText: 'Supervisor',
+                    prefixIcon: Icon(Icons.person),
+                    border: OutlineInputBorder(),
+                  ),
+                  items: _supervisores
+                      .map<DropdownMenuItem<String>>(
+                          (s) => DropdownMenuItem<String>(
+                                value: s.id,
+                                child: Text(s.fullName),
+                              ))
+                      .toList(),
+                  onChanged: (value) => setState(() => _supervisorId = value),
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'Obrigatório' : null,
+                ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: _contractType,
@@ -727,7 +787,7 @@ class _ContractEditFormState extends State<_ContractEditForm> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _isSaving = true);
 
-    String? supervisorId = widget.supervisorId;
+    String? supervisorId = _supervisorId;
     if (supervisorId == null || supervisorId.isEmpty) {
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -756,7 +816,7 @@ class _ContractEditFormState extends State<_ContractEditForm> {
       updatedAt: widget.contract != null ? DateTime.now() : null,
     );
 
-    final bloc = context.read<ContractBloc>();
+    final bloc = flutter_bloc.ReadContext(context).read<ContractBloc>();
     if (widget.contract == null) {
       bloc.add(ContractCreateRequested(contract: contract));
     } else {
