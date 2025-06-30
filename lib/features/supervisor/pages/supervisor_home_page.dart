@@ -29,13 +29,12 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
   void initState() {
     super.initState();
     // Carregar dados do dashboard
-    Modular.get<SupervisorBloc>().add(LoadSupervisorDashboardDataEvent());
+    BlocProvider.of<SupervisorBloc>(context, listen: false)
+        .add(LoadSupervisorDashboardDataEvent());
   }
 
   @override
   Widget build(BuildContext context) {
-    final supervisorBloc = Modular.get<SupervisorBloc>();
-
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthUnauthenticated) {
@@ -64,7 +63,6 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
           ],
         ),
         body: BlocListener<SupervisorBloc, SupervisorState>(
-          bloc: supervisorBloc,
           listener: (context, state) {
             if (state is SupervisorOperationSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -79,7 +77,6 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
             }
           },
           child: BlocBuilder<SupervisorBloc, SupervisorState>(
-            bloc: supervisorBloc,
             builder: (context, state) {
               if (kDebugMode) {
                 print(
@@ -299,8 +296,10 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                                 isScrollControlled: true,
                                 builder: (context) => _StudentFilterSheet(
                                   onApply: (params) {
-                                    supervisorBloc.add(
-                                        FilterStudentsEvent(params: params));
+                                    BlocProvider.of<SupervisorBloc>(context,
+                                            listen: false)
+                                        .add(FilterStudentsEvent(
+                                            params: params));
                                   },
                                 ),
                               );
@@ -319,7 +318,9 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                               isEdit: true,
                               initialStudent: student,
                               onSubmit: (editedStudent, _, __) {
-                                supervisorBloc.add(
+                                BlocProvider.of<SupervisorBloc>(context,
+                                        listen: false)
+                                    .add(
                                   UpdateStudentBySupervisorEvent(
                                       studentData: editedStudent),
                                 );
@@ -350,9 +351,12 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                               ],
                             ),
                           );
+                          if (!mounted) return;
                           if (confirm == true) {
-                            supervisorBloc.add(DeleteStudentBySupervisorEvent(
-                                studentId: student.id));
+                            BlocProvider.of<SupervisorBloc>(context,
+                                    listen: false)
+                                .add(DeleteStudentBySupervisorEvent(
+                                    studentId: student.id));
                           }
                         },
                       ),
@@ -373,7 +377,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
               builder: (context) => StudentFormDialog(
                 isEdit: false,
                 onSubmit: (student, email, password) {
-                  supervisorBloc.add(
+                  BlocProvider.of<SupervisorBloc>(context, listen: false).add(
                     CreateStudentBySupervisorEvent(
                       studentData: student,
                       initialEmail: email,

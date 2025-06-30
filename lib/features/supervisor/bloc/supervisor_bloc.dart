@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dartz/dartz.dart';
 import 'package:gestao_de_estagio/core/enums/student_status.dart'
     as student_status_enum;
 import 'package:gestao_de_estagio/domain/entities/filter_students_params.dart';
