@@ -11,6 +11,7 @@ import 'pages/student_details_page.dart';
 import 'pages/student_edit_page.dart';
 import 'pages/supervisor_list_page.dart';
 import 'pages/contract_page.dart';
+import 'pages/supervisor_student_list_page.dart';
 
 // BLoCs
 import 'bloc/supervisor_bloc.dart';
@@ -76,7 +77,7 @@ class SupervisorModule extends Module {
       '/students',
       child: (_) => BlocProvider.value(
         value: Modular.get<SupervisorBloc>(),
-        child: SupervisorListPage(),
+        child: SupervisorStudentListPage(),
       ),
       transition: TransitionType.fadeIn,
     );
