@@ -15,4 +15,18 @@ abstract class ITimeLogRepository {
       String studentId, DateTime startDate, DateTime endDate);
   Future<Either<AppFailure, Duration>> getTotalHoursByPeriod(
       String studentId, DateTime start, DateTime end);
+  
+  // Métodos adicionais para aprovação/rejeição
+  Future<Either<AppFailure, TimeLogEntity>> getTimeLogById(String timeLogId);
+  Future<Either<AppFailure, TimeLogEntity>> updateTimeLogStatus({
+    required String timeLogId,
+    required bool approved,
+    String? rejectionReason,
+  });
+  Future<Either<AppFailure, List<TimeLogEntity>>> getPendingTimeLogsBySupervisor(String supervisorId);
+  Future<Either<AppFailure, List<TimeLogEntity>>> getTimeLogsByDateRange({
+    required String studentId,
+    required DateTime startDate,
+    required DateTime endDate,
+  });
 }

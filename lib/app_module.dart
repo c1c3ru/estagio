@@ -225,7 +225,7 @@ class AppModule extends Module {
     i.addLazySingleton<GetAllTimeLogsForSupervisorUsecase>(
         () => GetAllTimeLogsForSupervisorUsecase(i()));
     i.addLazySingleton<ApproveOrRejectTimeLogUsecase>(
-        () => ApproveOrRejectTimeLogUsecase(i(), i(), i()));
+        () => ApproveOrRejectTimeLogUsecase(i(), i(), i(), i()));
 
     // Use Cases - TimeLog
     i.addLazySingleton<ClockInUsecase>(() => ClockInUsecase(i()));

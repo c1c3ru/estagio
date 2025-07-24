@@ -1,8 +1,5 @@
 // lib/core/utils/validators.dart
 import '../constants/app_strings.dart'; // Para mensagens de erro padrão
-import '../enums/user_role.dart';
-import '../enums/class_shift.dart';
-import '../enums/internship_shift.dart';
 
 class Validators {
   /// Validador para campos obrigatórios.

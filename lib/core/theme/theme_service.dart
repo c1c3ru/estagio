@@ -256,7 +256,7 @@ class ThemeService extends ChangeNotifier {
     };
   }
 
-  MaterialColorScheme _getColorScheme(ColorScheme scheme, bool isDark) {
+  ColorScheme _getColorScheme(ColorScheme scheme, bool isDark) {
     final Map<ColorScheme, Color> primaryColors = {
       ColorScheme.blue: Colors.blue,
       ColorScheme.green: Colors.green,
@@ -268,20 +268,24 @@ class ThemeService extends ChangeNotifier {
 
     final primaryColor = primaryColors[scheme] ?? Colors.blue;
     
-    if (isDark) {
-      return MaterialColorScheme.fromSeed(
-        seedColor: primaryColor,
-        brightness: Brightness.dark,
-      );
-    } else {
-      return MaterialColorScheme.fromSeed(
-        seedColor: primaryColor,
-        brightness: Brightness.light,
-      );
-    }
+    return isDark 
+        ? ColorScheme.fromSeed(seedColor: primaryColor, brightness: Brightness.dark)
+        : ColorScheme.fromSeed(seedColor: primaryColor, brightness: Brightness.light);
   }
 
-  ThemeData _buildTheme(MaterialColorScheme colorScheme, Brightness brightness) {
+  ColorScheme _createCustomColorScheme(Color primaryColor, bool isDark) {
+    return isDark 
+        ? ColorScheme.fromSeed(seedColor: primaryColor, brightness: Brightness.dark)
+        : ColorScheme.fromSeed(seedColor: primaryColor, brightness: Brightness.light);
+  }
+
+  static ColorScheme _buildColorScheme(Color primaryColor, bool isDark) {
+    return isDark 
+        ? ColorScheme.fromSeed(seedColor: primaryColor, brightness: Brightness.dark)
+        : ColorScheme.fromSeed(seedColor: primaryColor, brightness: Brightness.light);
+  }
+
+  ThemeData _buildTheme(ColorScheme colorScheme, Brightness brightness) {
     final isDark = brightness == Brightness.dark;
     
     // Configurações de texto baseadas na configuração

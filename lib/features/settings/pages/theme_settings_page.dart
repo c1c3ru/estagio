@@ -1,6 +1,7 @@
 // lib/features/settings/pages/theme_settings_page.dart
 import 'package:flutter/material.dart';
-import 'package:estagio/core/theme/theme_service.dart';
+import 'package:flutter_modular/flutter_modular.dart';
+import '../../../core/theme/theme_service.dart';
 
 class ThemeSettingsPage extends StatefulWidget {
   const ThemeSettingsPage({super.key});

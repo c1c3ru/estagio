@@ -161,21 +161,13 @@ class TimeLogRepository implements ITimeLogRepository {
   }
 
   @override
-  Future<Either<AppFailure, Map<String, dynamic>>> getTotalHoursByStudent(
-    String studentId,
-    DateTime startDate,
-    DateTime endDate,
-  ) async {
+  Future<Either<AppFailure, Duration>> getTotalHoursByPeriod(
+      String studentId, DateTime start, DateTime end) async {
     try {
-      final result = await _timeLogDatasource.getTotalHoursByStudent(
-        studentId,
-        startDate,
-        endDate,
-      );
+      final result = await _timeLogDatasource.getTotalHoursByPeriod(studentId, start, end);
       return Right(result);
     } catch (e) {
-      return Left(ServerFailure(
-          message: 'Erro no repositório ao calcular horas totais: $e'));
+      return Left(AppFailure.unexpected(e.toString()));
     }
   }
 
@@ -196,41 +188,76 @@ class TimeLogRepository implements ITimeLogRepository {
   }
 
   @override
-  Future<Either<AppFailure, Duration>> getTotalHoursByPeriod(
-      String studentId, DateTime start, DateTime end) async {
+  Future<Either<AppFailure, TimeLogEntity?>> getTimeLogById(String timeLogId) async {
     try {
-      final timeLogsResult = await getTimeLogsByDateRange(studentId, start, end);
-      
-      return timeLogsResult.fold(
-        (failure) => Left(failure),
-        (timeLogs) {
-          int totalMinutes = 0;
-
-          for (final timeLog in timeLogs) {
-            if (timeLog.checkOutTime != null) {
-              try {
-                final checkInDateTime = DateTime.parse(
-                    '${timeLog.logDate.toIso8601String().split('T')[0]}T${timeLog.checkInTime}');
-                final checkOutDateTime = DateTime.parse(
-                    '${timeLog.logDate.toIso8601String().split('T')[0]}T${timeLog.checkOutTime!}');
-                final duration = checkOutDateTime.difference(checkInDateTime);
-                totalMinutes += duration.inMinutes;
-              } catch (e) {
-                // Lidar com possíveis erros de parsing, se o formato da hora for inválido
-                if (kDebugMode) {
-                  print(
-                      'Erro ao parsear data/hora no registro de horas ${timeLog.id}: $e');
-                }
-              }
-            }
-          }
-
-          return Right(Duration(minutes: totalMinutes));
-        },
-      );
+      final result = await _timeLogDatasource.getTimeLogById(timeLogId);
+      if (result != null) {
+        return Right(result);
+      } else {
+        return Left(AppFailure.notFound('Time log não encontrado'));
+      }
     } catch (e) {
-      return Left(ServerFailure(
-          message: 'Erro no repositório ao calcular horas por período: $e'));
+      return Left(AppFailure.unexpected(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<AppFailure, TimeLogEntity>> updateTimeLogStatus({
+    required String timeLogId,
+    required bool approved,
+    String? rejectionReason,
+  }) async {
+    try {
+      // Primeiro, buscar o time log atual
+      final currentTimeLogResult = await getTimeLogById(timeLogId);
+      if (currentTimeLogResult.isLeft()) {
+        return currentTimeLogResult;
+      }
+
+      final currentTimeLog = currentTimeLogResult.getOrElse(() => throw Exception('TimeLog not found'));
+      
+      // Atualizar o status
+      final updatedTimeLog = currentTimeLog.copyWith(
+        approved: approved,
+        rejectionReason: rejectionReason,
+        updatedAt: DateTime.now(),
+      );
+
+      final result = await _timeLogDatasource.updateTimeLog(updatedTimeLog);
+      return Right(result);
+    } catch (e) {
+      return Left(AppFailure.unexpected(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<AppFailure, List<TimeLogEntity>>> getPendingTimeLogsBySupervisor(String supervisorId) async {
+    try {
+      // Buscar todos os time logs pendentes para estudantes supervisionados por este supervisor
+      // Esta implementação dependeria de como a relação supervisor-estudante é mantida
+      // Por enquanto, vamos implementar uma versão básica
+      final result = await _timeLogDatasource.getPendingTimeLogs();
+      return Right(result);
+    } catch (e) {
+      return Left(AppFailure.unexpected(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<AppFailure, List<TimeLogEntity>>> getTimeLogsByDateRange({
+    required String studentId,
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    try {
+      final result = await _timeLogDatasource.getTimeLogsByDateRange(
+        studentId: studentId,
+        startDate: startDate,
+        endDate: endDate,
+      );
+      return Right(result);
+    } catch (e) {
+      return Left(AppFailure.unexpected(e.toString()));
     }
   }
 }
