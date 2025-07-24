@@ -124,6 +124,7 @@ import 'core/services/reminder_service.dart';
 import 'core/services/connectivity_service.dart';
 import 'core/services/cache_service.dart';
 import 'core/services/sync_service.dart';
+import 'core/services/report_service.dart';
 
 class AppModule extends Module {
   @override
@@ -256,6 +257,7 @@ class AppModule extends Module {
     i.addLazySingleton<ConnectivityService>(() => ConnectivityService());
     i.addLazySingleton<CacheService>(() => CacheService());
     i.addLazySingleton<SyncService>(() => SyncService());
+    i.addLazySingleton<ReportService>(() => ReportService());
 
     // BLoCs
     i.addLazySingleton<AuthBloc>(() => AuthBloc(
