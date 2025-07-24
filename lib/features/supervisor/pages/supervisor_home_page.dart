@@ -315,7 +315,6 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                           );
                         },
                         onDelete: (student) async {
-                          if (!mounted) return;
                           final confirm = await showDialog<bool>(
                             context: context,
                             builder: (context) => AlertDialog(
