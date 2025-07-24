@@ -9,12 +9,12 @@ import '../entities/student_entity.dart';
 
 abstract class IStudentRepository {
   Future<Either<AppFailure, List<StudentEntity>>> getAllStudents();
-  Future<StudentEntity?> getStudentById(String id);
-  Future<StudentEntity?> getStudentByUserId(String userId);
-  Future<StudentEntity> createStudent(StudentEntity student);
-  Future<StudentEntity> updateStudent(StudentEntity student);
-  Future<void> deleteStudent(String id);
-  Future<List<StudentEntity>> getStudentsBySupervisor(String supervisorId);
+  Future<Either<AppFailure, StudentEntity?>> getStudentById(String id);
+  Future<Either<AppFailure, StudentEntity?>> getStudentByUserId(String userId);
+  Future<Either<AppFailure, StudentEntity>> createStudent(StudentEntity student);
+  Future<Either<AppFailure, StudentEntity>> updateStudent(StudentEntity student);
+  Future<Either<AppFailure, void>> deleteStudent(String id);
+  Future<Either<AppFailure, List<StudentEntity>>> getStudentsBySupervisor(String supervisorId);
 
   Future<Either<AppFailure, TimeLogEntity>> checkIn(
       {required String studentId, String? notes});

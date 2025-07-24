@@ -30,75 +30,75 @@ class StudentRepository implements IStudentRepository {
   }
 
   @override
-  Future<StudentEntity?> getStudentById(String id) async {
+  Future<Either<AppFailure, StudentEntity?>> getStudentById(String id) async {
     try {
       final studentData = await _studentDatasource.getStudentById(id);
-      if (studentData == null) return null;
-      return StudentModel.fromJson(studentData).toEntity();
+      if (studentData == null) return const Right(null);
+      return Right(StudentModel.fromJson(studentData).toEntity());
     } catch (e) {
-      throw Exception('Erro no repositório ao buscar estudante: $e');
+      return Left(ServerFailure(message: 'Erro ao buscar estudante: $e'));
     }
   }
 
   @override
-  Future<StudentEntity?> getStudentByUserId(String userId) async {
+  Future<Either<AppFailure, StudentEntity?>> getStudentByUserId(String userId) async {
     try {
       final studentData = await _studentDatasource.getStudentByUserId(userId);
-      if (studentData == null) return null;
-      return StudentModel.fromJson(studentData).toEntity();
+      if (studentData == null) return const Right(null);
+      return Right(StudentModel.fromJson(studentData).toEntity());
     } catch (e) {
-      throw Exception(
-          'Erro no repositório ao buscar estudante por usuário: $e');
+      return Left(ServerFailure(message: 'Erro ao buscar estudante por usuário: $e'));
     }
   }
 
   @override
-  Future<StudentEntity> createStudent(StudentEntity student) async {
+  Future<Either<AppFailure, StudentEntity>> createStudent(StudentEntity student) async {
     try {
       final studentModel = student as StudentModel;
       final createdData =
           await _studentDatasource.createStudent(studentModel.toJson());
-      return StudentModel.fromJson(createdData).toEntity();
+      return Right(StudentModel.fromJson(createdData).toEntity());
     } catch (e) {
-      throw Exception('Erro no repositório ao criar estudante: $e');
+      return Left(ServerFailure(message: 'Erro ao criar estudante: $e'));
     }
   }
 
   @override
-  Future<StudentEntity> updateStudent(StudentEntity student) async {
+  Future<Either<AppFailure, StudentEntity>> updateStudent(StudentEntity student) async {
     try {
       final studentModel = student as StudentModel;
       final updatedData = await _studentDatasource.updateStudent(
         student.id,
         studentModel.toJson(),
       );
-      return StudentModel.fromJson(updatedData).toEntity();
+      return Right(StudentModel.fromJson(updatedData).toEntity());
     } catch (e) {
-      throw Exception('Erro no repositório ao atualizar estudante: $e');
+      return Left(ServerFailure(message: 'Erro ao atualizar estudante: $e'));
     }
   }
 
   @override
-  Future<void> deleteStudent(String id) async {
+  Future<Either<AppFailure, void>> deleteStudent(String id) async {
     try {
       await _studentDatasource.deleteStudent(id);
+      return const Right(null);
     } catch (e) {
-      throw Exception('Erro no repositório ao excluir estudante: $e');
+      return Left(ServerFailure(message: 'Erro ao excluir estudante: $e'));
     }
   }
 
   @override
-  Future<List<StudentEntity>> getStudentsBySupervisor(
+  Future<Either<AppFailure, List<StudentEntity>>> getStudentsBySupervisor(
       String supervisorId) async {
     try {
       final studentsData =
           await _studentDatasource.getStudentsBySupervisor(supervisorId);
-      return studentsData
+      final students = studentsData
           .map((data) => StudentModel.fromJson(data).toEntity())
           .toList();
+      return Right(students);
     } catch (e) {
-      throw Exception(
-          'Erro no repositório ao buscar estudantes do supervisor: $e');
+      return Left(ServerFailure(message: 'Erro ao buscar estudantes do supervisor: $e'));
     }
   }
 
@@ -158,15 +158,16 @@ class StudentRepository implements IStudentRepository {
   @override
   Future<Either<AppFailure, StudentEntity>> getStudentDetails(
       String userId) async {
-    try {
-      final student = await getStudentByUserId(userId);
-      if (student == null) {
-        return const Left(ServerFailure(message: 'Estudante não encontrado'));
-      }
-      return Right(student);
-    } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
-    }
+    final result = await getStudentByUserId(userId);
+    return result.fold(
+      (failure) => Left(failure),
+      (student) {
+        if (student == null) {
+          return const Left(ServerFailure(message: 'Estudante não encontrado'));
+        }
+        return Right(student);
+      },
+    );
   }
 
   @override
@@ -197,12 +198,7 @@ class StudentRepository implements IStudentRepository {
   @override
   Future<Either<AppFailure, StudentEntity>> updateStudentProfile(
       StudentEntity student) async {
-    try {
-      final updatedStudent = await updateStudent(student);
-      return Right(updatedStudent);
-    } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
-    }
+    return await updateStudent(student);
   }
 
   @override

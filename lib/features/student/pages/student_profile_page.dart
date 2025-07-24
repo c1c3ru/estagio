@@ -189,31 +189,34 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
 
           // Usar o use case diretamente
           final createStudentUsecase = Modular.get<CreateStudentUsecase>();
-          createStudentUsecase(student).then((createdStudent) {
+          createStudentUsecase(student).then((result) {
             if (mounted) {
-              setState(() {
-                _currentStudent = createdStudent;
-                _isEditMode = false;
-              });
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  SnackBar(
-                    content: const Text('Perfil criado com sucesso!'),
-                    backgroundColor: AppColors.success,
-                  ),
-                );
-            }
-          }).catchError((error) {
-            if (mounted) {
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  SnackBar(
-                    content: Text('Erro ao criar perfil: $error'),
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                  ),
-                );
+              result.fold(
+                (failure) {
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(
+                      SnackBar(
+                        content: Text('Erro ao criar perfil: ${failure.message}'),
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                      ),
+                    );
+                },
+                (createdStudent) {
+                  setState(() {
+                    _currentStudent = createdStudent;
+                    _isEditMode = false;
+                  });
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(
+                      SnackBar(
+                        content: const Text('Perfil criado com sucesso!'),
+                        backgroundColor: AppColors.success,
+                      ),
+                    );
+                },
+              );
             }
           });
         }

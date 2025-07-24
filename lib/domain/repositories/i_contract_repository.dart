@@ -29,4 +29,8 @@ abstract class IContractRepository {
       String studentId);
 
   Future<Either<AppFailure, Map<String, dynamic>>> getContractStatistics();
+  
+  Future<Either<AppFailure, List<ContractEntity>>> getActiveContracts();
+  
+  Future<Either<AppFailure, List<ContractEntity>>> getExpiringContracts(int daysAhead);
 }

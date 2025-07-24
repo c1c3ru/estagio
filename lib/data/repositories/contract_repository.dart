@@ -76,14 +76,16 @@ class ContractRepository implements IContractRepository {
     }
   }
 
-  Future<List<ContractEntity>> getActiveContracts() async {
+  @override
+  Future<Either<AppFailure, List<ContractEntity>>> getActiveContracts() async {
     try {
       final contractsData = await _contractDatasource.getActiveContracts();
-      return contractsData
+      final contracts = contractsData
           .map((data) => ContractModel.fromJson(data).toEntity())
           .toList();
+      return Right(contracts);
     } catch (e) {
-      throw Exception('Erro no repositório ao buscar contratos ativos: $e');
+      return Left(ServerFailure(message: 'Erro ao buscar contratos ativos: $e'));
     }
   }
 
@@ -141,16 +143,17 @@ class ContractRepository implements IContractRepository {
     }
   }
 
-  Future<List<ContractEntity>> getExpiringContracts(int daysAhead) async {
+  @override
+  Future<Either<AppFailure, List<ContractEntity>>> getExpiringContracts(int daysAhead) async {
     try {
       final contractsData =
           await _contractDatasource.getExpiringContracts(daysAhead);
-      return contractsData
+      final contracts = contractsData
           .map((data) => ContractModel.fromJson(data).toEntity())
           .toList();
+      return Right(contracts);
     } catch (e) {
-      throw Exception(
-          'Erro no repositório ao buscar contratos próximos do vencimento: $e');
+      return Left(ServerFailure(message: 'Erro ao buscar contratos próximos do vencimento: $e'));
     }
   }
 
