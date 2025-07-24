@@ -1,6 +1,7 @@
 // ignore_for_file: override_on_non_overriding_member
 
 import 'package:flutter/foundation.dart';
+import 'package:dartz/dartz.dart';
 
 import '../../core/errors/app_exceptions.dart';
 import '../../domain/repositories/i_time_log_repository.dart';

@@ -11,9 +11,19 @@ import 'app_widget.dart';
 import 'core/constants/app_constants.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/reminder_service.dart';
+import 'core/services/performance_service.dart';
+import 'core/theme/theme_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializar serviços de performance primeiro
+  final performanceService = PerformanceService();
+  performanceService.initialize();
+  
+  // Inicializar serviço de temas
+  final themeService = ThemeService();
+  await themeService.initialize();
 
   if (kDebugMode) {
     print('🟡 main: Iniciando aplicação...');
@@ -27,7 +37,9 @@ Future<void> main() async {
 
   try {
     // Carregar variáveis de ambiente
-    await dotenv.load(fileName: ".env");
+    await performanceService.measureOperation('load_env', () async {
+      await dotenv.load(fileName: ".env");
+    });
     if (kDebugMode) {
       print('✅ Variáveis de ambiente carregadas');
     }
@@ -46,11 +58,13 @@ Future<void> main() async {
       }
     }
 
-    // Inicializar Supabase com as constantes
-    await Supabase.initialize(
-      url: AppConstants.supabaseUrl,
-      anonKey: AppConstants.supabaseAnonKey,
-    );
+    // Inicializar Supabase
+    await performanceService.measureOperation('init_supabase', () async {
+      await Supabase.initialize(
+        url: AppConstants.supabaseUrl,
+        anonKey: AppConstants.supabaseAnonKey,
+      );
+    });
     if (kDebugMode) {
       print('✅ Supabase inicializado com sucesso');
     }
@@ -126,9 +140,41 @@ Future<void> main() async {
     }
   }
 
+  // Pré-carregar dados críticos se usuário estiver logado
+  final currentUser = Supabase.instance.client.auth.currentUser;
+  if (currentUser != null) {
+    await performanceService.preloadCriticalData(
+      userId: currentUser.id,
+      userType: 'student', // Determinar tipo baseado nos dados do usuário
+    );
+  }
+
+  // Configurar otimizações de UI
+  performanceService.configureUIOptimizations();
+
   if (kDebugMode) {
     print('🟡 main: Executando app...');
   }
 
-  runApp(ModularApp(module: AppModule(), child: const AppWidget()));
+  runApp(
+    ListenableBuilder(
+      listenable: ThemeService(),
+      builder: (context, child) {
+        final themeService = ThemeService();
+        
+        return MaterialApp.router(
+          title: 'Sistema de Estágio',
+          theme: themeService.lightTheme,
+          darkTheme: themeService.darkTheme,
+          themeMode: themeService.themeMode,
+          routerConfig: Modular.routerConfig,
+          debugShowCheckedModeBanner: false,
+          builder: (context, child) {
+            // Configurar otimizações de performance para a UI
+            return child ?? const SizedBox();
+          },
+        );
+      },
+    ),
+  );
 }

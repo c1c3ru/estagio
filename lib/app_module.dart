@@ -125,6 +125,8 @@ import 'core/services/connectivity_service.dart';
 import 'core/services/cache_service.dart';
 import 'core/services/sync_service.dart';
 import 'core/services/report_service.dart';
+import 'core/services/performance_service.dart';
+import 'core/theme/theme_service.dart';
 
 class AppModule extends Module {
   @override
@@ -223,7 +225,7 @@ class AppModule extends Module {
     i.addLazySingleton<GetAllTimeLogsForSupervisorUsecase>(
         () => GetAllTimeLogsForSupervisorUsecase(i()));
     i.addLazySingleton<ApproveOrRejectTimeLogUsecase>(
-        () => ApproveOrRejectTimeLogUsecase(i()));
+        () => ApproveOrRejectTimeLogUsecase(i(), i(), i()));
 
     // Use Cases - TimeLog
     i.addLazySingleton<ClockInUsecase>(() => ClockInUsecase(i()));
@@ -251,13 +253,15 @@ class AppModule extends Module {
         () => GetAllContractsUsecase(i()));
 
     // Services
-    i.addLazySingleton<NotificationService>(() => NotificationService());
-    i.addLazySingleton<NotificationHelper>(() => NotificationHelper());
-    i.addLazySingleton<ReminderService>(() => ReminderService());
-    i.addLazySingleton<ConnectivityService>(() => ConnectivityService());
-    i.addLazySingleton<CacheService>(() => CacheService());
-    i.addLazySingleton<SyncService>(() => SyncService());
-    i.addLazySingleton<ReportService>(() => ReportService());
+    i.addSingleton<NotificationService>(() => NotificationService());
+    i.addSingleton<NotificationHelper>(() => NotificationHelper());
+    i.addSingleton<ReminderService>(() => ReminderService());
+    i.addSingleton<ConnectivityService>(() => ConnectivityService());
+    i.addSingleton<CacheService>(() => CacheService());
+    i.addSingleton<SyncService>(() => SyncService());
+    i.addSingleton<ReportService>(() => ReportService());
+    i.addSingleton<PerformanceService>(() => PerformanceService());
+    i.addSingleton<ThemeService>(() => ThemeService());
 
     // BLoCs
     i.addLazySingleton<AuthBloc>(() => AuthBloc(
