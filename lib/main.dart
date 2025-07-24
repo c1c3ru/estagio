@@ -9,6 +9,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'app_module.dart';
 import 'app_widget.dart';
 import 'core/constants/app_constants.dart';
+import 'core/services/notification_service.dart';
+import 'core/services/reminder_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,6 +75,42 @@ Future<void> main() async {
   } catch (e) {
     if (kDebugMode) {
       print('⚠️ Erro ao inicializar SharedPreferences: $e');
+    }
+  }
+
+  try {
+    // Initialize Notification Service
+    if (!kIsWeb) { // Notificações push não funcionam na web
+      final notificationService = NotificationService();
+      final initialized = await notificationService.initialize();
+      if (kDebugMode) {
+        if (initialized) {
+          print('✅ Serviço de notificações inicializado com sucesso');
+        } else {
+          print('⚠️ Falha ao inicializar serviço de notificações');
+        }
+      }
+
+      // Initialize Reminder Service
+      if (initialized) {
+        final reminderService = ReminderService();
+        final reminderInitialized = await reminderService.initialize();
+        if (kDebugMode) {
+          if (reminderInitialized) {
+            print('✅ Serviço de lembretes inicializado com sucesso');
+          } else {
+            print('⚠️ Falha ao inicializar serviço de lembretes');
+          }
+        }
+      }
+    } else {
+      if (kDebugMode) {
+        print('🌐 Notificações push não suportadas na web');
+      }
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('⚠️ Erro ao inicializar serviços de notificação: $e');
     }
   }
 

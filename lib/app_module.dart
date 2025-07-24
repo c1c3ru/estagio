@@ -118,6 +118,13 @@ import 'features/supervisor/supervisor_module.dart';
 // Guards
 import 'core/guards/auth_guard.dart';
 
+import 'core/services/notification_service.dart';
+import 'core/services/notification_helper.dart';
+import 'core/services/reminder_service.dart';
+import 'core/services/connectivity_service.dart';
+import 'core/services/cache_service.dart';
+import 'core/services/sync_service.dart';
+
 class AppModule extends Module {
   @override
   void binds(Injector i) {
@@ -241,6 +248,14 @@ class AppModule extends Module {
         () => GetContractStatisticsUsecase(i()));
     i.addLazySingleton<GetAllContractsUsecase>(
         () => GetAllContractsUsecase(i()));
+
+    // Services
+    i.addLazySingleton<NotificationService>(() => NotificationService());
+    i.addLazySingleton<NotificationHelper>(() => NotificationHelper());
+    i.addLazySingleton<ReminderService>(() => ReminderService());
+    i.addLazySingleton<ConnectivityService>(() => ConnectivityService());
+    i.addLazySingleton<CacheService>(() => CacheService());
+    i.addLazySingleton<SyncService>(() => SyncService());
 
     // BLoCs
     i.addLazySingleton<AuthBloc>(() => AuthBloc(

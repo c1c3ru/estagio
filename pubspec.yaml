@@ -39,6 +39,16 @@ dependencies:
   # Network
   dio: ^5.4.3+1
   
+  # Push Notifications
+  firebase_messaging: ^14.7.10
+  flutter_local_notifications: ^16.3.2
+  permission_handler: ^11.2.0
+  
+  # Offline Support
+  sqflite: ^2.3.0
+  connectivity_plus: ^5.0.2
+  path: ^1.8.3
+  
   # Local Storage - Removido temporariamente para resolver conflitos
   # hive: ^2.2.3
   # hive_flutter: ^1.1.0
@@ -78,4 +88,3 @@ flutter:
     - assets/animations/
     - assets/images/
     - .env
-    
