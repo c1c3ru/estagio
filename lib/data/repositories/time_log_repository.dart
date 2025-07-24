@@ -2,6 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 
+import '../../core/errors/app_exceptions.dart';
 import '../../domain/repositories/i_time_log_repository.dart';
 import '../../domain/entities/time_log_entity.dart';
 import '../datasources/supabase/time_log_datasource.dart';
@@ -13,45 +14,49 @@ class TimeLogRepository implements ITimeLogRepository {
   TimeLogRepository(this._timeLogDatasource);
 
   @override
-  Future<List<TimeLogEntity>> getAllTimeLogs() async {
+  Future<Either<AppFailure, List<TimeLogEntity>>> getAllTimeLogs() async {
     try {
       final timeLogsData = await _timeLogDatasource.getAllTimeLogs();
-      return timeLogsData
+      final timeLogs = timeLogsData
           .map((data) => TimeLogModel.fromJson(data).toEntity())
           .toList();
+      return Right(timeLogs);
     } catch (e) {
-      throw Exception('Erro no repositório ao buscar registros de horas: $e');
+      return Left(ServerFailure(
+          message: 'Erro no repositório ao buscar registros de horas: $e'));
     }
   }
 
   @override
-  Future<TimeLogEntity?> getTimeLogById(String id) async {
+  Future<Either<AppFailure, TimeLogEntity?>> getTimeLogById(String id) async {
     try {
       final timeLogData = await _timeLogDatasource.getTimeLogById(id);
-      if (timeLogData == null) return null;
-      return TimeLogModel.fromJson(timeLogData).toEntity();
+      if (timeLogData == null) return const Right(null);
+      final timeLog = TimeLogModel.fromJson(timeLogData).toEntity();
+      return Right(timeLog);
     } catch (e) {
-      throw Exception('Erro no repositório ao buscar registro de horas: $e');
+      return Left(ServerFailure(
+          message: 'Erro no repositório ao buscar registro de horas: $e'));
     }
   }
 
   @override
-  Future<List<TimeLogEntity>> getTimeLogsByStudent(String studentId) async {
+  Future<Either<AppFailure, List<TimeLogEntity>>> getTimeLogsByStudent(String studentId) async {
     try {
       final timeLogsData =
           await _timeLogDatasource.getTimeLogsByStudent(studentId);
       final timeLogs = timeLogsData
           .map((data) => TimeLogModel.fromJson(data).toEntity())
           .toList();
-      return timeLogs;
+      return Right(timeLogs);
     } catch (e) {
-      throw Exception(
-          'Erro no repositório ao buscar registros do estudante: $e');
+      return Left(ServerFailure(
+          message: 'Erro no repositório ao buscar registros do estudante: $e'));
     }
   }
 
   @override
-  Future<List<TimeLogEntity>> getTimeLogsByDateRange(
+  Future<Either<AppFailure, List<TimeLogEntity>>> getTimeLogsByDateRange(
     String studentId,
     DateTime startDate,
     DateTime endDate,
@@ -62,145 +67,168 @@ class TimeLogRepository implements ITimeLogRepository {
         startDate,
         endDate,
       );
-      return timeLogsData
+      final timeLogs = timeLogsData
           .map((data) => TimeLogModel.fromJson(data).toEntity())
           .toList();
+      return Right(timeLogs);
     } catch (e) {
-      throw Exception(
-          'Erro no repositório ao buscar registros por período: $e');
+      return Left(ServerFailure(
+          message: 'Erro no repositório ao buscar registros por período: $e'));
     }
   }
 
   @override
-  Future<TimeLogEntity?> getActiveTimeLog(String studentId) async {
+  Future<Either<AppFailure, TimeLogEntity?>> getActiveTimeLog(String studentId) async {
     try {
       final timeLogData = await _timeLogDatasource.getActiveTimeLog(studentId);
-      if (timeLogData == null) return null;
-      return TimeLogModel.fromJson(timeLogData).toEntity();
+      if (timeLogData == null) return const Right(null);
+      final timeLog = TimeLogModel.fromJson(timeLogData).toEntity();
+      return Right(timeLog);
     } catch (e) {
-      throw Exception('Erro no repositório ao buscar registro ativo: $e');
+      return Left(ServerFailure(
+          message: 'Erro no repositório ao buscar registro ativo: $e'));
     }
   }
 
   @override
-  Future<TimeLogEntity> createTimeLog(TimeLogEntity timeLog) async {
+  Future<Either<AppFailure, TimeLogEntity>> createTimeLog(TimeLogEntity timeLog) async {
     try {
       final timeLogModel = timeLog as TimeLogModel;
       final createdData =
           await _timeLogDatasource.createTimeLog(timeLogModel.toJson());
-      return TimeLogModel.fromJson(createdData).toEntity();
+      final createdTimeLog = TimeLogModel.fromJson(createdData).toEntity();
+      return Right(createdTimeLog);
     } catch (e) {
-      throw Exception('Erro no repositório ao criar registro de horas: $e');
+      return Left(ServerFailure(
+          message: 'Erro no repositório ao criar registro de horas: $e'));
     }
   }
 
   @override
-  Future<TimeLogEntity> updateTimeLog(TimeLogEntity timeLog) async {
+  Future<Either<AppFailure, TimeLogEntity>> updateTimeLog(TimeLogEntity timeLog) async {
     try {
       final timeLogModel = timeLog as TimeLogModel;
       final updatedData = await _timeLogDatasource.updateTimeLog(
         timeLog.id,
         timeLogModel.toJson(),
       );
-      return TimeLogModel.fromJson(updatedData).toEntity();
+      final updatedTimeLog = TimeLogModel.fromJson(updatedData).toEntity();
+      return Right(updatedTimeLog);
     } catch (e) {
-      throw Exception('Erro no repositório ao atualizar registro de horas: $e');
+      return Left(ServerFailure(
+          message: 'Erro no repositório ao atualizar registro de horas: $e'));
     }
   }
 
   @override
-  Future<void> deleteTimeLog(String id) async {
+  Future<Either<AppFailure, void>> deleteTimeLog(String id) async {
     try {
       await _timeLogDatasource.deleteTimeLog(id);
+      return const Right(null);
     } catch (e) {
-      throw Exception('Erro no repositório ao excluir registro de horas: $e');
+      return Left(ServerFailure(
+          message: 'Erro no repositório ao excluir registro de horas: $e'));
     }
   }
 
   @override
-  Future<TimeLogEntity> clockIn(String studentId,
+  Future<Either<AppFailure, TimeLogEntity>> clockIn(String studentId,
       {String? description, String? notes}) async {
     try {
       final timeLogData = await _timeLogDatasource.clockIn(studentId,
           notes: notes ?? description);
-      return TimeLogModel.fromJson(timeLogData).toEntity();
+      final timeLog = TimeLogModel.fromJson(timeLogData).toEntity();
+      return Right(timeLog);
     } catch (e) {
-      throw Exception('Erro no repositório ao registrar entrada: $e');
+      return Left(ServerFailure(
+          message: 'Erro no repositório ao registrar entrada: $e'));
     }
   }
 
   @override
-  Future<TimeLogEntity> clockOut(String studentId, {String? notes}) async {
+  Future<Either<AppFailure, TimeLogEntity>> clockOut(String studentId, {String? notes}) async {
     try {
       final timeLogData =
           await _timeLogDatasource.clockOut(studentId, notes: notes);
-      return TimeLogModel.fromJson(timeLogData).toEntity();
+      final timeLog = TimeLogModel.fromJson(timeLogData).toEntity();
+      return Right(timeLog);
     } catch (e) {
-      throw Exception('Erro no repositório ao registrar saída: $e');
+      return Left(ServerFailure(
+          message: 'Erro no repositório ao registrar saída: $e'));
     }
   }
 
   @override
-  Future<Map<String, dynamic>> getTotalHoursByStudent(
+  Future<Either<AppFailure, Map<String, dynamic>>> getTotalHoursByStudent(
     String studentId,
     DateTime startDate,
     DateTime endDate,
   ) async {
     try {
-      return await _timeLogDatasource.getTotalHoursByStudent(
+      final result = await _timeLogDatasource.getTotalHoursByStudent(
         studentId,
         startDate,
         endDate,
       );
+      return Right(result);
     } catch (e) {
-      throw Exception('Erro no repositório ao calcular horas totais: $e');
+      return Left(ServerFailure(
+          message: 'Erro no repositório ao calcular horas totais: $e'));
     }
   }
 
   @override
-  Future<List<TimeLogEntity>> getTimeLogsBySupervisor(
+  Future<Either<AppFailure, List<TimeLogEntity>>> getTimeLogsBySupervisor(
       String supervisorId) async {
     try {
       final timeLogsData =
           await _timeLogDatasource.getTimeLogsBySupervisor(supervisorId);
-      return timeLogsData
+      final timeLogs = timeLogsData
           .map((data) => TimeLogModel.fromJson(data).toEntity())
           .toList();
+      return Right(timeLogs);
     } catch (e) {
-      throw Exception(
-          'Erro no repositório ao buscar registros do supervisor: $e');
+      return Left(ServerFailure(
+          message: 'Erro no repositório ao buscar registros do supervisor: $e'));
     }
   }
 
   @override
-  Future<Duration> getTotalHoursByPeriod(
+  Future<Either<AppFailure, Duration>> getTotalHoursByPeriod(
       String studentId, DateTime start, DateTime end) async {
     try {
-      final timeLogs = await getTimeLogsByDateRange(studentId, start, end);
-      int totalMinutes = 0;
+      final timeLogsResult = await getTimeLogsByDateRange(studentId, start, end);
+      
+      return timeLogsResult.fold(
+        (failure) => Left(failure),
+        (timeLogs) {
+          int totalMinutes = 0;
 
-      for (final timeLog in timeLogs) {
-        if (timeLog.checkOutTime != null) {
-          try {
-            final checkInDateTime = DateTime.parse(
-                '${timeLog.logDate.toIso8601String().split('T')[0]}T${timeLog.checkInTime}');
-            final checkOutDateTime = DateTime.parse(
-                '${timeLog.logDate.toIso8601String().split('T')[0]}T${timeLog.checkOutTime!}');
-            final duration = checkOutDateTime.difference(checkInDateTime);
-            totalMinutes += duration.inMinutes;
-          } catch (e) {
-            // Lidar com possíveis erros de parsing, se o formato da hora for inválido
-            if (kDebugMode) {
-              print(
-                  'Erro ao parsear data/hora no registro de horas ${timeLog.id}: $e');
+          for (final timeLog in timeLogs) {
+            if (timeLog.checkOutTime != null) {
+              try {
+                final checkInDateTime = DateTime.parse(
+                    '${timeLog.logDate.toIso8601String().split('T')[0]}T${timeLog.checkInTime}');
+                final checkOutDateTime = DateTime.parse(
+                    '${timeLog.logDate.toIso8601String().split('T')[0]}T${timeLog.checkOutTime!}');
+                final duration = checkOutDateTime.difference(checkInDateTime);
+                totalMinutes += duration.inMinutes;
+              } catch (e) {
+                // Lidar com possíveis erros de parsing, se o formato da hora for inválido
+                if (kDebugMode) {
+                  print(
+                      'Erro ao parsear data/hora no registro de horas ${timeLog.id}: $e');
+                }
+              }
             }
           }
-        }
-      }
 
-      return Duration(minutes: totalMinutes);
+          return Right(Duration(minutes: totalMinutes));
+        },
+      );
     } catch (e) {
-      throw Exception('Erro no repositório ao calcular horas por período: $e');
+      return Left(ServerFailure(
+          message: 'Erro no repositório ao calcular horas por período: $e'));
     }
   }
 }
