@@ -2,7 +2,6 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:dartz/dartz.dart';
-import 'package:dartz/dartz.dart';
 
 import '../../core/errors/app_exceptions.dart';
 import '../../domain/repositories/i_time_log_repository.dart';
@@ -30,10 +29,12 @@ class TimeLogRepository implements ITimeLogRepository {
   }
 
   @override
-  Future<Either<AppFailure, TimeLogEntity?>> getTimeLogById(String id) async {
+  Future<Either<AppFailure, TimeLogEntity>> getTimeLogById(String id) async {
     try {
       final timeLogData = await _timeLogDatasource.getTimeLogById(id);
-      if (timeLogData == null) return const Right(null);
+      if (timeLogData == null) {
+        return Left(ServerFailure(message: 'Registro de horas não encontrado'));
+      }
       final timeLog = TimeLogModel.fromJson(timeLogData).toEntity();
       return Right(timeLog);
     } catch (e) {
@@ -184,20 +185,6 @@ class TimeLogRepository implements ITimeLogRepository {
     } catch (e) {
       return Left(ServerFailure(
           message: 'Erro no repositório ao buscar registros do supervisor: $e'));
-    }
-  }
-
-  @override
-  Future<Either<AppFailure, TimeLogEntity?>> getTimeLogById(String timeLogId) async {
-    try {
-      final result = await _timeLogDatasource.getTimeLogById(timeLogId);
-      if (result != null) {
-        return Right(result);
-      } else {
-        return Left(AppFailure.notFound('Time log não encontrado'));
-      }
-    } catch (e) {
-      return Left(AppFailure.unexpected(e.toString()));
     }
   }
 
