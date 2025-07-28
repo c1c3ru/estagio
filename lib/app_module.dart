@@ -38,7 +38,7 @@ import 'domain/usecases/auth/logout_usecase.dart';
 import 'domain/usecases/auth/get_current_user_usecase.dart';
 import 'domain/usecases/auth/update_profile_usecase.dart';
 import 'domain/usecases/auth/get_auth_state_changes_usecase.dart';
-import 'domain/usecases/auth/reset_password_usecase.dart';
+import 'package:gestao_de_estagio/domain/usecases/auth/reset_password_usecase.dart';
 
 // Use Cases - Student
 import 'domain/usecases/student/get_all_students_usecase.dart';
@@ -108,7 +108,7 @@ import 'features/auth/pages/supervisor_register_page.dart';
 import 'features/student/pages/student_register_page.dart';
 import 'features/auth/pages/unauthorized_page.dart';
 import 'features/auth/pages/email_confirmation_page.dart';
-import 'features/auth/pages/forgot_password_page.dart';
+import 'package:gestao_de_estagio/features/auth/pages/forgot_password_page.dart';
 import 'features/shared/pages/not_found_page.dart';
 
 // Modules

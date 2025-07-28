@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gestao_de_estagio/core/animations.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:lottie/lottie.dart';
 
@@ -22,7 +23,7 @@ class UnauthorizedPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Lottie.asset(
-                AssetAnimations.notFound404Animation,
+                AssetAnimations.notFound404,
                 height: 160,
                 repeat: true,
               ),

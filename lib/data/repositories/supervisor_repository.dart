@@ -252,7 +252,7 @@ class SupervisorRepository implements ISupervisorRepository {
 
       final timeLogsResult = await _timeLogRepository.getTimeLogsByStudent(studentId);
       if (timeLogsResult.isLeft()) {
-        return Left(timeLogsResult.swap().getOrElse(() => ServerFailure(message: 'Erro ao buscar time logs')));
+        return Left(timeLogsResult.swap().getOrElse(() => const ServerFailure(message: 'Erro ao buscar time logs')));
       }
       final timeLogs = timeLogsResult.getOrElse(() => []);
 

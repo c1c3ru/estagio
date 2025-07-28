@@ -79,7 +79,7 @@ class ApproveOrRejectTimeLogUsecase {
         
         // Criar wrappers para as interfaces do NotificationHelper
         final timeLogWrapper = _TimeLogWrapper(updatedTimeLog);
-        final studentWrapper = _StudentWrapper(student);
+        final studentWrapper = _StudentWrapper(student!);
         final supervisorWrapper = supervisor != null ? _SupervisorWrapper(supervisor) : null;
         
         // Enviar notificação baseada no resultado

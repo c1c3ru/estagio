@@ -72,7 +72,7 @@ void main() {
         (WidgetTester tester) async {
       // Test /* StudentAnimation removido */
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
               child: Column(
@@ -93,7 +93,7 @@ void main() {
 
       // Test /* SupervisorAnimation removido */
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
               child: Column(
@@ -113,7 +113,7 @@ void main() {
 
       // Test /* PasswordResetAnimation removido */
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
               child: Column(
@@ -139,7 +139,7 @@ void main() {
       tester.binding.window.devicePixelRatioTestValue = 1.0;
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
               child: Column(
@@ -162,7 +162,7 @@ void main() {
       tester.binding.window.devicePixelRatioTestValue = 1.0;
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
               child: Column(

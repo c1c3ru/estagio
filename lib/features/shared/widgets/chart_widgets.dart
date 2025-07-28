@@ -13,6 +13,7 @@ class StatsSummaryCard extends StatelessWidget {
     required this.value,
     required this.icon,
     required this.color,
+    required String subtitle,
   });
 
   @override

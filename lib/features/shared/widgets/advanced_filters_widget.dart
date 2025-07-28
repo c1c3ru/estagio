@@ -114,7 +114,7 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
   }
 
   void _resetFilters() {
-    const final resetFilters = AdvancedFilters();
+    final resetFilters = AdvancedFilters();
     _updateFilters(resetFilters);
     widget.onReset?.call();
   }

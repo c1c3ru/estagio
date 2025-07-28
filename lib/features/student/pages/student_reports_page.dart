@@ -7,6 +7,7 @@ import '../../../domain/repositories/i_time_log_repository.dart';
 import '../../../domain/repositories/i_contract_repository.dart';
 import '../../shared/widgets/chart_widgets.dart';
 import '../bloc/student_bloc.dart';
+import '../bloc/student_state.dart';
 
 class StudentReportsPage extends StatefulWidget {
   const StudentReportsPage({super.key});
@@ -17,7 +18,7 @@ class StudentReportsPage extends StatefulWidget {
 
 class _StudentReportsPageState extends State<StudentReportsPage> {
   final ReportService _reportService = ReportService();
-  final FeedbackService _feedbackService = FeedbackService();
+  // Removido: FeedbackService é utilitário estático, não deve ser instanciado.
 
   DateTime _startDate = DateTime.now().subtract(const Duration(days: 30));
   DateTime _endDate = DateTime.now();
@@ -41,10 +42,16 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
 
     try {
       final studentBloc = context.read<StudentBloc>();
-      final studentId = studentBloc.state.student?.id;
+      final state = studentBloc.state;
+      String? studentId;
+      if (state is StudentDashboardLoadSuccess) {
+        studentId = (state as StudentDashboardLoadSuccess).student.id;
+      } else if (state is StudentDetailsLoaded) {
+        studentId = (state as StudentDetailsLoaded).student.id;
+      }
 
       if (studentId == null) {
-        _feedbackService.showErrorSnackBar(
+        FeedbackService.showError(
           context,
           'Erro: ID do estudante não encontrado',
         );
@@ -55,14 +62,12 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
       final timeLogRepository = Modular.get<ITimeLogRepository>();
       final contractRepository = Modular.get<IContractRepository>();
 
-      final timeLogsResult =
-          await timeLogRepository.getTimeLogsByStudentId(studentId);
-      final contractsResult =
-          await contractRepository.getContractsByStudentId(studentId);
+      final timeLogsResult = await timeLogRepository.getTimeLogsByStudent(studentId!);
+      final contractsResult = await contractRepository.getContractsByStudent(studentId!);
 
       timeLogsResult.fold(
         (failure) {
-          _feedbackService.showErrorSnackBar(
+          FeedbackService.showError(
             context,
             'Erro ao carregar registros de horas: ${failure.message}',
           );
@@ -78,7 +83,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
 
           contractsResult.fold(
             (failure) {
-              _feedbackService.showErrorSnackBar(
+              FeedbackService.showError(
                 context,
                 'Erro ao carregar contratos: ${failure.message}',
               );
@@ -104,7 +109,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
       );
     } catch (e) {
       if (mounted) {
-        _feedbackService.showErrorSnackBar(
+        FeedbackService.showError(
           context,
           'Erro inesperado ao carregar relatórios: $e',
         );
@@ -140,7 +145,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
 
   Future<void> _exportReport(String format) async {
     if (_currentReport == null) {
-      _feedbackService.showErrorSnackBar(
+      FeedbackService.showError(
         context,
         'Nenhum relatório disponível para exportar',
       );
@@ -148,7 +153,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
     }
 
     try {
-      _feedbackService.showLoadingDialog(context, 'Exportando relatório...');
+      FeedbackService.showLoadingDialog(context, 'Exportando relatório...');
 
       String filePath;
       final reportData = _currentReport!.toJson();
@@ -175,13 +180,13 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
             'Relatório de Horas - ${_startDate.day}/${_startDate.month}/${_startDate.year} a ${_endDate.day}/${_endDate.month}/${_endDate.year}',
       );
 
-      _feedbackService.showSuccessSnackBar(
+      FeedbackService.showSuccessSnackBar(
         context,
         'Relatório exportado com sucesso!',
       );
     } catch (e) {
       Navigator.of(context).pop(); // Fechar loading
-      _feedbackService.showErrorSnackBar(
+      FeedbackService.showError(
         context,
         'Erro ao exportar relatório: $e',
       );
@@ -302,31 +307,22 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                       mainAxisSpacing: 16,
                       children: [
                         StatsSummaryCard(
-                          title: 'Total de Horas',
-                          value: _currentReport!.totalHours.toStringAsFixed(1),
-                          subtitle: 'horas trabalhadas',
-                          icon: Icons.access_time,
-                          color: Colors.blue,
-                        ),
+  title: 'Total de Horas',
                         StatsSummaryCard(
                           title: 'Dias Trabalhados',
                           value: _currentReport!.totalDays.toString(),
-                          subtitle: 'dias no período',
                           icon: Icons.calendar_today,
                           color: Colors.green,
                         ),
                         StatsSummaryCard(
                           title: 'Média Diária',
-                          value: _currentReport!.averageHoursPerDay
-                              .toStringAsFixed(1),
-                          subtitle: 'horas por dia',
+                          value: _currentReport!.averageHoursPerDay.toStringAsFixed(1),
                           icon: Icons.trending_up,
                           color: Colors.orange,
                         ),
                         StatsSummaryCard(
                           title: 'Registros',
                           value: _currentReport!.timeLogs.length.toString(),
-                          subtitle: 'entradas de ponto',
                           icon: Icons.list,
                           color: Colors.purple,
                         ),
@@ -337,8 +333,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
 
                     // Gráfico de barras - horas por dia da semana
                     WeeklyHoursBarChart(
-                      hoursByWeekday: _currentReport!.hoursByWeekday,
-                      primaryColor: Theme.of(context).primaryColor,
+                      data: _currentReport!.hoursByWeekday,
                     ),
 
                     const SizedBox(height: 16),
@@ -346,9 +341,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                     // Gráfico de linha - horas por semana
                     if (_currentReport!.hoursByWeek.isNotEmpty)
                       TimeSeriesLineChart(
-                        timeSeriesData: _currentReport!.hoursByWeek,
-                        title: 'Horas por Semana',
-                        lineColor: Colors.green,
+                        data: _currentReport!.hoursByWeek,
                       ),
 
                     const SizedBox(height: 16),
@@ -356,9 +349,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                     // Gráfico de linha - horas por mês
                     if (_currentReport!.hoursByMonth.isNotEmpty)
                       TimeSeriesLineChart(
-                        timeSeriesData: _currentReport!.hoursByMonth,
-                        title: 'Horas por Mês',
-                        lineColor: Colors.blue,
+                        data: _currentReport!.hoursByMonth,
                       ),
 
                     const SizedBox(height: 16),
@@ -366,13 +357,10 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                     // Progresso do contrato (se houver)
                     if (_contractReport != null &&
                         _contractReport!.activeContracts > 0)
-                      const ProgressCard(
+                      ProgressCard(
                         title: 'Progresso do Contrato',
                         progress: 0.65, // Calcular baseado nas horas
-                        progressText: '65%',
-                        progressColor: Colors.green,
-                        subtitle:
-                            'Baseado nas horas trabalhadas vs. horas requeridas',
+                        subtitle: 'Baseado nas horas trabalhadas vs. horas requeridas',
                       ),
 
                     const SizedBox(height: 24),
@@ -464,7 +452,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                                 child: TextButton(
                                   onPressed: () {
                                     // Navegar para página com todos os registros
-                                    _feedbackService.showInfoSnackBar(
+                                    FeedbackService.showInfo(
                                       context,
                                       'Funcionalidade em desenvolvimento',
                                     );

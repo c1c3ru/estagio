@@ -111,8 +111,9 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
   ) async {
     emit(const StudentLoading());
     try {
-      final timeLogs = await _getTimeLogsByStudentUsecase(event.userId);
-      emit(StudentTimeLogsLoadSuccess(timeLogs: timeLogs));
+      final eitherTimeLogs = await _getTimeLogsByStudentUsecase(event.userId);
+final timeLogs = eitherTimeLogs.getOrElse(() => []);
+emit(StudentTimeLogsLoadSuccess(timeLogs: timeLogs));
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
     }

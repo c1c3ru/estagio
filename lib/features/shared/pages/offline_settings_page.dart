@@ -55,18 +55,18 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
         switch (status) {
           case SyncStatus.synced:
             FeedbackService.showSuccess(
-                context: context,
-                message: 'Sincronização concluída!'); // Use named parameters
+                context,
+                'Sincronização concluída!');
             break;
           case SyncStatus.syncError:
             FeedbackService.showError(
-                context: context,
-                message: 'Erro na sincronização'); // Use named parameters
+                context,
+                'Erro na sincronização');
             break;
           case SyncStatus.partialSync:
             FeedbackService.showWarning(
-                context: context,
-                message: 'Sincronização parcial'); // Use named parameters
+                context,
+                'Sincronização parcial');
             break;
           default:
             break;
@@ -97,9 +97,9 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
     } catch (e) {
       if (!mounted) return; // Check if widget is still mounted
       FeedbackService.showErrorDialog(
-        context: context, // Pass context with named parameter
+        context, // Pass context with named parameter
         title: 'Erro ao carregar dados',
-        message: 'Não foi possível carregar as informações offline: $e',
+        'Não foi possível carregar as informações offline: $e',
       );
     }
   }
@@ -108,38 +108,38 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
     if (!_isOnline) {
       if (!mounted) return; // Check if widget is still mounted
       FeedbackService.showError(
-          context: context,
-          message: 'Dispositivo offline - não é possível sincronizar');
+          context,
+          'Dispositivo offline - não é possível sincronizar');
       return;
     }
 
     try {
       await FeedbackService.executeWithFeedback(
-        context: context,
-        operationName: 'Sincronizando dados...',
+        context,
+        loadingMessage: 'Sincronizando dados...',
         operation: () async {
           final success = await _syncService.forcSync();
           if (!mounted) return; // Check if widget is still mounted
           if (success) {
             FeedbackService.showSuccess(
-                context: context, message: 'Sincronização concluída!');
+                context, 'Sincronização concluída!');
           } else {
             FeedbackService.showError(
-                context: context, message: 'Falha na sincronização');
+                context, 'Falha na sincronização');
           }
         },
       );
     } catch (e) {
       if (!mounted) return; // Check if widget is still mounted
       FeedbackService.showError(
-          context: context, message: 'Erro na sincronização');
+          context, 'Erro na sincronização');
     }
   }
 
   Future<void> _clearCache() async {
     // Access static method directly and provide named parameters
     final confirmed = await FeedbackService.showConfirmationDialog(
-      context: context,
+      context,
       title: 'Limpar Cache',
       message:
           'Tem certeza que deseja limpar todos os dados offline? Esta ação não pode ser desfeita.',
@@ -151,25 +151,25 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
     if (confirmed == true) {
       try {
         await FeedbackService.executeWithFeedback(
-          context: context,
-          operationName: 'Limpando cache...',
+          context,
+          loadingMessage: 'Limpando cache...',
           operation: () async {
             final success = await _syncService.clearAllData();
             if (!mounted) return; // Check if widget is still mounted
             if (success) {
               FeedbackService.showSuccess(
-                  context: context, message: 'Cache limpo com sucesso!');
+                  context, 'Cache limpo com sucesso!');
               await _loadOfflineData();
             } else {
               FeedbackService.showError(
-                  context: context, message: 'Erro ao limpar cache');
+                  context, 'Erro ao limpar cache');
             }
           },
         );
       } catch (e) {
         if (!mounted) return; // Check if widget is still mounted
         FeedbackService.showError(
-            context: context, message: 'Erro ao limpar cache');
+            context, 'Erro ao limpar cache');
       }
     }
   }
@@ -177,14 +177,14 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
   Future<void> _clearExpiredData() async {
     try {
       await FeedbackService.executeWithFeedback(
-        context: context,
-        operationName: 'Limpando dados expirados...',
+        context,
+        loadingMessage: 'Limpando dados expirados...',
         operation: () async {
           final deletedCount = await _cacheService.clearExpiredData();
           if (!mounted) return; // Check if widget is still mounted
           FeedbackService.showSuccess(
-            context: context,
-            message: '$deletedCount itens expirados removidos!',
+            context,
+            '$deletedCount itens expirados removidos!',
           );
           await _loadOfflineData();
         },
@@ -192,7 +192,7 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
     } catch (e) {
       if (!mounted) return; // Check if widget is still mounted
       FeedbackService.showError(
-          context: context, message: 'Erro ao limpar dados expirados');
+          context, 'Erro ao limpar dados expirados');
     }
   }
 

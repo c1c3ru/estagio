@@ -19,7 +19,7 @@ class SupervisorReportsPage extends StatefulWidget {
 class _SupervisorReportsPageState extends State<SupervisorReportsPage>
     with SingleTickerProviderStateMixin {
   final ReportService _reportService = ReportService();
-  final FeedbackService _feedbackService = FeedbackService();
+  // final FeedbackService _feedbackService = FeedbackService(); // REMOVIDO
 
   late TabController _tabController;
 
@@ -53,7 +53,11 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
 
     try {
       final supervisorBloc = context.read<SupervisorBloc>();
-      final supervisorId = supervisorBloc.state.supervisor?.id;
+      String? supervisorId;
+      if (supervisorBloc.state is SupervisorDashboardLoadSuccess) {
+        supervisorId = (supervisorBloc.state as SupervisorDashboardLoadSuccess).supervisorProfile?.id;
+      }
+
 
       if (supervisorId == null) {
         FeedbackService.showError(
@@ -81,7 +85,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
         },
         (students) async {
           setState(() {
-            _students = students.map((s) => s.toJson()).toList();
+            _students = students.map((s) => {'id': s.id, 'fullName': s.fullName}).toList();
           });
 
           // Buscar registros de horas de todos os estudantes
@@ -182,7 +186,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
     }
 
     try {
-      FeedbackService.showLoading(context, 'Exportando relatório...');
+      FeedbackService.showLoading(context, message: 'Exportando relatório...');
 
       String filePath;
       Map<String, dynamic> reportData;
@@ -226,6 +230,8 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
       );
     } catch (e) {
       Navigator.of(context).pop(); // Fechar loading
+      // ignore: use_build_context_synchronously
+      if (!mounted) return;
       FeedbackService.showError(
         context,
         'Erro ao exportar relatório: $e',
@@ -240,10 +246,10 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
         title: const Text('Relatórios de Supervisão'),
         bottom: TabBar(
           controller: _tabController,
-          tabs: [
-            const Tab(icon: Icon(Icons.people), text: 'Performance'),
-            const Tab(icon: Icon(Icons.assignment), text: 'Contratos'),
-            const Tab(icon: Icon(Icons.analytics), text: 'Análises'),
+          tabs: const [
+            Tab(icon: Icon(Icons.people), text: 'Performance'),
+            Tab(icon: Icon(Icons.assignment), text: 'Contratos'),
+            Tab(icon: Icon(Icons.analytics), text: 'Análises'),
           ],
         ),
         actions: [

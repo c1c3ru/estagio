@@ -571,6 +571,7 @@ class FeedbackService {
           final errorMessage = errorMessageBuilder?.call(error, attempt) ??
               'Operação falhou após $maxRetries tentativas.';
 
+          // ignore: use_build_context_synchronously
           if (!context.mounted) rethrow; // Guard BuildContext usage
           FeedbackService.showErrorDialog(
             // Explicitly call static method
@@ -581,6 +582,7 @@ class FeedbackService {
           rethrow;
         } else {
           // Mostra erro e pergunta se quer tentar novamente
+          // ignore: use_build_context_synchronously
           if (!context.mounted) rethrow; // Guard BuildContext usage
           final retry = await FeedbackService.showConfirmationDialog(
             // Explicitly call static method

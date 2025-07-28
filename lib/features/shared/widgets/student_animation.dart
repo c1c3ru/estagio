@@ -4,7 +4,7 @@ import 'package:lottie/lottie.dart';
 class StudentAnimation extends StatelessWidget {
   final double size;
   final BoxFit fit;
-  const StudentAnimation({Key? key, this.size = 120, this.fit = BoxFit.contain}) : super(key: key);
+  const StudentAnimation({super.key, this.size = 120, this.fit = BoxFit.contain});
 
   @override
   Widget build(BuildContext context) {

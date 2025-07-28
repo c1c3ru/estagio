@@ -78,10 +78,9 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       setState(() => _isLoading = false);
       // Access static methods directly from FeedbackService class with named parameters
       FeedbackService.showErrorDialog(
-        context: context,
+        context,
         title: 'Erro ao carregar configurações',
-        message:
-            'Não foi possível carregar as configurações de notificação: $e',
+        message: 'Não foi possível carregar as configurações de notificação: $e',
       );
     }
   }
@@ -90,80 +89,73 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     try {
       // Access static methods directly from FeedbackService class with named parameters
       await FeedbackService.executeWithFeedback(
-        context: context,
-        operationName: 'Solicitando permissão...',
+        context,
         operation: () async {
           final granted = await _notificationService.requestPermission();
           if (granted) {
             if (!mounted) return; // Check if widget is still mounted
             FeedbackService.showSuccess(
-                context: context,
-                message:
-                    'Permissão concedida!'); // Use named parameter 'message'
+                context,
+                'Permissão concedida!');
           } else {
             if (!mounted) return; // Check if widget is still mounted
             FeedbackService.showError(
-                context: context,
-                message: 'Permissão negada'); // Use named parameter 'message'
+                context,
+                'Permissão negada');
           }
         },
       );
     } catch (e) {
       if (!mounted) return; // Check if widget is still mounted
       FeedbackService.showError(
-          context: context,
-          message:
-              'Erro ao solicitar permissão'); // Use named parameter 'message'
+          context,
+          'Erro ao solicitar permissão');
     }
   }
 
   Future<void> _toggleDailyReminders(bool enabled) async {
     try {
       await FeedbackService.executeWithFeedback(
-        context: context,
-        operationName:
-            enabled ? 'Habilitando lembretes...' : 'Desabilitando lembretes...',
+        context,
         operation: () async {
           await _reminderService.setDailyRemindersEnabled(enabled);
           if (!mounted) return; // Check if widget is still mounted
           setState(() => _dailyRemindersEnabled = enabled);
 
           FeedbackService.showSuccess(
-            context: context,
-            message:
-                enabled ? 'Lembretes habilitados!' : 'Lembretes desabilitados!',
+            context,
+            enabled ? 'Lembretes habilitados!' : 'Lembretes desabilitados!',
           );
         },
       );
     } catch (e) {
       if (!mounted) return; // Check if widget is still mounted
       FeedbackService.showError(
-          context: context, message: 'Erro ao alterar configuração');
+          context,
+          'Erro ao alterar configuração');
     }
   }
 
   Future<void> _toggleContractReminders(bool enabled) async {
     try {
       await FeedbackService.executeWithFeedback(
-        context: context,
-        operationName:
-            enabled ? 'Habilitando alertas...' : 'Desabilitando alertas...',
+        context,
         operation: () async {
           await _reminderService.setContractRemindersEnabled(enabled);
           if (!mounted) return; // Check if widget is still mounted
           setState(() => _contractRemindersEnabled = enabled);
 
           FeedbackService.showSuccess(
-            context: context,
-            message:
-                enabled ? 'Alertas habilitados!' : 'Alertas desabilitados!',
+            context,
+            enabled ? 'Alertas habilitados!' : 'Alertas desabilitados!',
           );
         },
       );
     } catch (e) {
       if (!mounted) return; // Check if widget is still mounted
       FeedbackService.showError(
-          context: context, message: 'Erro ao alterar configuração');
+          context,
+          'Erro ao alterar configuração');
     }
   }
 

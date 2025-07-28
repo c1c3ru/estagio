@@ -197,10 +197,10 @@ class _ExportOptionsWidgetState extends State<ExportOptionsWidget>
             // Abas
             TabBar(
               controller: _tabController,
-              tabs: [
-                const Tab(icon: Icon(Icons.settings), text: 'Configurações'),
-                const Tab(icon: Icon(Icons.view_column), text: 'Campos'),
-                const Tab(icon: Icon(Icons.preview), text: 'Preview'),
+              tabs: const [
+                Tab(icon: Icon(Icons.settings), text: 'Configurações'),
+                Tab(icon: Icon(Icons.view_column), text: 'Campos'),
+                Tab(icon: Icon(Icons.preview), text: 'Preview'),
               ],
             ),
 
@@ -353,11 +353,11 @@ class _ExportOptionsWidgetState extends State<ExportOptionsWidget>
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
             ),
-            items: [
-              const DropdownMenuItem(value: 'dd/MM/yyyy', child: Text('DD/MM/AAAA')),
-              const DropdownMenuItem(value: 'MM/dd/yyyy', child: Text('MM/DD/AAAA')),
-              const DropdownMenuItem(value: 'yyyy-MM-dd', child: Text('AAAA-MM-DD')),
-              const DropdownMenuItem(value: 'dd-MM-yyyy HH:mm', child: Text('DD-MM-AAAA HH:MM')),
+            items: const [
+              DropdownMenuItem(value: 'dd/MM/yyyy', child: Text('DD/MM/AAAA')),
+              DropdownMenuItem(value: 'MM/dd/yyyy', child: Text('MM/DD/AAAA')),
+              DropdownMenuItem(value: 'yyyy-MM-dd', child: Text('AAAA-MM-DD')),
+              DropdownMenuItem(value: 'dd-MM-yyyy HH:mm', child: Text('DD-MM-AAAA HH:MM')),
             ],
             onChanged: (value) {
               if (value != null) {
@@ -609,7 +609,7 @@ class _ExportOptionsWidgetState extends State<ExportOptionsWidget>
           labelText: 'Separador',
           border: OutlineInputBorder(),
         ),
-        items: [
+        items: const [
           DropdownMenuItem(value: ',', child: Text('Vírgula (,)')),
           DropdownMenuItem(value: ';', child: Text('Ponto e vírgula (;)')),
           DropdownMenuItem(value: '\t', child: Text('Tab')),
@@ -630,7 +630,7 @@ class _ExportOptionsWidgetState extends State<ExportOptionsWidget>
           labelText: 'Codificação',
           border: OutlineInputBorder(),
         ),
-        items: [
+        items: const [
           DropdownMenuItem(value: 'UTF-8', child: Text('UTF-8')),
           DropdownMenuItem(value: 'ISO-8859-1', child: Text('ISO-8859-1')),
           DropdownMenuItem(value: 'Windows-1252', child: Text('Windows-1252')),

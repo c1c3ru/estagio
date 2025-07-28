@@ -82,7 +82,7 @@ class _LoginPageState extends State<LoginPage> {
                   const AppLottieAnimation(
                     assetPath: 'assets/animations/intership_animations.json',
                     height: 180,
-                    frameRate: FrameRate(30),
+                    
                   ),
                   const SizedBox(height: 32),
                   Text(

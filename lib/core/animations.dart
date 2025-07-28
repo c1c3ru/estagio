@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
 class AssetAnimations {
+  static const String notFound404 = 'assets/animations/404_not_found_animation.json';
   static const String loading = 'assets/animations/Loading_animations.json';
   static const String success = 'assets/animations/success_check_animation.json';
   static const String error = 'assets/animations/error_cross_animation.json';

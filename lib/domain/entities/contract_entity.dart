@@ -75,8 +75,20 @@ class ContractEntity extends Equatable {
     );
   }
 
-  @override
-  String toString() {
-    return 'ContractEntity(id: $id, studentId: $studentId, supervisorId: $supervisorId, contractType: $contractType, status: $status, startDate: $startDate, endDate: $endDate, description: $description, documentUrl: $documentUrl, createdBy: $createdBy, createdAt: $createdAt, updatedAt: $updatedAt)';
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'student_id': studentId,
+      'supervisor_id': supervisorId,
+      'contract_type': contractType,
+      'status': status,
+      'start_date': startDate.toIso8601String(),
+      'end_date': endDate.toIso8601String(),
+      'description': description,
+      'document_url': documentUrl,
+      'created_by': createdBy,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+    };
   }
 }

@@ -22,7 +22,7 @@ abstract class ITimeLogRepository {
     required bool approved,
     String? rejectionReason,
   });
-  Future<Either<AppFailure, List<TimeLogEntity>>> getPendingTimeLogsBySupervisor(String supervisorId);
+  Future<Either<AppFailure, List<TimeLogEntity>>> getTimeLogsBySupervisor(String supervisorId);
   Future<Either<AppFailure, List<TimeLogEntity>>> getTimeLogsByDateRange({
     required String studentId,
     required DateTime startDate,
