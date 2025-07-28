@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import '../../../core/services/report_service.dart';
-import '../../../core/services/feedback_service.dart';
+import '../../../core/utils/feedback_service.dart';
 import '../../../domain/repositories/i_time_log_repository.dart';
 import '../../../domain/repositories/i_contract_repository.dart';
 import '../../../domain/repositories/i_student_repository.dart';
@@ -20,13 +20,13 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
     with SingleTickerProviderStateMixin {
   final ReportService _reportService = ReportService();
   final FeedbackService _feedbackService = FeedbackService();
-  
+
   late TabController _tabController;
-  
+
   StudentPerformanceReport? _performanceReport;
   ContractReport? _contractReport;
   bool _isLoading = false;
-  
+
   String _selectedPeriod = '30'; // dias
   String _selectedStudent = 'all';
   List<Map<String, dynamic>> _students = [];
@@ -46,7 +46,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
 
   Future<void> _loadReports() async {
     if (_isLoading) return;
-    
+
     setState(() {
       _isLoading = true;
     });
@@ -54,10 +54,10 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
     try {
       final supervisorBloc = context.read<SupervisorBloc>();
       final supervisorId = supervisorBloc.state.supervisor?.id;
-      
+
       if (supervisorId == null) {
-        _feedbackService.showErrorSnackBar(
-          context, 
+        FeedbackService.showError(
+          context,
           'Erro: ID do supervisor não encontrado',
         );
         return;
@@ -69,11 +69,12 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
       final studentRepository = Modular.get<IStudentRepository>();
 
       // Buscar estudantes do supervisor
-      final studentsResult = await studentRepository.getStudentsBySupervisorId(supervisorId);
-      
+      final studentsResult =
+          await studentRepository.getStudentsBySupervisor(supervisorId);
+
       studentsResult.fold(
         (failure) {
-          _feedbackService.showErrorSnackBar(
+          FeedbackService.showError(
             context,
             'Erro ao carregar estudantes: ${failure.message}',
           );
@@ -84,12 +85,14 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
           });
 
           // Buscar registros de horas de todos os estudantes
-          final timeLogsResult = await timeLogRepository.getTimeLogsBySupervisorId(supervisorId);
-          final contractsResult = await contractRepository.getContractsBySupervisorId(supervisorId);
+          final timeLogsResult =
+              await timeLogRepository.getTimeLogsBySupervisor(supervisorId);
+          final contractsResult =
+              await contractRepository.getContractsBySupervisor(supervisorId);
 
           timeLogsResult.fold(
             (failure) {
-              _feedbackService.showErrorSnackBar(
+              FeedbackService.showError(
                 context,
                 'Erro ao carregar registros de horas: ${failure.message}',
               );
@@ -97,37 +100,47 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
             (timeLogs) async {
               contractsResult.fold(
                 (failure) {
-                  _feedbackService.showErrorSnackBar(
+                  FeedbackService.showError(
                     context,
                     'Erro ao carregar contratos: ${failure.message}',
                   );
                 },
                 (contracts) async {
                   // Filtrar dados baseado no período selecionado
-                  final cutoffDate = DateTime.now().subtract(Duration(days: int.parse(_selectedPeriod)));
+                  final cutoffDate = DateTime.now()
+                      .subtract(Duration(days: int.parse(_selectedPeriod)));
                   final filteredTimeLogs = timeLogs
-                      .where((log) => DateTime.parse(log.createdAt).isAfter(cutoffDate))
+                      .where((log) =>
+                          DateTime.parse(log.createdAt).isAfter(cutoffDate))
                       .toList();
 
                   // Filtrar por estudante se selecionado
                   final finalTimeLogs = _selectedStudent == 'all'
                       ? filteredTimeLogs
-                      : filteredTimeLogs.where((log) => log.studentId == _selectedStudent).toList();
+                      : filteredTimeLogs
+                          .where((log) => log.studentId == _selectedStudent)
+                          .toList();
 
                   final finalStudents = _selectedStudent == 'all'
                       ? _students
-                      : _students.where((s) => s['id'] == _selectedStudent).toList();
+                      : _students
+                          .where((s) => s['id'] == _selectedStudent)
+                          .toList();
 
                   // Gerar relatórios
-                  final performanceReport = await _reportService.generateStudentPerformanceReport(
+                  final performanceReport =
+                      await _reportService.generateStudentPerformanceReport(
                     supervisorId: supervisorId,
                     students: finalStudents,
                     timeLogs: finalTimeLogs.map((log) => log.toJson()).toList(),
-                    contracts: contracts.map((contract) => contract.toJson()).toList(),
+                    contracts:
+                        contracts.map((contract) => contract.toJson()).toList(),
                   );
 
-                  final contractReport = await _reportService.generateContractReport(
-                    contracts: contracts.map((contract) => contract.toJson()).toList(),
+                  final contractReport =
+                      await _reportService.generateContractReport(
+                    contracts:
+                        contracts.map((contract) => contract.toJson()).toList(),
                     supervisorId: supervisorId,
                   );
 
@@ -145,7 +158,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
       );
     } catch (e) {
       if (mounted) {
-        _feedbackService.showErrorSnackBar(
+        FeedbackService.showError(
           context,
           'Erro inesperado ao carregar relatórios: $e',
         );
@@ -161,7 +174,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
 
   Future<void> _exportReport(String format, String reportType) async {
     if (_performanceReport == null && _contractReport == null) {
-      _feedbackService.showErrorSnackBar(
+      FeedbackService.showError(
         context,
         'Nenhum relatório disponível para exportar',
       );
@@ -169,7 +182,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
     }
 
     try {
-      _feedbackService.showLoadingDialog(context, 'Exportando relatório...');
+      FeedbackService.showLoading(context, 'Exportando relatório...');
 
       String filePath;
       Map<String, dynamic> reportData;
@@ -180,7 +193,8 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
         reportData = _contractReport!.toJson();
       } else {
         Navigator.of(context).pop();
-        _feedbackService.showErrorSnackBar(context, 'Tipo de relatório inválido');
+        FeedbackService.showError(
+            context, 'Tipo de relatório inválido');
         return;
       }
 
@@ -202,16 +216,17 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
 
       await _reportService.shareReport(
         filePath,
-        subject: 'Relatório de ${reportType == 'performance' ? 'Performance' : 'Contratos'} - Supervisor',
+        subject:
+            'Relatório de ${reportType == 'performance' ? 'Performance' : 'Contratos'} - Supervisor',
       );
 
-      _feedbackService.showSuccessSnackBar(
+      FeedbackService.showSuccess(
         context,
         'Relatório exportado com sucesso!',
       );
     } catch (e) {
       Navigator.of(context).pop(); // Fechar loading
-      _feedbackService.showErrorSnackBar(
+      FeedbackService.showError(
         context,
         'Erro ao exportar relatório: $e',
       );
@@ -305,12 +320,16 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                     decoration: const InputDecoration(
                       labelText: 'Período',
                       border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                     items: const [
-                      DropdownMenuItem(value: '7', child: Text('Últimos 7 dias')),
-                      DropdownMenuItem(value: '30', child: Text('Últimos 30 dias')),
-                      DropdownMenuItem(value: '90', child: Text('Últimos 3 meses')),
+                      DropdownMenuItem(
+                          value: '7', child: Text('Últimos 7 dias')),
+                      DropdownMenuItem(
+                          value: '30', child: Text('Últimos 30 dias')),
+                      DropdownMenuItem(
+                          value: '90', child: Text('Últimos 3 meses')),
                       DropdownMenuItem(value: '365', child: Text('Último ano')),
                     ],
                     onChanged: (value) {
@@ -330,14 +349,16 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                     decoration: const InputDecoration(
                       labelText: 'Estudante',
                       border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                     items: [
-                      const DropdownMenuItem(value: 'all', child: Text('Todos os estudantes')),
+                      const DropdownMenuItem(
+                          value: 'all', child: Text('Todos os estudantes')),
                       ..._students.map((student) => DropdownMenuItem(
-                        value: student['id'],
-                        child: Text(student['name'] ?? 'Sem nome'),
-                      )),
+                            value: student['id'],
+                            child: Text(student['name'] ?? 'Sem nome'),
+                          )),
                     ],
                     onChanged: (value) {
                       if (value != null) {
@@ -352,7 +373,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
               ],
             ),
           ),
-          
+
           // Conteúdo das abas
           Expanded(
             child: _isLoading
@@ -411,28 +432,25 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
               StatsSummaryCard(
                 title: 'Total de Estudantes',
                 value: _performanceReport!.totalStudents.toString(),
-                subtitle: 'estudantes supervisionados',
                 icon: Icons.people,
                 color: Colors.blue,
               ),
               StatsSummaryCard(
                 title: 'Estudantes Ativos',
                 value: _performanceReport!.activeStudents.toString(),
-                subtitle: 'ativos nos últimos 7 dias',
-                icon: Icons.person_check,
+                icon: Icons.verified,
                 color: Colors.green,
               ),
               StatsSummaryCard(
                 title: 'Total de Horas',
                 value: _performanceReport!.totalHours.toStringAsFixed(1),
-                subtitle: 'horas trabalhadas',
                 icon: Icons.access_time,
                 color: Colors.orange,
               ),
               StatsSummaryCard(
                 title: 'Média por Estudante',
-                value: _performanceReport!.averageHoursPerStudent.toStringAsFixed(1),
-                subtitle: 'horas por estudante',
+                value: _performanceReport!.averageHoursPerStudent
+                    .toStringAsFixed(1),
                 icon: Icons.trending_up,
                 color: Colors.purple,
               ),
@@ -452,8 +470,8 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                   Text(
                     'Performance dos Estudantes',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 16),
                   ListView.separated(
@@ -462,16 +480,21 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                     itemCount: _performanceReport!.studentPerformances.length,
                     separatorBuilder: (context, index) => const Divider(),
                     itemBuilder: (context, index) {
-                      final performance = _performanceReport!.studentPerformances[index];
-                      
+                      final performance =
+                          _performanceReport!.studentPerformances[index];
+
                       return ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: performance.isActive 
+                          backgroundColor: performance.isActive
                               ? Colors.green.withOpacity(0.1)
                               : Colors.grey.withOpacity(0.1),
                           child: Icon(
-                            performance.isActive ? Icons.person : Icons.person_outline,
-                            color: performance.isActive ? Colors.green : Colors.grey,
+                            performance.isActive
+                                ? Icons.person
+                                : Icons.person_outline,
+                            color: performance.isActive
+                                ? Colors.green
+                                : Colors.grey,
                           ),
                         ),
                         title: Text(
@@ -481,8 +504,10 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('${performance.totalHours.toStringAsFixed(1)}h em ${performance.totalDays} dias'),
-                            Text('Média: ${performance.averageHoursPerDay.toStringAsFixed(1)}h/dia'),
+                            Text(
+                                '${performance.totalHours.toStringAsFixed(1)}h em ${performance.totalDays} dias'),
+                            Text(
+                                'Média: ${performance.averageHoursPerDay.toStringAsFixed(1)}h/dia'),
                             if (performance.lastActivity != null)
                               Text(
                                 'Última atividade: ${performance.lastActivity!.day.toString().padLeft(2, '0')}/${performance.lastActivity!.month.toString().padLeft(2, '0')}/${performance.lastActivity!.year}',
@@ -498,9 +523,12 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: performance.isActive ? Colors.green : Colors.grey,
+                                color: performance.isActive
+                                    ? Colors.green
+                                    : Colors.grey,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -517,8 +545,8 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                               '${performance.contractProgress.toStringAsFixed(0)}%',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: performance.contractProgress >= 80 
-                                    ? Colors.green 
+                                color: performance.contractProgress >= 80
+                                    ? Colors.green
                                     : performance.contractProgress >= 50
                                         ? Colors.orange
                                         : Colors.red,
@@ -570,28 +598,24 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
               StatsSummaryCard(
                 title: 'Total de Contratos',
                 value: _contractReport!.totalContracts.toString(),
-                subtitle: 'contratos gerenciados',
                 icon: Icons.assignment,
                 color: Colors.blue,
               ),
               StatsSummaryCard(
                 title: 'Contratos Ativos',
                 value: _contractReport!.activeContracts.toString(),
-                subtitle: 'em andamento',
                 icon: Icons.assignment_turned_in,
                 color: Colors.green,
               ),
               StatsSummaryCard(
                 title: 'Concluídos',
                 value: _contractReport!.completedContracts.toString(),
-                subtitle: 'finalizados',
                 icon: Icons.check_circle,
                 color: Colors.teal,
               ),
               StatsSummaryCard(
                 title: 'Expirando',
                 value: _contractReport!.expiringContracts.toString(),
-                subtitle: 'próximos ao vencimento',
                 icon: Icons.warning,
                 color: Colors.orange,
               ),
@@ -602,18 +626,11 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
 
           // Gráfico de pizza - distribuição de contratos
           DonutChart(
-            title: 'Distribuição de Contratos',
-            data: {
-              'Ativos': _contractReport!.activeContracts.toDouble(),
-              'Concluídos': _contractReport!.completedContracts.toDouble(),
-              'Expirados': _contractReport!.expiredContracts.toDouble(),
-              'Expirando': _contractReport!.expiringContracts.toDouble(),
-            },
-            colors: const [
-              Colors.green,
-              Colors.blue,
-              Colors.red,
-              Colors.orange,
+            data: [
+              {'label': 'Ativos', 'value': _contractReport!.activeContracts.toDouble(), 'color': Colors.green},
+              {'label': 'Concluídos', 'value': _contractReport!.completedContracts.toDouble(), 'color': Colors.blue},
+              {'label': 'Expirados', 'value': _contractReport!.expiredContracts.toDouble(), 'color': Colors.red},
+              {'label': 'Expirando', 'value': _contractReport!.expiringContracts.toDouble(), 'color': Colors.orange},
             ],
           ),
 
@@ -622,11 +639,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
           // Gráfico de linha - contratos por mês
           if (_contractReport!.contractsByMonth.isNotEmpty)
             TimeSeriesLineChart(
-              timeSeriesData: _contractReport!.contractsByMonth.map(
-                (key, value) => MapEntry(key, value.toDouble()),
-              ),
-              title: 'Contratos Criados por Mês',
-              lineColor: Colors.purple,
+              data: _contractReport!.contractsByMonth.entries.map((e) => {'label': e.key, 'value': e.value.toDouble()}).toList(),
             ),
         ],
       ),
@@ -650,7 +663,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
     // Preparar dados para análises
     final hoursDistribution = <String, double>{};
     final progressDistribution = <String, double>{};
-    
+
     for (final performance in _performanceReport!.studentPerformances) {
       // Distribuição de horas
       if (performance.totalHours < 20) {
@@ -665,13 +678,17 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
 
       // Distribuição de progresso
       if (performance.contractProgress < 25) {
-        progressDistribution['0-25%'] = (progressDistribution['0-25%'] ?? 0) + 1;
+        progressDistribution['0-25%'] =
+            (progressDistribution['0-25%'] ?? 0) + 1;
       } else if (performance.contractProgress < 50) {
-        progressDistribution['25-50%'] = (progressDistribution['25-50%'] ?? 0) + 1;
+        progressDistribution['25-50%'] =
+            (progressDistribution['25-50%'] ?? 0) + 1;
       } else if (performance.contractProgress < 75) {
-        progressDistribution['50-75%'] = (progressDistribution['50-75%'] ?? 0) + 1;
+        progressDistribution['50-75%'] =
+            (progressDistribution['50-75%'] ?? 0) + 1;
       } else {
-        progressDistribution['75-100%'] = (progressDistribution['75-100%'] ?? 0) + 1;
+        progressDistribution['75-100%'] =
+            (progressDistribution['75-100%'] ?? 0) + 1;
       }
     }
 
@@ -682,13 +699,11 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
         children: [
           // Distribuição de horas trabalhadas
           DonutChart(
-            title: 'Distribuição de Horas Trabalhadas',
-            data: hoursDistribution,
-            colors: const [
-              Colors.red,
-              Colors.orange,
-              Colors.blue,
-              Colors.green,
+            data: [
+              {'label': '0-20h', 'value': hoursDistribution['0-20h'] ?? 0, 'color': Colors.red},
+              {'label': '20-50h', 'value': hoursDistribution['20-50h'] ?? 0, 'color': Colors.orange},
+              {'label': '50-100h', 'value': hoursDistribution['50-100h'] ?? 0, 'color': Colors.blue},
+              {'label': '100h+', 'value': hoursDistribution['100h+'] ?? 0, 'color': Colors.green},
             ],
           ),
 
@@ -696,13 +711,11 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
 
           // Distribuição de progresso dos contratos
           DonutChart(
-            title: 'Distribuição de Progresso dos Contratos',
-            data: progressDistribution,
-            colors: const [
-              Colors.red,
-              Colors.orange,
-              Colors.yellow,
-              Colors.green,
+            data: [
+              {'label': '0-25%', 'value': progressDistribution['0-25%'] ?? 0, 'color': Colors.red},
+              {'label': '25-50%', 'value': progressDistribution['25-50%'] ?? 0, 'color': Colors.orange},
+              {'label': '50-75%', 'value': progressDistribution['50-75%'] ?? 0, 'color': Colors.yellow},
+              {'label': '75-100%', 'value': progressDistribution['75-100%'] ?? 0, 'color': Colors.green},
             ],
           ),
 
@@ -719,26 +732,28 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                   Text(
                     'Top 5 Estudantes por Horas Trabalhadas',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 16),
                   ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: (_performanceReport!.studentPerformances.length > 5 
-                        ? 5 
-                        : _performanceReport!.studentPerformances.length),
+                    itemCount:
+                        (_performanceReport!.studentPerformances.length > 5
+                            ? 5
+                            : _performanceReport!.studentPerformances.length),
                     separatorBuilder: (context, index) => const Divider(),
                     itemBuilder: (context, index) {
-                      final performance = _performanceReport!.studentPerformances[index];
+                      final performance =
+                          _performanceReport!.studentPerformances[index];
                       final position = index + 1;
-                      
+
                       return ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: position == 1 
-                              ? Colors.amber 
-                              : position == 2 
+                          backgroundColor: position == 1
+                              ? Colors.amber
+                              : position == 2
                                   ? Colors.grey[400]
                                   : position == 3
                                       ? Colors.brown[300]
@@ -747,7 +762,8 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                             '$position°',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: position <= 3 ? Colors.white : Colors.black,
+                              color:
+                                  position <= 3 ? Colors.white : Colors.black,
                             ),
                           ),
                         ),
@@ -760,10 +776,11 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                         ),
                         trailing: Text(
                           '${performance.totalHours.toStringAsFixed(1)}h',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).primaryColor,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context).primaryColor,
+                                  ),
                         ),
                       );
                     },
