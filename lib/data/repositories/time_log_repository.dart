@@ -58,11 +58,11 @@ class TimeLogRepository implements ITimeLogRepository {
   }
 
   @override
-  Future<Either<AppFailure, List<TimeLogEntity>>> getTimeLogsByDateRange(
-    String studentId,
-    DateTime startDate,
-    DateTime endDate,
-  ) async {
+  Future<Either<AppFailure, List<TimeLogEntity>>> getTimeLogsByDateRange({
+    required String studentId,
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
     try {
       final timeLogsData = await _timeLogDatasource.getTimeLogsByDateRange(
         studentId,

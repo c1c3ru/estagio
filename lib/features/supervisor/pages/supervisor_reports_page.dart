@@ -225,10 +225,10 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
         title: const Text('Relatórios de Supervisão'),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(icon: Icon(Icons.people), text: 'Performance'),
-            Tab(icon: Icon(Icons.assignment), text: 'Contratos'),
-            Tab(icon: Icon(Icons.analytics), text: 'Análises'),
+          tabs: [
+            const Tab(icon: Icon(Icons.people), text: 'Performance'),
+            const Tab(icon: Icon(Icons.assignment), text: 'Contratos'),
+            const Tab(icon: Icon(Icons.analytics), text: 'Análises'),
           ],
         ),
         actions: [
