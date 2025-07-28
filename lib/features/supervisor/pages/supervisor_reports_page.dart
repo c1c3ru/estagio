@@ -1,6 +1,7 @@
 // lib/features/supervisor/pages/supervisor_reports_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:gestao_de_estagio/features/supervisor/bloc/supervisor_state.dart';
 import '../../../core/services/report_service.dart';
 import '../../../core/utils/feedback_service.dart';
 import '../../../domain/repositories/i_time_log_repository.dart';
@@ -74,7 +75,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
 
       // Buscar estudantes do supervisor
       final studentsResult =
-          await studentRepository.getStudentsBySupervisor(supervisorId);
+          await studentRepository.getStudentsBySupervisor(supervisorId!);
 
       studentsResult.fold(
         (failure) {
@@ -90,9 +91,9 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
 
           // Buscar registros de horas de todos os estudantes
           final timeLogsResult =
-              await timeLogRepository.getTimeLogsBySupervisor(supervisorId);
+              await timeLogRepository.getTimeLogsBySupervisor(supervisorId!);
           final contractsResult =
-              await contractRepository.getContractsBySupervisor(supervisorId);
+              await contractRepository.getContractsBySupervisor(supervisorId!);
 
           timeLogsResult.fold(
             (failure) {
@@ -440,18 +441,21 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                 value: _performanceReport!.totalStudents.toString(),
                 icon: Icons.people,
                 color: Colors.blue,
+                subtitle: 'Todos cadastrados',
               ),
               StatsSummaryCard(
                 title: 'Estudantes Ativos',
                 value: _performanceReport!.activeStudents.toString(),
                 icon: Icons.verified,
                 color: Colors.green,
+                subtitle: 'Ativos atualmente',
               ),
               StatsSummaryCard(
                 title: 'Total de Horas',
                 value: _performanceReport!.totalHours.toStringAsFixed(1),
                 icon: Icons.access_time,
                 color: Colors.orange,
+                subtitle: 'Somatório geral',
               ),
               StatsSummaryCard(
                 title: 'Média por Estudante',
@@ -459,6 +463,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                     .toStringAsFixed(1),
                 icon: Icons.trending_up,
                 color: Colors.purple,
+                subtitle: 'Horas médias',
               ),
             ],
           ),
@@ -606,24 +611,28 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                 value: _contractReport!.totalContracts.toString(),
                 icon: Icons.assignment,
                 color: Colors.blue,
+                subtitle: 'Todos cadastrados',
               ),
               StatsSummaryCard(
                 title: 'Contratos Ativos',
                 value: _contractReport!.activeContracts.toString(),
                 icon: Icons.assignment_turned_in,
                 color: Colors.green,
+                subtitle: 'Ativos atualmente',
               ),
               StatsSummaryCard(
                 title: 'Concluídos',
                 value: _contractReport!.completedContracts.toString(),
                 icon: Icons.check_circle,
                 color: Colors.teal,
+                subtitle: 'Já finalizados',
               ),
               StatsSummaryCard(
                 title: 'Expirando',
                 value: _contractReport!.expiringContracts.toString(),
                 icon: Icons.warning,
                 color: Colors.orange,
+                subtitle: 'Próximos a vencer',
               ),
             ],
           ),

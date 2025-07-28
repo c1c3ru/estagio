@@ -153,7 +153,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
     }
 
     try {
-      FeedbackService.showLoadingDialog(context, 'Exportando relatório...');
+      FeedbackService.showLoading(context, message: 'Exportando relatório...');
 
       String filePath;
       final reportData = _currentReport!.toJson();
@@ -180,7 +180,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
             'Relatório de Horas - ${_startDate.day}/${_startDate.month}/${_startDate.year} a ${_endDate.day}/${_endDate.month}/${_endDate.year}',
       );
 
-      FeedbackService.showSuccessSnackBar(
+      FeedbackService.showSuccess(
         context,
         'Relatório exportado com sucesso!',
       );
@@ -313,18 +313,21 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                           value: _currentReport!.totalDays.toString(),
                           icon: Icons.calendar_today,
                           color: Colors.green,
+                          subtitle: 'Dias trabalhados',
                         ),
                         StatsSummaryCard(
                           title: 'Média Diária',
                           value: _currentReport!.averageHoursPerDay.toStringAsFixed(1),
                           icon: Icons.trending_up,
                           color: Colors.orange,
+                          subtitle: 'Horas por dia',
                         ),
                         StatsSummaryCard(
                           title: 'Registros',
                           value: _currentReport!.timeLogs.length.toString(),
                           icon: Icons.list,
-                          color: Colors.purple,
+                          color: Colors.blue,
+                          subtitle: 'Total de registros',
                         ),
                       ],
                     ),
@@ -333,7 +336,9 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
 
                     // Gráfico de barras - horas por dia da semana
                     WeeklyHoursBarChart(
-                      data: _currentReport!.hoursByWeekday,
+                      data: _currentReport!.hoursByWeekday.entries.map((e) => {'label': e.key, 'value': e.value}).toList(),
+                      title: 'Horas por Semana',
+                      height: 180,
                     ),
 
                     const SizedBox(height: 16),
@@ -359,8 +364,8 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                         _contractReport!.activeContracts > 0)
                       ProgressCard(
                         title: 'Progresso do Contrato',
-                        progress: 0.65, // Calcular baseado nas horas
-                        subtitle: 'Baseado nas horas trabalhadas vs. horas requeridas',
+                        progress: _contractReport!.progress,
+                        subtitle: 'Horas cumpridas',
                       ),
 
                     const SizedBox(height: 24),
