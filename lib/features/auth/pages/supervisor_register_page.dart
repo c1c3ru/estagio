@@ -12,6 +12,7 @@ import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart' as custom_auth;
 import '../widgets/auth_text_field.dart';
 import '../../../core/utils/feedback_service.dart';
+import 'package:gestao_de_estagio/features/shared/widgets/supervisor_animation.dart';
 
 class SupervisorRegisterPage extends StatefulWidget {
   const SupervisorRegisterPage({super.key});

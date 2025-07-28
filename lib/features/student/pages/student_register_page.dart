@@ -16,6 +16,7 @@ import '../../../core/utils/validators.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/utils/feedback_service.dart';
+import 'package:gestao_de_estagio/features/shared/widgets/student_animation.dart';
 
 class StudentRegisterPage extends StatefulWidget {
   const StudentRegisterPage({super.key});
