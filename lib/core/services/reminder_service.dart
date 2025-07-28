@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'notification_service.dart';
-import 'notification_helper.dart';
+import 'notification_helper.dart'; // Mantém a importação para usar os métodos estáticos
 
 /// Serviço responsável por gerenciar lembretes automáticos
 /// para estudantes (check-in, check-out, contratos expirando, etc.)
@@ -13,11 +13,12 @@ class ReminderService {
   ReminderService._internal();
 
   final NotificationService _notificationService = NotificationService();
-  final NotificationHelper _notificationHelper = NotificationHelper();
-  
+  // Removendo a instância de NotificationHelper, pois os métodos serão chamados estaticamente.
+  // final NotificationHelper _notificationHelper = NotificationHelper();
+
   Timer? _dailyReminderTimer;
   Timer? _contractExpirationTimer;
-  
+
   static const String _reminderEnabledKey = 'reminder_enabled';
   static const String _checkInTimeKey = 'check_in_reminder_time';
   static const String _checkOutTimeKey = 'check_out_reminder_time';
@@ -33,7 +34,8 @@ class ReminderService {
       // Verificar se os lembretes estão habilitados
       final prefs = await SharedPreferences.getInstance();
       final reminderEnabled = prefs.getBool(_reminderEnabledKey) ?? true;
-      final contractReminderEnabled = prefs.getBool(_contractReminderKey) ?? true;
+      final contractReminderEnabled =
+          prefs.getBool(_contractReminderKey) ?? true;
 
       if (reminderEnabled) {
         await _setupDailyReminders();
@@ -44,13 +46,15 @@ class ReminderService {
       }
 
       if (kDebugMode) {
-        print('✅ ReminderService: Serviço de lembretes inicializado com sucesso');
+        print(
+            '✅ ReminderService: Serviço de lembretes inicializado com sucesso');
       }
 
       return true;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ ReminderService: Erro ao inicializar serviço de lembretes: $e');
+        print(
+            '❌ ReminderService: Erro ao inicializar serviço de lembretes: $e');
       }
       return false;
     }
@@ -60,29 +64,31 @@ class ReminderService {
   Future<void> _setupDailyReminders() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Horários padrão: check-in às 8h, check-out às 17h
       final checkInHour = prefs.getInt('${_checkInTimeKey}_hour') ?? 8;
       final checkInMinute = prefs.getInt('${_checkInTimeKey}_minute') ?? 0;
       final checkOutHour = prefs.getInt('${_checkOutTimeKey}_hour') ?? 17;
       final checkOutMinute = prefs.getInt('${_checkOutTimeKey}_minute') ?? 0;
 
-      // Agendar lembrete de check-in
-      await _notificationHelper.scheduleCheckInReminder(
+      // Agendar lembrete de check-in usando a classe estática NotificationHelper
+      await NotificationHelper.scheduleCheckInReminder(
         hour: checkInHour,
         minute: checkInMinute,
       );
 
-      // Agendar lembrete de check-out
-      await _notificationHelper.scheduleCheckOutReminder(
+      // Agendar lembrete de check-out usando a classe estática NotificationHelper
+      await NotificationHelper.scheduleCheckOutReminder(
         hour: checkOutHour,
         minute: checkOutMinute,
       );
 
       if (kDebugMode) {
         print('✅ ReminderService: Lembretes diários configurados');
-        print('   - Check-in: ${checkInHour.toString().padLeft(2, '0')}:${checkInMinute.toString().padLeft(2, '0')}');
-        print('   - Check-out: ${checkOutHour.toString().padLeft(2, '0')}:${checkOutMinute.toString().padLeft(2, '0')}');
+        print(
+            '   - Check-in: ${checkInHour.toString().padLeft(2, '0')}:${checkInMinute.toString().padLeft(2, '0')}');
+        print(
+            '   - Check-out: ${checkOutHour.toString().padLeft(2, '0')}:${checkOutMinute.toString().padLeft(2, '0')}');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -104,11 +110,13 @@ class ReminderService {
       await _checkExpiringContracts();
 
       if (kDebugMode) {
-        print('✅ ReminderService: Verificação de contratos expirando configurada');
+        print(
+            '✅ ReminderService: Verificação de contratos expirando configurada');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ ReminderService: Erro ao configurar lembretes de contrato: $e');
+        print(
+            '❌ ReminderService: Erro ao configurar lembretes de contrato: $e');
       }
     }
   }
@@ -118,7 +126,7 @@ class ReminderService {
     try {
       // Aqui você integraria com o repositório de contratos
       // para buscar contratos expirando nos próximos 30, 15, 7 e 1 dias
-      
+
       if (kDebugMode) {
         print('🔍 ReminderService: Verificando contratos expirando...');
       }
@@ -126,9 +134,8 @@ class ReminderService {
       // Exemplo de como seria a integração:
       // final contracts = await contractRepository.getExpiringContracts();
       // for (final contract in contracts) {
-      //   await _notificationHelper.notifyContractExpiring(...);
+      //   await NotificationHelper.notifyContractExpiring(...); // Chamada estática
       // }
-      
     } catch (e) {
       if (kDebugMode) {
         print('❌ ReminderService: Erro ao verificar contratos expirando: $e');
@@ -149,7 +156,8 @@ class ReminderService {
       }
 
       if (kDebugMode) {
-        print('✅ ReminderService: Lembretes diários ${enabled ? 'habilitados' : 'desabilitados'}');
+        print(
+            '✅ ReminderService: Lembretes diários ${enabled ? 'habilitados' : 'desabilitados'}');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -167,7 +175,7 @@ class ReminderService {
   }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       await prefs.setInt('${_checkInTimeKey}_hour', checkInHour);
       await prefs.setInt('${_checkInTimeKey}_minute', checkInMinute);
       await prefs.setInt('${_checkOutTimeKey}_hour', checkOutHour);
@@ -192,9 +200,12 @@ class ReminderService {
   /// Cancela todos os lembretes diários
   Future<void> _cancelDailyReminders() async {
     try {
-      await _notificationService.cancelNotification(1001); // Check-in reminder ID
-      await _notificationService.cancelNotification(1002); // Check-out reminder ID
-      
+      // Convertendo IDs para String
+      await _notificationService
+          .cancelNotification('1001'); // Check-in reminder ID
+      await _notificationService
+          .cancelNotification('1002'); // Check-out reminder ID
+
       if (kDebugMode) {
         print('✅ ReminderService: Lembretes diários cancelados');
       }
@@ -218,7 +229,8 @@ class ReminderService {
       }
 
       if (kDebugMode) {
-        print('✅ ReminderService: Lembretes de contrato ${enabled ? 'habilitados' : 'desabilitados'}');
+        print(
+            '✅ ReminderService: Lembretes de contrato ${enabled ? 'habilitados' : 'desabilitados'}');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -236,15 +248,19 @@ class ReminderService {
   }) async {
     try {
       await _notificationService.scheduleNotification(
-        id: DateTime.now().millisecondsSinceEpoch % 100000, // ID único
+        id: (DateTime.now().millisecondsSinceEpoch % 100000)
+            .toString(), // ID único como String
         title: title,
         body: body,
         scheduledDate: scheduledDate,
-        payload: payload,
+        data: payload != null
+            ? {'payload': payload}
+            : null, // Passando payload como 'data'
       );
 
       if (kDebugMode) {
-        print('✅ ReminderService: Lembrete personalizado agendado para $scheduledDate');
+        print(
+            '✅ ReminderService: Lembrete personalizado agendado para $scheduledDate');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -257,7 +273,7 @@ class ReminderService {
   Future<Map<String, dynamic>> getReminderSettings() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       return {
         'dailyRemindersEnabled': prefs.getBool(_reminderEnabledKey) ?? true,
         'contractRemindersEnabled': prefs.getBool(_contractReminderKey) ?? true,
@@ -279,7 +295,7 @@ class ReminderService {
     try {
       _dailyReminderTimer?.cancel();
       _contractExpirationTimer?.cancel();
-      
+
       await _cancelDailyReminders();
       await _notificationService.cancelAllNotifications();
 
@@ -292,7 +308,8 @@ class ReminderService {
       await prefs.remove('${_checkOutTimeKey}_minute');
 
       if (kDebugMode) {
-        print('✅ ReminderService: Todos os lembretes e configurações foram limpos');
+        print(
+            '✅ ReminderService: Todos os lembretes e configurações foram limpos');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -305,7 +322,7 @@ class ReminderService {
   void dispose() {
     _dailyReminderTimer?.cancel();
     _contractExpirationTimer?.cancel();
-    
+
     if (kDebugMode) {
       print('🔔 ReminderService: Serviço de lembretes finalizado');
     }

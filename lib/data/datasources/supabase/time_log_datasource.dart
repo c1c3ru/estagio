@@ -97,21 +97,7 @@ class TimeLogDatasource {
     }
   }
 
-  Future<Map<String, dynamic>> updateTimeLog(
-      String id, Map<String, dynamic> timeLogData) async {
-    try {
-      final response = await _supabaseClient
-          .from('time_logs')
-          .update(timeLogData)
-          .eq('id', id)
-          .select()
-          .single();
 
-      return response;
-    } catch (e) {
-      throw Exception('Erro ao atualizar registro de horas: $e');
-    }
-  }
 
   Future<void> deleteTimeLog(String id) async {
     try {
@@ -167,6 +153,61 @@ class TimeLogDatasource {
       return await updateTimeLog(activeLog['id'], updateData);
     } catch (e) {
       throw Exception('Erro ao registrar saída: $e');
+    }
+  }
+
+  /// Método para compatibilidade com repositório
+  Future<Duration> getTotalHoursByPeriod(
+    String studentId,
+    DateTime start,
+    DateTime end,
+  ) async {
+    final result = await getTotalHoursByStudent(studentId, start, end);
+    final hours = result['total_hours'] as double;
+    return Duration(minutes: (hours * 60).round());
+  }
+
+  /// Obtém registros pendentes de aprovação
+  Future<List<Map<String, dynamic>>> getPendingTimeLogs(String supervisorId) async {
+    try {
+      final response = await _supabaseClient
+          .from('time_logs')
+          .select('''
+            *,
+            students!inner(*)
+          ''')
+          .eq('students.supervisor_id', supervisorId)
+          .eq('status', 'pending')
+          .order('created_at', ascending: false);
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      throw Exception('Erro ao buscar registros pendentes: $e');
+    }
+  }
+
+  /// Atualiza registro com motivo de rejeição
+  Future<Map<String, dynamic>> updateTimeLog(
+    String id, 
+    Map<String, dynamic> timeLogData, {
+    String? rejectionReason,
+  }) async {
+    if (rejectionReason != null) {
+      timeLogData['rejection_reason'] = rejectionReason;
+    }
+    return await updateTimeLogData(id, timeLogData);
+  }
+
+  Future<Map<String, dynamic>> updateTimeLogData(String id, Map<String, dynamic> data) async {
+    try {
+      final response = await _supabaseClient
+          .from('time_logs')
+          .update(data)
+          .eq('id', id)
+          .select()
+          .single();
+      return response;
+    } catch (e) {
+      throw Exception('Erro ao atualizar registro: $e');
     }
   }
 

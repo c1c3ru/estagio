@@ -5,27 +5,30 @@ import '../../../core/services/reminder_service.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/utils/feedback_service.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_strings.dart';
+// import '../../../core/constants/app_strings.dart'; // Removed: Unused import
 
 class NotificationSettingsPage extends StatefulWidget {
-  const NotificationSettingsPage({Key? key}) : super(key: key);
+  const NotificationSettingsPage({super.key}); // Use super.key
 
   @override
-  State<NotificationSettingsPage> createState() => _NotificationSettingsPageState();
+  State<NotificationSettingsPage> createState() =>
+      _NotificationSettingsPageState();
 }
 
 class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
   final ReminderService _reminderService = Modular.get<ReminderService>();
-  final NotificationService _notificationService = Modular.get<NotificationService>();
-  final FeedbackService _feedbackService = FeedbackService();
+  final NotificationService _notificationService =
+      Modular.get<NotificationService>();
+  // No longer instantiating FeedbackService, as its methods are static.
+  // final FeedbackService _feedbackService = FeedbackService();
 
   bool _dailyRemindersEnabled = true;
   bool _contractRemindersEnabled = true;
   bool _notificationsEnabled = true;
-  
+
   TimeOfDay _checkInTime = const TimeOfDay(hour: 8, minute: 0);
   TimeOfDay _checkOutTime = const TimeOfDay(hour: 17, minute: 0);
-  
+
   bool _isLoading = true;
 
   @override
@@ -40,94 +43,127 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
 
       // Carregar configurações de lembretes
       final reminderSettings = await _reminderService.getReminderSettings();
-      
+
       // Verificar se notificações estão habilitadas
-      final notificationStatus = await _notificationService.areNotificationsEnabled();
+      final notificationStatus =
+          await _notificationService.areNotificationsEnabled();
+
+      if (!mounted) {
+        return; // Check if widget is still mounted after async operation
+      }
 
       setState(() {
-        _dailyRemindersEnabled = reminderSettings['dailyRemindersEnabled'] ?? true;
-        _contractRemindersEnabled = reminderSettings['contractRemindersEnabled'] ?? true;
+        _dailyRemindersEnabled =
+            reminderSettings['dailyRemindersEnabled'] ?? true;
+        _contractRemindersEnabled =
+            reminderSettings['contractRemindersEnabled'] ?? true;
         _notificationsEnabled = notificationStatus;
-        
+
         _checkInTime = TimeOfDay(
           hour: reminderSettings['checkInHour'] ?? 8,
           minute: reminderSettings['checkInMinute'] ?? 0,
         );
-        
+
         _checkOutTime = TimeOfDay(
           hour: reminderSettings['checkOutHour'] ?? 17,
           minute: reminderSettings['checkOutMinute'] ?? 0,
         );
-        
+
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) {
+        return; // Check if widget is still mounted
+      }
       setState(() => _isLoading = false);
-      _feedbackService.showErrorDialog(
-        context,
-        'Erro ao carregar configurações',
-        'Não foi possível carregar as configurações de notificação: $e',
+      // Access static methods directly from FeedbackService class with named parameters
+      FeedbackService.showErrorDialog(
+        context: context,
+        title: 'Erro ao carregar configurações',
+        message:
+            'Não foi possível carregar as configurações de notificação: $e',
       );
     }
   }
 
   Future<void> _requestNotificationPermission() async {
     try {
-      await _feedbackService.executeWithFeedback(
-        context,
-        'Solicitando permissão...',
-        () async {
+      // Access static methods directly from FeedbackService class with named parameters
+      await FeedbackService.executeWithFeedback(
+        context: context,
+        operationName: 'Solicitando permissão...',
+        operation: () async {
           final granted = await _notificationService.requestPermission();
           if (granted) {
-            setState(() => _notificationsEnabled = true);
-            _feedbackService.showSuccessToast(context, 'Permissão concedida!');
+            if (!mounted) return; // Check if widget is still mounted
+            FeedbackService.showSuccess(
+                context: context,
+                message:
+                    'Permissão concedida!'); // Use named parameter 'message'
           } else {
-            _feedbackService.showErrorToast(context, 'Permissão negada');
+            if (!mounted) return; // Check if widget is still mounted
+            FeedbackService.showError(
+                context: context,
+                message: 'Permissão negada'); // Use named parameter 'message'
           }
         },
       );
     } catch (e) {
-      _feedbackService.showErrorToast(context, 'Erro ao solicitar permissão');
+      if (!mounted) return; // Check if widget is still mounted
+      FeedbackService.showError(
+          context: context,
+          message:
+              'Erro ao solicitar permissão'); // Use named parameter 'message'
     }
   }
 
   Future<void> _toggleDailyReminders(bool enabled) async {
     try {
-      await _feedbackService.executeWithFeedback(
-        context,
-        enabled ? 'Habilitando lembretes...' : 'Desabilitando lembretes...',
-        () async {
+      await FeedbackService.executeWithFeedback(
+        context: context,
+        operationName:
+            enabled ? 'Habilitando lembretes...' : 'Desabilitando lembretes...',
+        operation: () async {
           await _reminderService.setDailyRemindersEnabled(enabled);
+          if (!mounted) return; // Check if widget is still mounted
           setState(() => _dailyRemindersEnabled = enabled);
-          
-          _feedbackService.showSuccessToast(
-            context,
-            enabled ? 'Lembretes habilitados!' : 'Lembretes desabilitados!',
+
+          FeedbackService.showSuccess(
+            context: context,
+            message:
+                enabled ? 'Lembretes habilitados!' : 'Lembretes desabilitados!',
           );
         },
       );
     } catch (e) {
-      _feedbackService.showErrorToast(context, 'Erro ao alterar configuração');
+      if (!mounted) return; // Check if widget is still mounted
+      FeedbackService.showError(
+          context: context, message: 'Erro ao alterar configuração');
     }
   }
 
   Future<void> _toggleContractReminders(bool enabled) async {
     try {
-      await _feedbackService.executeWithFeedback(
-        context,
-        enabled ? 'Habilitando alertas...' : 'Desabilitando alertas...',
-        () async {
+      await FeedbackService.executeWithFeedback(
+        context: context,
+        operationName:
+            enabled ? 'Habilitando alertas...' : 'Desabilitando alertas...',
+        operation: () async {
           await _reminderService.setContractRemindersEnabled(enabled);
+          if (!mounted) return; // Check if widget is still mounted
           setState(() => _contractRemindersEnabled = enabled);
-          
-          _feedbackService.showSuccessToast(
-            context,
-            enabled ? 'Alertas habilitados!' : 'Alertas desabilitados!',
+
+          FeedbackService.showSuccess(
+            context: context,
+            message:
+                enabled ? 'Alertas habilitados!' : 'Alertas desabilitados!',
           );
         },
       );
     } catch (e) {
-      _feedbackService.showErrorToast(context, 'Erro ao alterar configuração');
+      if (!mounted) return; // Check if widget is still mounted
+      FeedbackService.showError(
+          context: context, message: 'Erro ao alterar configuração');
     }
   }
 
@@ -139,8 +175,8 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: AppColors.primary,
-            ),
+                  primary: AppColors.primary,
+                ),
           ),
           child: child!,
         );
@@ -149,10 +185,10 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
 
     if (picked != null) {
       try {
-        await _feedbackService.executeWithFeedback(
-          context,
-          'Atualizando horário...',
-          () async {
+        await FeedbackService.executeWithFeedback(
+          context: context,
+          operationName: 'Atualizando horário...',
+          operation: () async {
             if (isCheckIn) {
               setState(() => _checkInTime = picked);
             } else {
@@ -165,34 +201,41 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
               checkOutHour: _checkOutTime.hour,
               checkOutMinute: _checkOutTime.minute,
             );
-
-            _feedbackService.showSuccessToast(context, 'Horário atualizado!');
+            if (!mounted) return; // Check if widget is still mounted
+            FeedbackService.showSuccess(
+                context: context, message: 'Horário atualizado!');
           },
         );
       } catch (e) {
-        _feedbackService.showErrorToast(context, 'Erro ao atualizar horário');
+        if (!mounted) return; // Check if widget is still mounted
+        FeedbackService.showError(
+            context: context, message: 'Erro ao atualizar horário');
       }
     }
   }
 
   Future<void> _testNotification() async {
     try {
-      await _feedbackService.executeWithFeedback(
-        context,
-        'Enviando notificação de teste...',
-        () async {
+      await FeedbackService.executeWithFeedback(
+        context: context,
+        operationName: 'Enviando notificação de teste...',
+        operation: () async {
           await _notificationService.showNotification(
-            id: 9999,
             title: 'Teste de Notificação',
             body: 'Esta é uma notificação de teste do sistema de estágio!',
-            payload: 'test_notification',
+            data: {
+              'payload': 'test_notification'
+            }, // 'payload' is now part of 'data' map
           );
-          
-          _feedbackService.showSuccessToast(context, 'Notificação enviada!');
+          if (!mounted) return; // Check if widget is still mounted
+          FeedbackService.showSuccess(
+              context: context, message: 'Notificação enviada!');
         },
       );
     } catch (e) {
-      _feedbackService.showErrorToast(context, 'Erro ao enviar notificação');
+      if (!mounted) return; // Check if widget is still mounted
+      FeedbackService.showError(
+          context: context, message: 'Erro ao enviar notificação');
     }
   }
 
@@ -213,19 +256,13 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 children: [
                   _buildSectionTitle('Permissões'),
                   _buildNotificationPermissionCard(),
-                  
                   const SizedBox(height: 24),
-                  
                   _buildSectionTitle('Lembretes Diários'),
                   _buildDailyRemindersCard(),
-                  
                   const SizedBox(height: 24),
-                  
                   _buildSectionTitle('Alertas de Contrato'),
                   _buildContractAlertsCard(),
-                  
                   const SizedBox(height: 24),
-                  
                   _buildSectionTitle('Teste'),
                   _buildTestCard(),
                 ],
@@ -240,9 +277,9 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       child: Text(
         title,
         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.bold,
-          color: AppColors.primary,
-        ),
+              fontWeight: FontWeight.bold,
+              color: AppColors.primary,
+            ),
       ),
     );
   }
@@ -257,13 +294,15 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
             Row(
               children: [
                 Icon(
-                  _notificationsEnabled ? Icons.notifications : Icons.notifications_off,
+                  _notificationsEnabled
+                      ? Icons.notifications
+                      : Icons.notifications_off,
                   color: _notificationsEnabled ? Colors.green : Colors.red,
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  _notificationsEnabled 
-                      ? 'Notificações Habilitadas' 
+                  _notificationsEnabled
+                      ? 'Notificações Habilitadas'
                       : 'Notificações Desabilitadas',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
@@ -302,16 +341,17 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          // Changed to Column to hold multiple widgets
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SwitchListTile(
               title: const Text('Lembretes de Check-in/out'),
-              subtitle: const Text('Receba lembretes para registrar entrada e saída'),
+              subtitle:
+                  const Text('Receba lembretes para registrar entrada e saída'),
               value: _dailyRemindersEnabled,
               onChanged: _notificationsEnabled ? _toggleDailyReminders : null,
               activeColor: AppColors.primary,
             ),
-            
             if (_dailyRemindersEnabled) ...[
               const Divider(),
               ListTile(

@@ -2,7 +2,7 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+// import 'package:flutter/services.dart'; // Removido: Unused import
 
 /// Serviço de otimização de performance
 class PerformanceService {
@@ -14,7 +14,7 @@ class PerformanceService {
   final Map<String, List<double>> _operationMetrics = {};
   final Map<String, dynamic> _memoryCache = {};
   final Map<String, DateTime> _cacheTimestamps = {};
-  
+
   static const int _maxCacheSize = 100;
   static const Duration _cacheExpiry = Duration(minutes: 15);
   static const Duration _performanceThreshold = Duration(milliseconds: 500);
@@ -24,10 +24,10 @@ class PerformanceService {
     if (kDebugMode) {
       developer.log('PerformanceService initialized', name: 'Performance');
     }
-    
+
     // Configurar limpeza automática de cache
     Timer.periodic(const Duration(minutes: 5), (_) => _cleanExpiredCache());
-    
+
     // Configurar coleta de métricas de sistema
     Timer.periodic(const Duration(seconds: 30), (_) => _collectSystemMetrics());
   }
@@ -35,7 +35,7 @@ class PerformanceService {
   /// Iniciar medição de performance de uma operação
   void startOperation(String operationName) {
     _operationStartTimes[operationName] = DateTime.now();
-    
+
     if (kDebugMode) {
       developer.log('Started operation: $operationName', name: 'Performance');
     }
@@ -56,7 +56,7 @@ class PerformanceService {
         'Completed operation: $operationName (${duration.inMilliseconds}ms)${isSlowOperation ? ' [SLOW]' : ''}',
         name: 'Performance',
       );
-      
+
       if (isSlowOperation) {
         _logSlowOperation(operationName, duration);
       }
@@ -156,7 +156,7 @@ class PerformanceService {
   void clearAllCache() {
     _memoryCache.clear();
     _cacheTimestamps.clear();
-    
+
     if (kDebugMode) {
       developer.log('All cache cleared', name: 'Performance');
     }
@@ -165,7 +165,7 @@ class PerformanceService {
   /// Obter estatísticas de performance
   Map<String, dynamic> getPerformanceStats() {
     final stats = <String, dynamic>{};
-    
+
     for (final entry in _operationMetrics.entries) {
       final metrics = entry.value;
       if (metrics.isEmpty) continue;
@@ -194,7 +194,7 @@ class PerformanceService {
   /// Otimizar automaticamente baseado em métricas
   void optimizePerformance() {
     final stats = getPerformanceStats();
-    
+
     // Limpar cache se estiver muito cheio
     final cacheSize = _memoryCache.length;
     if (cacheSize > _maxCacheSize * 0.8) {
@@ -206,8 +206,9 @@ class PerformanceService {
     for (final entry in stats.entries) {
       if (entry.value is Map<String, dynamic>) {
         final operationStats = entry.value as Map<String, dynamic>;
-        final averageMs = double.tryParse(operationStats['average_ms'] ?? '0') ?? 0;
-        
+        final averageMs =
+            double.tryParse(operationStats['average_ms'] ?? '0') ?? 0;
+
         if (averageMs > _performanceThreshold.inMilliseconds) {
           slowOperations.add(entry.key);
         }
@@ -283,7 +284,7 @@ class PerformanceService {
     try {
       // Obter informações de memória do sistema
       final memoryInfo = await _getSystemMemoryInfo();
-      
+
       return {
         'cache_size': _memoryCache.length,
         'cache_memory_mb': _estimateCacheMemoryUsage(),
@@ -303,9 +304,9 @@ class PerformanceService {
   void _recordMetric(String operationName, double durationMs) {
     _operationMetrics.putIfAbsent(operationName, () => <double>[]);
     final metrics = _operationMetrics[operationName]!;
-    
+
     metrics.add(durationMs);
-    
+
     // Manter apenas as últimas 100 métricas por operação
     if (metrics.length > 100) {
       metrics.removeAt(0);
@@ -344,14 +345,12 @@ class PerformanceService {
 
   void _cleanOldestCacheEntries({int? count}) {
     final entriesToRemove = count ?? (_maxCacheSize * 0.2).round();
-    
+
     final sortedEntries = _cacheTimestamps.entries.toList()
       ..sort((a, b) => a.value.compareTo(b.value));
 
-    final keysToRemove = sortedEntries
-        .take(entriesToRemove)
-        .map((e) => e.key)
-        .toList();
+    final keysToRemove =
+        sortedEntries.take(entriesToRemove).map((e) => e.key).toList();
 
     for (final key in keysToRemove) {
       _memoryCache.remove(key);
@@ -398,7 +397,8 @@ class PerformanceService {
   Future<Map<String, dynamic>> _getSystemMemoryInfo() async {
     try {
       // Simulação - em produção usaria platform channels
-      return {
+      return const {
+        // Adicionado const
         'total_mb': 4096,
         'available_mb': 2048,
         'used_mb': 2048,
@@ -422,7 +422,8 @@ class PerformanceService {
     ];
   }
 
-  Future<List<Map<String, dynamic>>> _loadSupervisorStudents(String userId) async {
+  Future<List<Map<String, dynamic>>> _loadSupervisorStudents(
+      String userId) async {
     await Future.delayed(const Duration(milliseconds: 250));
     return [
       {'id': 'student1', 'supervisor_id': userId, 'name': 'Student 1'},

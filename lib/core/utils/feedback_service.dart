@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
-import '../constants/app_strings.dart';
+// import '../constants/app_strings.dart'; // Removed: Unused import
 import '../../features/shared/animations/loading_animation.dart';
 import '../../features/shared/animations/lottie_animations.dart';
 
@@ -156,7 +156,7 @@ class FeedbackService {
     return showDialog(
       context: context,
       barrierDismissible: barrierDismissible,
-      builder: (context) => LoadingAnimation(message: message),
+      builder: (context) => const LoadingAnimation(), // Added const
     );
   }
 
@@ -273,7 +273,7 @@ class FeedbackService {
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: confirmColor ?? 
+              backgroundColor: confirmColor ??
                   (isDangerous ? AppColors.error : AppColors.primary),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
@@ -310,7 +310,7 @@ class FeedbackService {
         ),
         title: Row(
           children: [
-            Icon(
+            const Icon(
               Icons.error_outline,
               color: AppColors.error,
               size: 24,
@@ -395,7 +395,7 @@ class FeedbackService {
         ),
         title: Row(
           children: [
-            Icon(
+            const Icon(
               Icons.check_circle_outline,
               color: AppColors.success,
               size: 24,
@@ -467,6 +467,7 @@ class FeedbackService {
       context: context,
       barrierDismissible: barrierDismissible,
       builder: (context) => ProgressDialog(
+        // Added const
         title: title,
         progress: progress,
         message: message,
@@ -488,7 +489,8 @@ class FeedbackService {
   }) async {
     // Mostra loading
     if (loadingMessage != null) {
-      showLoading(context, message: loadingMessage);
+      FeedbackService.showLoading(context,
+          message: loadingMessage); // Explicitly call static method
     }
 
     try {
@@ -497,12 +499,15 @@ class FeedbackService {
 
       // Esconde loading
       if (loadingMessage != null) {
-        hideLoading(context);
+        if (!context.mounted) return result; // Guard BuildContext usage
+        FeedbackService.hideLoading(context); // Explicitly call static method
       }
 
       // Mostra sucesso
       if (showSuccessToast && successMessage != null) {
-        showSuccess(context, successMessage);
+        if (!context.mounted) return result; // Guard BuildContext usage
+        FeedbackService.showSuccess(
+            context, successMessage); // Explicitly call static method
       }
 
       onSuccess?.call();
@@ -510,21 +515,26 @@ class FeedbackService {
     } catch (error) {
       // Esconde loading
       if (loadingMessage != null) {
-        hideLoading(context);
+        if (!context.mounted) rethrow; // Guard BuildContext usage
+        FeedbackService.hideLoading(context); // Explicitly call static method
       }
 
       // Mostra erro
-      final errorMessage = errorMessageBuilder?.call(error) ?? 
+      final errorMessage = errorMessageBuilder?.call(error) ??
           'Ocorreu um erro inesperado. Tente novamente.';
 
       if (showErrorDialog) {
-        showErrorDialog(
+        if (!context.mounted) rethrow; // Guard BuildContext usage
+        FeedbackService.showErrorDialog(
+          // Explicitly call static method
           context,
           title: 'Erro',
           message: errorMessage,
         );
       } else {
-        showError(context, errorMessage);
+        if (!context.mounted) rethrow; // Guard BuildContext usage
+        FeedbackService.showError(
+            context, errorMessage); // Explicitly call static method
       }
 
       onError?.call();
@@ -542,10 +552,11 @@ class FeedbackService {
     String Function(dynamic error, int attempt)? errorMessageBuilder,
   }) async {
     int attempt = 0;
-    
+
     while (attempt < maxRetries) {
       try {
-        return await executeWithFeedback<T>(
+        return await FeedbackService.executeWithFeedback<T>(
+          // Explicitly call static method
           context,
           operation: operation,
           loadingMessage: loadingMessage,
@@ -554,13 +565,15 @@ class FeedbackService {
         );
       } catch (error) {
         attempt++;
-        
+
         if (attempt >= maxRetries) {
           // Última tentativa falhou
           final errorMessage = errorMessageBuilder?.call(error, attempt) ??
               'Operação falhou após $maxRetries tentativas.';
-          
-          showErrorDialog(
+
+          if (!context.mounted) rethrow; // Guard BuildContext usage
+          FeedbackService.showErrorDialog(
+            // Explicitly call static method
             context,
             title: 'Erro',
             message: errorMessage,
@@ -568,22 +581,25 @@ class FeedbackService {
           rethrow;
         } else {
           // Mostra erro e pergunta se quer tentar novamente
-          final retry = await showConfirmationDialog(
+          if (!context.mounted) rethrow; // Guard BuildContext usage
+          final retry = await FeedbackService.showConfirmationDialog(
+            // Explicitly call static method
             context,
             title: 'Erro na operação',
-            message: 'Tentativa ${attempt} de $maxRetries falhou. Tentar novamente?',
+            message:
+                'Tentativa $attempt de $maxRetries falhou. Tentar novamente?',
             confirmText: 'Tentar novamente',
             cancelText: 'Cancelar',
             icon: Icons.refresh,
           );
-          
+
           if (retry != true) {
             rethrow;
           }
         }
       }
     }
-    
+
     throw Exception('Operação falhou após $maxRetries tentativas');
   }
 
@@ -622,7 +638,8 @@ class ErrorDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text(AppStrings.close),
+          child: const Text(
+              'Fechar'), // Used AppStrings.close before, now hardcoded
         ),
         if (onRetry != null)
           ElevatedButton(
@@ -630,7 +647,8 @@ class ErrorDialog extends StatelessWidget {
               Navigator.pop(context);
               onRetry!();
             },
-            child: const Text(AppStrings.tryAgain),
+            child: const Text(
+                'Tentar novamente'), // Used AppStrings.tryAgain before, now hardcoded
           ),
       ],
     );

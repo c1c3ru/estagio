@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import '../utils/date_utils.dart';
 
 /// Serviço responsável por gerar relatórios, estatísticas e exportar dados
 class ReportService {

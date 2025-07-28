@@ -11,7 +11,7 @@ enum AppThemeType {
 }
 
 /// Esquemas de cores personalizados
-enum ColorScheme {
+enum AppColorScheme {
   blue,
   green,
   purple,
@@ -23,7 +23,7 @@ enum ColorScheme {
 /// Configuração de tema personalizada
 class ThemeConfig {
   final AppThemeType themeType;
-  final ColorScheme colorScheme;
+  final AppColorScheme colorScheme;
   final double fontSize;
   final bool useSystemFont;
   final bool highContrast;
@@ -31,7 +31,7 @@ class ThemeConfig {
 
   const ThemeConfig({
     this.themeType = AppThemeType.system,
-    this.colorScheme = ColorScheme.blue,
+    this.colorScheme = AppColorScheme.blue,
     this.fontSize = 14.0,
     this.useSystemFont = false,
     this.highContrast = false,
@@ -40,7 +40,7 @@ class ThemeConfig {
 
   ThemeConfig copyWith({
     AppThemeType? themeType,
-    ColorScheme? colorScheme,
+    AppColorScheme? colorScheme,
     double? fontSize,
     bool? useSystemFont,
     bool? highContrast,
@@ -73,9 +73,9 @@ class ThemeConfig {
         (e) => e.name == json['themeType'],
         orElse: () => AppThemeType.system,
       ),
-      colorScheme: ColorScheme.values.firstWhere(
+      colorScheme: AppColorScheme.values.firstWhere(
         (e) => e.name == json['colorScheme'],
-        orElse: () => ColorScheme.blue,
+        orElse: () => AppColorScheme.blue,
       ),
       fontSize: (json['fontSize'] as num?)?.toDouble() ?? 14.0,
       useSystemFont: json['useSystemFont'] as bool? ?? false,
@@ -148,7 +148,7 @@ class ThemeService extends ChangeNotifier {
   }
 
   /// Definir esquema de cores
-  Future<void> setColorScheme(ColorScheme colorScheme) async {
+  Future<void> setColorScheme(AppColorScheme colorScheme) async {
     await updateThemeConfig(_config.copyWith(colorScheme: colorScheme));
   }
 
@@ -175,38 +175,38 @@ class ThemeService extends ChangeNotifier {
   /// Obter lista de esquemas de cores disponíveis
   List<ColorSchemeInfo> getAvailableColorSchemes() {
     return [
-      ColorSchemeInfo(
-        scheme: ColorScheme.blue,
+      const ColorSchemeInfo(
+        scheme: AppColorScheme.blue,
         name: 'Azul',
         description: 'Esquema azul clássico',
         primaryColor: Colors.blue,
       ),
-      ColorSchemeInfo(
-        scheme: ColorScheme.green,
+      const ColorSchemeInfo(
+        scheme: AppColorScheme.green,
         name: 'Verde',
         description: 'Esquema verde natural',
         primaryColor: Colors.green,
       ),
-      ColorSchemeInfo(
-        scheme: ColorScheme.purple,
+      const ColorSchemeInfo(
+        scheme: AppColorScheme.purple,
         name: 'Roxo',
         description: 'Esquema roxo moderno',
         primaryColor: Colors.purple,
       ),
-      ColorSchemeInfo(
-        scheme: ColorScheme.orange,
+      const ColorSchemeInfo(
+        scheme: AppColorScheme.orange,
         name: 'Laranja',
         description: 'Esquema laranja energético',
         primaryColor: Colors.orange,
       ),
-      ColorSchemeInfo(
-        scheme: ColorScheme.red,
+      const ColorSchemeInfo(
+        scheme: AppColorScheme.red,
         name: 'Vermelho',
         description: 'Esquema vermelho vibrante',
         primaryColor: Colors.red,
       ),
-      ColorSchemeInfo(
-        scheme: ColorScheme.teal,
+      const ColorSchemeInfo(
+        scheme: AppColorScheme.teal,
         name: 'Azul-verde',
         description: 'Esquema azul-verde elegante',
         primaryColor: Colors.teal,
@@ -256,14 +256,14 @@ class ThemeService extends ChangeNotifier {
     };
   }
 
-  ColorScheme _getColorScheme(ColorScheme scheme, bool isDark) {
-    final Map<ColorScheme, Color> primaryColors = {
-      ColorScheme.blue: Colors.blue,
-      ColorScheme.green: Colors.green,
-      ColorScheme.purple: Colors.purple,
-      ColorScheme.orange: Colors.orange,
-      ColorScheme.red: Colors.red,
-      ColorScheme.teal: Colors.teal,
+  ColorScheme _getColorScheme(AppColorScheme scheme, bool isDark) {
+    final Map<AppColorScheme, Color> primaryColors = {
+      AppColorScheme.blue: Colors.blue,
+      AppColorScheme.green: Colors.green,
+      AppColorScheme.purple: Colors.purple,
+      AppColorScheme.orange: Colors.orange,
+      AppColorScheme.red: Colors.red,
+      AppColorScheme.teal: Colors.teal,
     };
 
     final primaryColor = primaryColors[scheme] ?? Colors.blue;
@@ -273,17 +273,7 @@ class ThemeService extends ChangeNotifier {
         : ColorScheme.fromSeed(seedColor: primaryColor, brightness: Brightness.light);
   }
 
-  ColorScheme _createCustomColorScheme(Color primaryColor, bool isDark) {
-    return isDark 
-        ? ColorScheme.fromSeed(seedColor: primaryColor, brightness: Brightness.dark)
-        : ColorScheme.fromSeed(seedColor: primaryColor, brightness: Brightness.light);
-  }
 
-  static ColorScheme _buildColorScheme(Color primaryColor, bool isDark) {
-    return isDark 
-        ? ColorScheme.fromSeed(seedColor: primaryColor, brightness: Brightness.dark)
-        : ColorScheme.fromSeed(seedColor: primaryColor, brightness: Brightness.light);
-  }
 
   ThemeData _buildTheme(ColorScheme colorScheme, Brightness brightness) {
     final isDark = brightness == Brightness.dark;
@@ -309,7 +299,7 @@ class ThemeService extends ChangeNotifier {
       ),
 
       // Cards
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: _config.highContrast ? 8 : 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -482,7 +472,7 @@ class ThemeService extends ChangeNotifier {
 
 /// Informações sobre um esquema de cores
 class ColorSchemeInfo {
-  final ColorScheme scheme;
+  final AppColorScheme scheme;
   final String name;
   final String description;
   final Color primaryColor;

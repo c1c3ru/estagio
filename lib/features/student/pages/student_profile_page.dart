@@ -210,8 +210,8 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                   ScaffoldMessenger.of(context)
                     ..hideCurrentSnackBar()
                     ..showSnackBar(
-                      SnackBar(
-                        content: const Text('Perfil criado com sucesso!'),
+                      const SnackBar(
+                        content: Text('Perfil criado com sucesso!'),
                         backgroundColor: AppColors.success,
                       ),
                     );
@@ -372,7 +372,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.info_outline,
                       size: 64,
                       color: AppColors.primary,

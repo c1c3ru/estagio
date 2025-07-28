@@ -14,7 +14,6 @@ import '../widgets/student_list_widget.dart';
 import '../widgets/student_form_dialog.dart';
 import '../../../domain/entities/filter_students_params.dart';
 import '../../../core/enums/student_status.dart';
-import '../../../r.dart';
 import 'package:flutter/foundation.dart';
 
 class SupervisorHomePage extends StatefulWidget {

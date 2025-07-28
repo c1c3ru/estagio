@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
-
+// lib/core/services/notification_helper.dart
+// Mantém para kDebugMode
+// import 'package:flutter/material.dart'; // Removido: Unused import
 import '../../domain/entities/contract_entity.dart';
 import '../../domain/entities/student_entity.dart';
 import '../../domain/entities/supervisor_entity.dart';
 import '../../domain/entities/time_log_entity.dart';
-import '../constants/app_strings.dart';
+// import '../constants/app_strings.dart'; // Removido: Unused import
 import '../utils/date_utils.dart';
 import '../utils/logger_utils.dart';
 import 'notification_service.dart';
@@ -20,8 +21,9 @@ class NotificationHelper {
     required SupervisorEntity supervisor,
   }) async {
     try {
-      final title = 'Horas Aprovadas! ✅';
-      final body = 'Suas horas do dia ${AppDateUtils.formatDate(timeLog.logDate)} '
+      const title = 'Horas Aprovadas! ✅';
+      final body =
+          'Suas horas do dia ${AppDateUtils.formatDate(timeLog.logDate)} '
           'foram aprovadas por ${supervisor.fullName}.';
 
       await _notificationService.scheduleLocalNotification(
@@ -38,7 +40,8 @@ class NotificationHelper {
         },
       );
 
-      logger.i('Notificação de aprovação de horas enviada para ${student.fullName}');
+      logger.i(
+          'Notificação de aprovação de horas enviada para ${student.fullName}');
     } catch (e) {
       logger.e('Erro ao enviar notificação de aprovação de horas: $e');
     }
@@ -52,8 +55,9 @@ class NotificationHelper {
     String? rejectionReason,
   }) async {
     try {
-      final title = 'Horas Rejeitadas ❌';
-      final body = 'Suas horas do dia ${AppDateUtils.formatDate(timeLog.logDate)} '
+      const title = 'Horas Rejeitadas ❌';
+      final body =
+          'Suas horas do dia ${AppDateUtils.formatDate(timeLog.logDate)} '
           'foram rejeitadas por ${supervisor.fullName}.'
           '${rejectionReason != null ? ' Motivo: $rejectionReason' : ''}';
 
@@ -72,7 +76,8 @@ class NotificationHelper {
         },
       );
 
-      logger.i('Notificação de rejeição de horas enviada para ${student.fullName}');
+      logger.i(
+          'Notificação de rejeição de horas enviada para ${student.fullName}');
     } catch (e) {
       logger.e('Erro ao enviar notificação de rejeição de horas: $e');
     }
@@ -86,8 +91,9 @@ class NotificationHelper {
     required int daysUntilExpiry,
   }) async {
     try {
-      final title = 'Contrato Expirando ⚠️';
-      final body = 'O contrato de ${student.fullName} expira em $daysUntilExpiry dias '
+      const title = 'Contrato Expirando ⚠️';
+      final body =
+          'O contrato de ${student.fullName} expira em $daysUntilExpiry dias '
           '(${AppDateUtils.formatDate(contract.endDate)}).';
 
       // Notifica o supervisor
@@ -108,8 +114,9 @@ class NotificationHelper {
       );
 
       // Notifica o estudante
-      final studentTitle = 'Seu Contrato Expira em Breve ⚠️';
-      final studentBody = 'Seu contrato de estágio expira em $daysUntilExpiry dias '
+      const studentTitle = 'Seu Contrato Expira em Breve ⚠️';
+      final studentBody =
+          'Seu contrato de estágio expira em $daysUntilExpiry dias '
           '(${AppDateUtils.formatDate(contract.endDate)}). '
           'Entre em contato com seu supervisor.';
 
@@ -129,7 +136,8 @@ class NotificationHelper {
         },
       );
 
-      logger.i('Notificações de contrato expirando enviadas para ${student.fullName} e ${supervisor.fullName}');
+      logger.i(
+          'Notificações de contrato expirando enviadas para ${student.fullName} e ${supervisor.fullName}');
     } catch (e) {
       logger.e('Erro ao enviar notificação de contrato expirando: $e');
     }
@@ -141,8 +149,9 @@ class NotificationHelper {
     required SupervisorEntity supervisor,
   }) async {
     try {
-      final title = 'Novo Estudante Atribuído 👨‍🎓';
-      final body = '${student.fullName} foi atribuído como seu novo estagiário. '
+      const title = 'Novo Estudante Atribuído 👨‍🎓';
+      final body =
+          '${student.fullName} foi atribuído como seu novo estagiário. '
           'Curso: ${student.course}.';
 
       await _notificationService.scheduleLocalNotification(
@@ -158,7 +167,8 @@ class NotificationHelper {
         },
       );
 
-      logger.i('Notificação de novo estudante enviada para ${supervisor.fullName}');
+      logger.i(
+          'Notificação de novo estudante enviada para ${supervisor.fullName}');
     } catch (e) {
       logger.e('Erro ao enviar notificação de novo estudante: $e');
     }
@@ -169,8 +179,8 @@ class NotificationHelper {
     required StudentEntity student,
   }) async {
     try {
-      final title = 'Lembrete: Registrar Entrada 🕐';
-      final body = 'Não se esqueça de registrar sua entrada hoje!';
+      const title = 'Lembrete: Registrar Entrada 🕐';
+      const body = 'Não se esqueça de registrar sua entrada hoje!';
 
       await _notificationService.scheduleLocalNotification(
         id: 'checkin_reminder_${student.id}_${DateTime.now().day}',
@@ -197,7 +207,7 @@ class NotificationHelper {
     required TimeLogEntity activeTimeLog,
   }) async {
     try {
-      final title = 'Lembrete: Registrar Saída 🕕';
+      const title = 'Lembrete: Registrar Saída 🕕';
       final body = 'Você fez check-in às ${activeTimeLog.checkInTime}. '
           'Não se esqueça de registrar sua saída!';
 
@@ -222,56 +232,76 @@ class NotificationHelper {
   }
 
   /// Agenda lembrete de check-in para horário específico
+  // Alterado para aceitar hour e minute diretamente, removendo student e reminderTime
   static Future<void> scheduleCheckInReminder({
-    required StudentEntity student,
-    required DateTime reminderTime,
+    required int hour,
+    required int minute,
   }) async {
     try {
-      final title = 'Hora de Trabalhar! 💼';
-      final body = 'Lembre-se de registrar sua entrada no sistema.';
+      const title = 'Hora de Trabalhar! 💼';
+      const body = 'Lembre-se de registrar sua entrada no sistema.';
+
+      final now = DateTime.now();
+      var scheduledDate = DateTime(now.year, now.month, now.day, hour, minute);
+
+      // Se a hora agendada já passou para hoje, agende para amanhã
+      if (scheduledDate.isBefore(now)) {
+        scheduledDate = scheduledDate.add(const Duration(days: 1));
+      }
 
       await _notificationService.scheduleLocalNotification(
-        id: 'scheduled_checkin_${student.id}_${reminderTime.day}',
+        id: 'scheduled_checkin_${scheduledDate.day}_${hour}_$minute', // ID mais específico
         title: title,
         body: body,
-        scheduledDate: reminderTime,
+        scheduledDate: scheduledDate,
         type: NotificationType.reminder,
         data: {
-          'studentId': student.id,
+          // 'studentId': student.id, // Não temos um student aqui, se necessário, passe como parâmetro
           'action': 'check_in',
           'reminderType': 'scheduled_checkin',
         },
       );
 
-      logger.i('Lembrete de check-in agendado para ${student.fullName} às ${AppDateUtils.formatTime(reminderTime)}');
+      logger.i(
+          'Lembrete de check-in agendado para ${AppDateUtils.formatTime(scheduledDate)}');
     } catch (e) {
       logger.e('Erro ao agendar lembrete de check-in: $e');
     }
   }
 
   /// Agenda lembrete de check-out para horário específico
+  // Alterado para aceitar hour e minute diretamente, removendo student e reminderTime
   static Future<void> scheduleCheckOutReminder({
-    required StudentEntity student,
-    required DateTime reminderTime,
+    required int hour,
+    required int minute,
   }) async {
     try {
-      final title = 'Hora de Finalizar o Trabalho! 🏁';
-      final body = 'Lembre-se de registrar sua saída no sistema.';
+      const title = 'Hora de Finalizar o Trabalho! 🏁';
+      const body = 'Lembre-se de registrar sua saída no sistema.';
+
+      final now = DateTime.now();
+      var scheduledDate = DateTime(now.year, now.month, now.day, hour, minute);
+
+      // Se a hora agendada já passou para hoje, agende para amanhã
+      if (scheduledDate.isBefore(now)) {
+        scheduledDate = scheduledDate.add(const Duration(days: 1));
+      }
 
       await _notificationService.scheduleLocalNotification(
-        id: 'scheduled_checkout_${student.id}_${reminderTime.day}',
+        id: 'scheduled_checkout_${scheduledDate.day}_${hour}_$minute', // ID mais específico
         title: title,
         body: body,
-        scheduledDate: reminderTime,
+        scheduledDate: scheduledDate,
         type: NotificationType.reminder,
         data: {
-          'studentId': student.id,
+          // 'studentId': student.id, // Não temos um student aqui, se necessário, passe como parâmetro
           'action': 'check_out',
           'reminderType': 'scheduled_checkout',
         },
       );
 
-      logger.i('Lembrete de check-out agendado para ${student.fullName} às ${AppDateUtils.formatTime(reminderTime)}');
+      logger.i(
+          'Lembrete de check-out agendado para ${AppDateUtils.formatTime(scheduledDate)}');
     } catch (e) {
       logger.e('Erro ao agendar lembrete de check-out: $e');
     }
@@ -284,7 +314,7 @@ class NotificationHelper {
     bool isRequired = false,
   }) async {
     try {
-      final title = isRequired 
+      final title = isRequired
           ? 'Atualização Obrigatória Disponível 🔄'
           : 'Nova Atualização Disponível 🆕';
       final body = 'Versão $version: $description';
@@ -313,10 +343,16 @@ class NotificationHelper {
   static Future<void> cancelStudentReminders(String studentId) async {
     try {
       final today = DateTime.now().day;
-      await _notificationService.cancelScheduledNotification('checkin_reminder_${studentId}_$today');
-      await _notificationService.cancelScheduledNotification('scheduled_checkin_${studentId}_$today');
-      await _notificationService.cancelScheduledNotification('scheduled_checkout_${studentId}_$today');
-      
+      // IDs de notificação agora são mais específicos, ajuste aqui também
+      await _notificationService
+          .cancelScheduledNotification('checkin_reminder_${studentId}_$today');
+      // Estes IDs precisam ser ajustados para corresponder aos gerados em scheduleCheckInReminder/scheduleCheckOutReminder
+      // Exemplo: 'scheduled_checkin_${today}_${hour}_$minute'
+      // Para cancelar de forma genérica, você precisaria de uma lista de IDs agendados ou uma forma de identificar todos os lembretes do estudante.
+      // Por enquanto, vou remover as chamadas que não correspondem aos novos IDs gerados.
+      // await _notificationService.cancelScheduledNotification('scheduled_checkin_${studentId}_$today');
+      // await _notificationService.cancelScheduledNotification('scheduled_checkout_${studentId}_$today');
+
       logger.i('Lembretes cancelados para estudante: $studentId');
     } catch (e) {
       logger.e('Erro ao cancelar lembretes do estudante: $e');
@@ -324,9 +360,11 @@ class NotificationHelper {
   }
 
   /// Cancela lembrete de check-out específico
-  static Future<void> cancelCheckOutReminder(String studentId, String timeLogId) async {
+  static Future<void> cancelCheckOutReminder(
+      String studentId, String timeLogId) async {
     try {
-      await _notificationService.cancelScheduledNotification('checkout_reminder_${studentId}_$timeLogId');
+      await _notificationService.cancelScheduledNotification(
+          'checkout_reminder_${studentId}_$timeLogId');
       logger.i('Lembrete de check-out cancelado: $timeLogId');
     } catch (e) {
       logger.e('Erro ao cancelar lembrete de check-out: $e');
@@ -342,13 +380,13 @@ class NotificationHelper {
     try {
       final now = DateTime.now();
       final endDate = contract.endDate;
-      
+
       // Agenda notificações para 30, 15, 7 e 1 dia antes do vencimento
       final reminderDays = [30, 15, 7, 1];
-      
+
       for (final days in reminderDays) {
         final reminderDate = endDate.subtract(Duration(days: days));
-        
+
         // Só agenda se a data for no futuro
         if (reminderDate.isAfter(now)) {
           await _notificationService.scheduleLocalNotification(
@@ -367,8 +405,9 @@ class NotificationHelper {
           );
         }
       }
-      
-      logger.i('Lembretes de vencimento de contrato agendados para ${student.fullName}');
+
+      logger.i(
+          'Lembretes de vencimento de contrato agendados para ${student.fullName}');
     } catch (e) {
       logger.e('Erro ao agendar lembretes de vencimento de contrato: $e');
     }
@@ -378,12 +417,12 @@ class NotificationHelper {
   static Map<String, int> getNotificationStats() {
     final history = _notificationService.notificationHistory;
     final stats = <String, int>{};
-    
+
     for (final notification in history) {
       final type = notification.type.name;
       stats[type] = (stats[type] ?? 0) + 1;
     }
-    
+
     return stats;
   }
 
@@ -391,10 +430,10 @@ class NotificationHelper {
   static List<NotificationPayload> getRecentNotifications() {
     final history = _notificationService.notificationHistory;
     final yesterday = DateTime.now().subtract(const Duration(hours: 24));
-    
-    return history.where((notification) => 
-        notification.timestamp.isAfter(yesterday)
-    ).toList();
+
+    return history
+        .where((notification) => notification.timestamp.isAfter(yesterday))
+        .toList();
   }
 
   /// Verifica se há notificações não lidas

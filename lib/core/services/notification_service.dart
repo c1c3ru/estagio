@@ -1,15 +1,19 @@
+// lib/core/services/notification_service.dart
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+// Mantém para kDebugMode
+// import 'package:flutter/material.dart'; // Removido: Unused import
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart'
+    as tz_data; // Importa para inicialização
 
-import '../constants/app_strings.dart';
+// import '../constants/app_strings.dart'; // Removido: Unused import
 import '../utils/logger_utils.dart';
 
 enum NotificationType {
@@ -96,6 +100,9 @@ class NotificationService {
     if (_isInitialized) return true;
 
     try {
+      // Inicializa timezones para zonedSchedule
+      tz_data.initializeTimeZones(); // Adicionado para resolver TZDateTime
+
       // Solicita permissões
       final hasPermission = await _requestPermissions();
       if (!hasPermission) {
@@ -125,7 +132,8 @@ class NotificationService {
   Future<bool> _requestPermissions() async {
     try {
       // Permissão para notificações
-      NotificationSettings settings = await _firebaseMessaging.requestPermission(
+      NotificationSettings settings =
+          await _firebaseMessaging.requestPermission(
         alert: true,
         announcement: false,
         badge: true,
@@ -221,6 +229,12 @@ class NotificationService {
     if (_fcmToken != null) {
       _tokenStreamController.add(_fcmToken!);
       await _saveFcmToken(_fcmToken!);
+    } else {
+      // Tenta carregar o token salvo se não conseguiu um novo
+      _fcmToken = await _loadFcmToken(); // Chamada adicionada
+      if (_fcmToken != null) {
+        _tokenStreamController.add(_fcmToken!);
+      }
     }
 
     // Listener para mudanças no token
@@ -379,7 +393,7 @@ class NotificationService {
       id.hashCode,
       title,
       body,
-      scheduledDate,
+      tz.TZDateTime.from(scheduledDate, tz.local),
       notificationDetails,
       payload: jsonEncode(payload.toJson()),
       uiLocalNotificationDateInterpretation:
@@ -430,7 +444,7 @@ class NotificationService {
   /// Adiciona notificação ao histórico
   Future<void> _addToHistory(NotificationPayload payload) async {
     _notificationHistory.insert(0, payload);
-    
+
     // Mantém apenas as últimas 100 notificações
     if (_notificationHistory.length > 100) {
       _notificationHistory = _notificationHistory.take(100).toList();
@@ -457,7 +471,7 @@ class NotificationService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final historyString = prefs.getString('notification_history');
-      
+
       if (historyString != null) {
         final historyJson = jsonDecode(historyString) as List;
         _notificationHistory = historyJson
@@ -532,6 +546,78 @@ class NotificationService {
       default:
         return Importance.defaultImportance;
     }
+  }
+
+  /// Envia notificação para usuário específico
+  Future<void> sendNotificationToUser({
+    required String userId,
+    required String title,
+    required String body,
+    Map<String, dynamic>? data,
+  }) async {
+    // Implementação simplificada - em produção enviaria via FCM
+    final payload = NotificationPayload(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      type: NotificationType.systemUpdate,
+      title: title,
+      body: body,
+      data: data,
+      timestamp: DateTime.now(),
+    );
+
+    await _showLocalNotification(payload);
+    logger.i('Notificação enviada para usuário: $userId');
+  }
+
+  /// Agenda notificação
+  Future<void> scheduleNotification({
+    required String id,
+    required String title,
+    required String body,
+    required DateTime scheduledDate,
+    Map<String, dynamic>? data, // Adicionado parâmetro 'data' para 'payload'
+  }) async {
+    await scheduleLocalNotification(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: scheduledDate,
+      data: data,
+    );
+  }
+
+  /// Cancela notificação
+  Future<void> cancelNotification(String id) async {
+    await cancelScheduledNotification(id);
+  }
+
+  /// Verifica se notificações estão habilitadas
+  Future<bool> areNotificationsEnabled() async {
+    final settings = await _firebaseMessaging.getNotificationSettings();
+    return settings.authorizationStatus == AuthorizationStatus.authorized;
+  }
+
+  /// Solicita permissão para notificações
+  Future<bool> requestPermission() async {
+    return await _requestPermissions();
+  }
+
+  /// Mostra notificação imediata
+  Future<void> showNotification({
+    required String title,
+    required String body,
+    Map<String, dynamic>? data,
+  }) async {
+    final payload = NotificationPayload(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      type: NotificationType.systemUpdate,
+      title: title,
+      body: body,
+      data: data,
+      timestamp: DateTime.now(),
+    );
+
+    await _showLocalNotification(payload);
   }
 
   /// Dispose do serviço

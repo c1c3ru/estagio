@@ -1,6 +1,5 @@
 // lib/features/settings/pages/theme_settings_page.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_modular/flutter_modular.dart';
 import '../../../core/theme/theme_service.dart';
 
 class ThemeSettingsPage extends StatefulWidget {
@@ -423,8 +422,8 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                   const SizedBox(height: 16),
                   
                   // Campo de texto
-                  TextField(
-                    decoration: const InputDecoration(
+                  const TextField(
+                    decoration: InputDecoration(
                       labelText: 'Campo de exemplo',
                       hintText: 'Digite algo aqui...',
                     ),

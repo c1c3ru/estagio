@@ -5,13 +5,13 @@ import 'package:integration_test/integration_test.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:estagio/main.dart' as app;
-import 'package:estagio/app_module.dart';
-import 'package:estagio/core/services/report_service.dart';
-import 'package:estagio/features/student/pages/student_reports_page.dart';
-import 'package:estagio/features/supervisor/pages/supervisor_reports_page.dart';
-import 'package:estagio/features/shared/widgets/advanced_filters_widget.dart';
-import 'package:estagio/features/shared/widgets/export_options_widget.dart';
+import 'package:gestao_de_estagio/main.dart' as app;
+import 'package:gestao_de_estagio/app_module.dart';
+import 'package:gestao_de_estagio/core/services/report_service.dart';
+import 'package:gestao_de_estagio/features/student/pages/student_reports_page.dart';
+import 'package:gestao_de_estagio/features/supervisor/pages/supervisor_reports_page.dart';
+import 'package:gestao_de_estagio/features/shared/widgets/advanced_filters_widget.dart';
+import 'package:gestao_de_estagio/features/shared/widgets/export_options_widget.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +32,7 @@ void main() {
     });
 
     tearDownAll(() async {
-      await Modular.destroy();
+      Modular.destroy();
     });
 
     group('ReportService Integration', () {

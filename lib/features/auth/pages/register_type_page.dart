@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import '../../shared/animations/lottie_animations.dart';
 
 class RegisterTypePage extends StatelessWidget {
   const RegisterTypePage({super.key});

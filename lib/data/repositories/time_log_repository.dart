@@ -1,6 +1,5 @@
 // ignore_for_file: override_on_non_overriding_member
 
-import 'package:flutter/foundation.dart';
 import 'package:dartz/dartz.dart';
 
 import '../../core/errors/app_exceptions.dart';
@@ -33,7 +32,7 @@ class TimeLogRepository implements ITimeLogRepository {
     try {
       final timeLogData = await _timeLogDatasource.getTimeLogById(id);
       if (timeLogData == null) {
-        return Left(ServerFailure(message: 'Registro de horas não encontrado'));
+        return const Left(ServerFailure(message: 'Registro de horas não encontrado'));
       }
       final timeLog = TimeLogModel.fromJson(timeLogData).toEntity();
       return Right(timeLog);
@@ -189,29 +188,36 @@ class TimeLogRepository implements ITimeLogRepository {
   }
 
   @override
+  Future<Either<AppFailure, Map<String, dynamic>>> getTotalHoursByStudent(
+      String studentId, DateTime startDate, DateTime endDate) async {
+    try {
+      final result = await _timeLogDatasource.getTotalHoursByStudent(
+          studentId, startDate, endDate);
+      return Right(result);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Either<AppFailure, TimeLogEntity>> updateTimeLogStatus({
     required String timeLogId,
     required bool approved,
     String? rejectionReason,
   }) async {
     try {
-      // Primeiro, buscar o time log atual
-      final currentTimeLogResult = await getTimeLogById(timeLogId);
-      if (currentTimeLogResult.isLeft()) {
-        return currentTimeLogResult;
-      }
-
-      final currentTimeLog = currentTimeLogResult.getOrElse(() => throw Exception('TimeLog not found'));
+      final updateData = {
+        'status': approved ? 'approved' : 'rejected',
+        'updated_at': DateTime.now().toIso8601String(),
+      };
       
-      // Atualizar o status
-      final updatedTimeLog = currentTimeLog.copyWith(
-        approved: approved,
+      final result = await _timeLogDatasource.updateTimeLog(
+        timeLogId, 
+        updateData,
         rejectionReason: rejectionReason,
-        updatedAt: DateTime.now(),
       );
-
-      final result = await _timeLogDatasource.updateTimeLog(updatedTimeLog);
-      return Right(result);
+      final timeLog = TimeLogModel.fromJson(result).toEntity();
+      return Right(timeLog);
     } catch (e) {
       return Left(AppFailure.unexpected(e.toString()));
     }
@@ -220,31 +226,15 @@ class TimeLogRepository implements ITimeLogRepository {
   @override
   Future<Either<AppFailure, List<TimeLogEntity>>> getPendingTimeLogsBySupervisor(String supervisorId) async {
     try {
-      // Buscar todos os time logs pendentes para estudantes supervisionados por este supervisor
-      // Esta implementação dependeria de como a relação supervisor-estudante é mantida
-      // Por enquanto, vamos implementar uma versão básica
-      final result = await _timeLogDatasource.getPendingTimeLogs();
-      return Right(result);
+      final result = await _timeLogDatasource.getPendingTimeLogs(supervisorId);
+      final timeLogs = result
+          .map((data) => TimeLogModel.fromJson(data).toEntity())
+          .toList();
+      return Right(timeLogs);
     } catch (e) {
       return Left(AppFailure.unexpected(e.toString()));
     }
   }
 
-  @override
-  Future<Either<AppFailure, List<TimeLogEntity>>> getTimeLogsByDateRange({
-    required String studentId,
-    required DateTime startDate,
-    required DateTime endDate,
-  }) async {
-    try {
-      final result = await _timeLogDatasource.getTimeLogsByDateRange(
-        studentId: studentId,
-        startDate: startDate,
-        endDate: endDate,
-      );
-      return Right(result);
-    } catch (e) {
-      return Left(AppFailure.unexpected(e.toString()));
-    }
-  }
+
 }

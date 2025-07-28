@@ -13,7 +13,6 @@ import '../../../core/enums/user_role.dart';
 import '../../../core/enums/class_shift.dart';
 import '../../../core/enums/internship_shift.dart';
 import '../../../core/utils/validators.dart';
-import '../../shared/animations/lottie_animations.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/utils/feedback_service.dart';

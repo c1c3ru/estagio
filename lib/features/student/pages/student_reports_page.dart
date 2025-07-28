@@ -1,9 +1,8 @@
 // lib/features/student/pages/student_reports_page.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import '../../../core/services/report_service.dart';
-import '../../../core/services/feedback_service.dart';
+import '../../../core/utils/feedback_service.dart';
 import '../../../domain/repositories/i_time_log_repository.dart';
 import '../../../domain/repositories/i_contract_repository.dart';
 import '../../shared/widgets/chart_widgets.dart';
@@ -19,10 +18,10 @@ class StudentReportsPage extends StatefulWidget {
 class _StudentReportsPageState extends State<StudentReportsPage> {
   final ReportService _reportService = ReportService();
   final FeedbackService _feedbackService = FeedbackService();
-  
+
   DateTime _startDate = DateTime.now().subtract(const Duration(days: 30));
   DateTime _endDate = DateTime.now();
-  
+
   TimeLogReport? _currentReport;
   ContractReport? _contractReport;
   bool _isLoading = false;
@@ -35,7 +34,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
 
   Future<void> _loadReports() async {
     if (_isLoading) return;
-    
+
     setState(() {
       _isLoading = true;
     });
@@ -43,10 +42,10 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
     try {
       final studentBloc = context.read<StudentBloc>();
       final studentId = studentBloc.state.student?.id;
-      
+
       if (studentId == null) {
         _feedbackService.showErrorSnackBar(
-          context, 
+          context,
           'Erro: ID do estudante não encontrado',
         );
         return;
@@ -56,8 +55,10 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
       final timeLogRepository = Modular.get<ITimeLogRepository>();
       final contractRepository = Modular.get<IContractRepository>();
 
-      final timeLogsResult = await timeLogRepository.getTimeLogsByStudentId(studentId);
-      final contractsResult = await contractRepository.getContractsByStudentId(studentId);
+      final timeLogsResult =
+          await timeLogRepository.getTimeLogsByStudentId(studentId);
+      final contractsResult =
+          await contractRepository.getContractsByStudentId(studentId);
 
       timeLogsResult.fold(
         (failure) {
@@ -84,8 +85,10 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
             },
             (contracts) async {
               // Gerar relatório de contratos
-              final contractReport = await _reportService.generateContractReport(
-                contracts: contracts.map((contract) => contract.toJson()).toList(),
+              final contractReport =
+                  await _reportService.generateContractReport(
+                contracts:
+                    contracts.map((contract) => contract.toJson()).toList(),
                 studentId: studentId,
               );
 
@@ -168,7 +171,8 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
 
       await _reportService.shareReport(
         filePath,
-        subject: 'Relatório de Horas - ${_startDate.day}/${_startDate.month}/${_startDate.year} a ${_endDate.day}/${_endDate.month}/${_endDate.year}',
+        subject:
+            'Relatório de Horas - ${_startDate.day}/${_startDate.month}/${_startDate.year} a ${_endDate.day}/${_endDate.month}/${_endDate.year}',
       );
 
       _feedbackService.showSuccessSnackBar(
@@ -250,9 +254,12 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                         children: [
                           Text(
                             'Período do Relatório',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                           const SizedBox(height: 12),
                           Row(
@@ -281,7 +288,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
 
                   if (_currentReport != null) ...[
@@ -310,7 +317,8 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                         ),
                         StatsSummaryCard(
                           title: 'Média Diária',
-                          value: _currentReport!.averageHoursPerDay.toStringAsFixed(1),
+                          value: _currentReport!.averageHoursPerDay
+                              .toStringAsFixed(1),
                           subtitle: 'horas por dia',
                           icon: Icons.trending_up,
                           color: Colors.orange,
@@ -356,13 +364,15 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                     const SizedBox(height: 16),
 
                     // Progresso do contrato (se houver)
-                    if (_contractReport != null && _contractReport!.activeContracts > 0)
-                      ProgressCard(
+                    if (_contractReport != null &&
+                        _contractReport!.activeContracts > 0)
+                      const ProgressCard(
                         title: 'Progresso do Contrato',
                         progress: 0.65, // Calcular baseado nas horas
                         progressText: '65%',
                         progressColor: Colors.green,
-                        subtitle: 'Baseado nas horas trabalhadas vs. horas requeridas',
+                        subtitle:
+                            'Baseado nas horas trabalhadas vs. horas requeridas',
                       ),
 
                     const SizedBox(height: 24),
@@ -377,26 +387,34 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                           children: [
                             Text(
                               'Registros Recentes',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                             ),
                             const SizedBox(height: 16),
                             ListView.separated(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              itemCount: (_currentReport!.timeLogs.length > 5 
-                                  ? 5 
+                              itemCount: (_currentReport!.timeLogs.length > 5
+                                  ? 5
                                   : _currentReport!.timeLogs.length),
-                              separatorBuilder: (context, index) => const Divider(),
+                              separatorBuilder: (context, index) =>
+                                  const Divider(),
                               itemBuilder: (context, index) {
                                 final log = _currentReport!.timeLogs[index];
-                                final date = DateTime.parse(log['created_at']).toLocal();
-                                final hours = log['total_hours'] as double? ?? 0.0;
-                                
+                                final date =
+                                    DateTime.parse(log['created_at']).toLocal();
+                                final hours =
+                                    log['total_hours'] as double? ?? 0.0;
+
                                 return ListTile(
                                   leading: CircleAvatar(
-                                    backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                                    backgroundColor: Theme.of(context)
+                                        .primaryColor
+                                        .withOpacity(0.1),
                                     child: Icon(
                                       Icons.access_time,
                                       color: Theme.of(context).primaryColor,
@@ -404,26 +422,32 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                                   ),
                                   title: Text(
                                     '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}',
-                                    style: const TextStyle(fontWeight: FontWeight.w500),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w500),
                                   ),
-                                  subtitle: Text(log['description'] ?? 'Sem descrição'),
+                                  subtitle: Text(
+                                      log['description'] ?? 'Sem descrição'),
                                   trailing: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
                                       Text(
                                         '${hours.toStringAsFixed(1)}h',
-                                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).primaryColor,
-                                        ),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleSmall
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: Theme.of(context)
+                                                  .primaryColor,
+                                            ),
                                       ),
                                       Text(
                                         log['status'] ?? '',
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: log['status'] == 'approved' 
-                                              ? Colors.green 
+                                          color: log['status'] == 'approved'
+                                              ? Colors.green
                                               : log['status'] == 'rejected'
                                                   ? Colors.red
                                                   : Colors.orange,
@@ -469,16 +493,22 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                           const SizedBox(height: 16),
                           Text(
                             'Nenhum dado encontrado',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: Colors.grey[600],
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  color: Colors.grey[600],
+                                ),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'Não há registros de horas para o período selecionado.',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey[500],
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Colors.grey[500],
+                                ),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 24),

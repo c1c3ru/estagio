@@ -14,7 +14,6 @@ import '../../../core/enums/contract_status.dart';
 import '../../../domain/usecases/supervisor/get_all_supervisors_usecase.dart';
 import '../../../domain/entities/supervisor_entity.dart';
 import 'package:lottie/lottie.dart';
-import '../../../r.dart';
 
 class StudentHomePage extends StatefulWidget {
   const StudentHomePage({super.key});

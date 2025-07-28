@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gestao_de_estagio/core/validation/validation_service.dart';
-import 'package:gestao_de_estagio/core/errors/app_exceptions.dart';
 
 void main() {
   group('ValidationService', () {

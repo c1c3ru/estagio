@@ -1,10 +1,5 @@
-import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import '../services/notification_service.dart';
-import '../../domain/entities/time_log_entity.dart';
-import '../../domain/entities/student_entity.dart';
-import '../../domain/entities/supervisor_entity.dart';
-import '../../domain/entities/contract_entity.dart';
 import '../utils/date_utils.dart';
 
 /// Interface simples para TimeLog usado em notificações

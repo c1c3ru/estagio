@@ -51,6 +51,13 @@ class AppFailure extends Equatable {
     this.originalException,
   });
 
+  /// Cria uma falha inesperada
+  static AppFailure unexpected([String? message]) {
+    return AppFailure(
+      message: message ?? 'Erro inesperado ocorreu',
+    );
+  }
+
   @override
   List<Object?> get props => [message, originalException];
 

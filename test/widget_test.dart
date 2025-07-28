@@ -16,7 +16,6 @@ import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:gestao_de_estagio/features/shared/animations/lottie_animations.dart';
 
 import 'widget_test.mocks.dart';
 
@@ -80,10 +79,10 @@ void main() {
           home: Scaffold(
             body: SingleChildScrollView(
               child: Column(
-                children: [
-                  const StudentAnimation(size: 120),
-                  const SizedBox(height: 20),
-                  const Text('Test content'),
+                children: const [
+                  StudentAnimation(size: 120),
+                  SizedBox(height: 20),
+                  Text('Test content'),
                 ],
               ),
             ),
@@ -101,10 +100,10 @@ void main() {
           home: Scaffold(
             body: SingleChildScrollView(
               child: Column(
-                children: [
-                  const SupervisorAnimation(size: 120),
-                  const SizedBox(height: 20),
-                  const Text('Test content'),
+                children: const [
+                  SupervisorAnimation(size: 120),
+                  SizedBox(height: 20),
+                  Text('Test content'),
                 ],
               ),
             ),
@@ -121,10 +120,10 @@ void main() {
           home: Scaffold(
             body: SingleChildScrollView(
               child: Column(
-                children: [
-                  const PasswordResetAnimation(size: 200),
-                  const SizedBox(height: 20),
-                  const Text('Test content'),
+                children: const [
+                  PasswordResetAnimation(size: 200),
+                  SizedBox(height: 20),
+                  Text('Test content'),
                 ],
               ),
             ),
@@ -147,10 +146,10 @@ void main() {
           home: Scaffold(
             body: SingleChildScrollView(
               child: Column(
-                children: [
-                  const StudentAnimation(size: 120),
-                  const SizedBox(height: 20),
-                  const Text('Test content on small screen'),
+                children: const [
+                  StudentAnimation(size: 120),
+                  SizedBox(height: 20),
+                  Text('Test content on small screen'),
                 ],
               ),
             ),
@@ -170,10 +169,10 @@ void main() {
           home: Scaffold(
             body: SingleChildScrollView(
               child: Column(
-                children: [
-                  const SupervisorAnimation(size: 120),
-                  const SizedBox(height: 20),
-                  const Text('Test content on large screen'),
+                children: const [
+                  SupervisorAnimation(size: 120),
+                  SizedBox(height: 20),
+                  Text('Test content on large screen'),
                 ],
               ),
             ),

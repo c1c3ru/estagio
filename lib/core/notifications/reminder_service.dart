@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
 import '../services/notification_service.dart';
 import '../../domain/entities/student_entity.dart';
 import '../../domain/entities/contract_entity.dart';
@@ -117,12 +113,12 @@ class ReminderService {
 
       // Só agenda se for no futuro
       if (reminderDateTime.isAfter(now)) {
-        await _notificationService.scheduleNotification(
-          id: _generateReminderId('checkin', student.id, date),
+        await _notificationService.scheduleLocalNotification(
+          id: _generateReminderId('checkin', student.id, date).toString(),
           title: 'Lembrete de Check-in',
           body: 'Não se esqueça de fazer o check-in para registrar o início do seu trabalho.',
           scheduledDate: reminderDateTime,
-          payload: 'checkin_reminder',
+          data: {'type': 'checkin_reminder'},
         );
       }
     }
@@ -158,12 +154,12 @@ class ReminderService {
 
       // Só agenda se for no futuro
       if (reminderDateTime.isAfter(now)) {
-        await _notificationService.scheduleNotification(
-          id: _generateReminderId('checkout', student.id, date),
+        await _notificationService.scheduleLocalNotification(
+          id: _generateReminderId('checkout', student.id, date).toString(),
           title: 'Lembrete de Check-out',
           body: 'Não se esqueça de fazer o check-out para registrar o fim do seu trabalho.',
           scheduledDate: reminderDateTime,
-          payload: 'checkout_reminder',
+          data: {'type': 'checkout_reminder'},
         );
       }
     }
@@ -197,12 +193,12 @@ class ReminderService {
 
       // Só agenda se for no futuro
       if (reminderDateTime.isAfter(DateTime.now())) {
-        await _notificationService.scheduleNotification(
-          id: _generateReminderId('contract', contract.id, reminderDate),
+        await _notificationService.scheduleLocalNotification(
+          id: _generateReminderId('contract', contract.id, reminderDate).toString(),
           title: 'Contrato Expirando',
           body: 'Seu contrato expira em ${reminderSettings.advanceDays} dias (${AppDateUtils.formatDate(contract.endDate)}). Entre em contato com seu supervisor.',
           scheduledDate: reminderDateTime,
-          payload: 'contract_expiry_reminder',
+          data: {'type': 'contract_expiry_reminder'},
         );
 
         // Agenda também um lembrete no dia do vencimento
@@ -215,12 +211,12 @@ class ReminderService {
         );
 
         if (expiryDateTime.isAfter(DateTime.now())) {
-          await _notificationService.scheduleNotification(
-            id: _generateReminderId('contract_expiry', contract.id, contract.endDate),
+          await _notificationService.scheduleLocalNotification(
+            id: _generateReminderId('contract_expiry', contract.id, contract.endDate).toString(),
             title: 'Contrato Expirado',
             body: 'Seu contrato expirou hoje (${AppDateUtils.formatDate(contract.endDate)}). Entre em contato com seu supervisor para renovação.',
             scheduledDate: expiryDateTime,
-            payload: 'contract_expired',
+            data: {'type': 'contract_expired'},
           );
         }
       }

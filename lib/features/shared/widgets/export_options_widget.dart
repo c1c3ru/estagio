@@ -1,6 +1,5 @@
 // lib/features/shared/widgets/export_options_widget.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 /// Configurações de exportação
 class ExportConfig {

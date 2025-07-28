@@ -114,17 +114,17 @@ class _OnlineColleaguesWidgetState extends State<OnlineColleaguesWidget> {
 
       // Criar conjunto de IDs de estudantes online
       final Set<String> onlineStudentIds = {};
-      for (var studentData in onlineStudentsResponse as List<dynamic>) {
+      for (var studentData in onlineStudentsResponse) {
         onlineStudentIds.add(studentData['id'] as String);
       }
 
       final List<OnlineColleague> allColleagues = [];
-      for (var studentData in studentsResponse as List<dynamic>) {
+      for (var studentData in studentsResponse) {
         final studentId = studentData['id'] as String;
         final isOnline = onlineStudentIds.contains(studentId);
 
         allColleagues.add(OnlineColleague.fromInitialQuery(
-            studentData as Map<String, dynamic>,
+            studentData,
             isOnline: isOnline));
       }
 
@@ -181,17 +181,17 @@ class _OnlineColleaguesWidgetState extends State<OnlineColleaguesWidget> {
 
       // Criar conjunto de IDs de estudantes online
       final Set<String> onlineStudentIds = {};
-      for (var studentData in onlineStudentsResponse as List<dynamic>) {
+      for (var studentData in onlineStudentsResponse) {
         onlineStudentIds.add(studentData['id'] as String);
       }
 
       final List<OnlineColleague> updatedColleagues = [];
-      for (var studentData in studentsResponse as List<dynamic>) {
+      for (var studentData in studentsResponse) {
         final studentId = studentData['id'] as String;
         final isOnline = onlineStudentIds.contains(studentId);
 
         updatedColleagues.add(OnlineColleague.fromInitialQuery(
-            studentData as Map<String, dynamic>,
+            studentData,
             isOnline: isOnline));
       }
 

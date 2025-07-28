@@ -15,8 +15,6 @@ abstract class ITimeLogRepository {
       String studentId, DateTime startDate, DateTime endDate);
   Future<Either<AppFailure, Duration>> getTotalHoursByPeriod(
       String studentId, DateTime start, DateTime end);
-  Future<Either<AppFailure, Duration>> getTotalHoursByStudent(
-      String studentId);
   // Métodos adicionais para aprovação/rejeição
   Future<Either<AppFailure, TimeLogEntity>> getTimeLogById(String timeLogId);
   Future<Either<AppFailure, TimeLogEntity>> updateTimeLogStatus({

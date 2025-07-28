@@ -77,7 +77,7 @@ class SupervisorModule extends Module {
       '/students',
       child: (_) => BlocProvider.value(
         value: Modular.get<SupervisorBloc>(),
-        child: SupervisorStudentListPage(),
+        child: const SupervisorStudentListPage(),
       ),
       transition: TransitionType.fadeIn,
     );
@@ -85,7 +85,7 @@ class SupervisorModule extends Module {
       '/contracts',
       child: (_) => BlocProvider.value(
         value: Modular.get<SupervisorBloc>(),
-        child: ContractPage(),
+        child: const ContractPage(),
       ),
       transition: TransitionType.fadeIn,
     );

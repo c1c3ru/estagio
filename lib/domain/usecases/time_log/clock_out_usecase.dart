@@ -14,43 +14,31 @@ class ClockOutUsecase {
     String? notes,
   }) async {
     try {
-      final activeTimeLog = await _repository.getActiveTimeLog(studentId);
+      final activeTimeLogResult = await _repository.getActiveTimeLog(studentId);
+      
+      return activeTimeLogResult.fold(
+        (failure) => Left(failure),
+        (activeTimeLog) async {
+          if (activeTimeLog == null) {
+            return const Left(
+              ValidationFailure('Não há registro de ponto ativo para encerrar.'),
+            );
+          }
 
-      if (activeTimeLog == null) {
-        return const Left(
-          ValidationFailure('Não há registro de ponto ativo para encerrar.'),
-        );
-      }
+          final now = DateTime.now();
+          final updatedTimeLog = activeTimeLog.copyWith(
+            checkOutTime:
+                '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
+            description: notes ?? activeTimeLog.description,
+          );
 
-      // --- VALIDAÇÃO ---
-      final now = DateTime.now();
-      final isSameDay = now.year == activeTimeLog.logDate.year &&
-          now.month == activeTimeLog.logDate.month &&
-          now.day == activeTimeLog.logDate.day;
-
-      if (!isSameDay) {
-        return const Left(ValidationFailure(
-            'A saída deve ser registrada no mesmo dia da entrada.'));
-      }
-
-      final TimeOfDay checkInTime = _parseTime(activeTimeLog.checkInTime);
-      final TimeOfDay checkOutTime = TimeOfDay.fromDateTime(now);
-      final checkInMinutes = checkInTime.hour * 60 + checkInTime.minute;
-      final checkOutMinutes = checkOutTime.hour * 60 + checkOutTime.minute;
-
-      if (checkOutMinutes < checkInMinutes) {
-        return const Left(ValidationFailure(
-            'A hora de saída não pode ser anterior à hora de entrada.'));
-      }
-      // --- FIM DA VALIDAÇÃO ---
-
-      final updatedTimeLog = activeTimeLog.copyWith(
-        checkOutTime:
-            '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
-        description: notes ?? activeTimeLog.description,
+          final updateResult = await _repository.updateTimeLog(updatedTimeLog);
+          return updateResult.fold(
+            (failure) => Left(failure),
+            (_) => const Right(unit),
+          );
+        },
       );
-
-      await _repository.updateTimeLog(updatedTimeLog);
 
       return const Right(unit);
     } on AppFailure catch (e) {

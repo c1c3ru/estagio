@@ -3,6 +3,9 @@ import 'package:equatable/equatable.dart';
 class StudentEntity extends Equatable {
   final String id;
   final String fullName;
+  
+  /// Getter para compatibilidade com interfaces de notificação
+  String get name => fullName;
   final String registrationNumber;
   final String course;
   final String advisorName;
