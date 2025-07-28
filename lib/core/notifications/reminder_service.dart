@@ -59,7 +59,7 @@ class ReminderSettings {
 /// Serviço de lembretes automáticos
 class ReminderService {
   final NotificationService _notificationService;
-  final NotificationHelper _notificationHelper;
+  
   
   // Configurações padrão
   static const ReminderSettings _defaultCheckInSettings = ReminderSettings(
@@ -310,24 +310,5 @@ class ReminderService {
     // Por enquanto, cancelamos todas (não ideal, mas funcional)
     // Em uma implementação real, manteríamos um registro dos IDs
     // de notificação para cancelar seletivamente
-  }
-
-  /// Salva configurações de lembrete (para implementação futura)
-  Future<void> _saveSettings(String key, ReminderSettings settings) async {
-    // Implementar persistência usando SharedPreferences ou similar
-    // await SharedPreferences.getInstance().then((prefs) {
-    //   prefs.setString(key, jsonEncode(settings.toJson()));
-    // });
-  }
-
-  /// Carrega configurações de lembrete (para implementação futura)
-  Future<ReminderSettings?> _loadSettings(String key) async {
-    // Implementar carregamento usando SharedPreferences ou similar
-    // final prefs = await SharedPreferences.getInstance();
-    // final settingsJson = prefs.getString(key);
-    // if (settingsJson != null) {
-    //   return ReminderSettings.fromJson(jsonDecode(settingsJson));
-    // }
-    return null;
   }
 }

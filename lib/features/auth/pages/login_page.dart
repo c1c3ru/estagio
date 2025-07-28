@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:lottie/lottie.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/enums/user_role.dart';
@@ -82,7 +81,6 @@ class _LoginPageState extends State<LoginPage> {
                   const AppLottieAnimation(
                     assetPath: 'assets/animations/intership_animations.json',
                     height: 180,
-                    
                   ),
                   const SizedBox(height: 32),
                   Text(

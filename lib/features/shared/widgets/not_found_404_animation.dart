@@ -20,7 +20,7 @@ class NotFound404Animation extends StatelessWidget {
     return Padding(
       padding: padding ?? const EdgeInsets.symmetric(vertical: 16),
       child: Lottie.asset(
-        AssetAnimations.notFound404Animation,
+        AssetAnimations.notFound404,
         height: height,
         repeat: repeat,
       ),

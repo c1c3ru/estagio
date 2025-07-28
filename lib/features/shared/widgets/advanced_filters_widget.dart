@@ -54,17 +54,17 @@ class AdvancedFilters {
   }
 
   Map<String, dynamic> toJson() => {
-    'startDate': startDate?.toIso8601String(),
-    'endDate': endDate?.toIso8601String(),
-    'studentId': studentId,
-    'supervisorId': supervisorId,
-    'statuses': statuses,
-    'minHours': minHours,
-    'maxHours': maxHours,
-    'sortBy': sortBy,
-    'sortAscending': sortAscending,
-    'groupBy': groupBy,
-  };
+        'startDate': startDate?.toIso8601String(),
+        'endDate': endDate?.toIso8601String(),
+        'studentId': studentId,
+        'supervisorId': supervisorId,
+        'statuses': statuses,
+        'minHours': minHours,
+        'maxHours': maxHours,
+        'sortBy': sortBy,
+        'sortAscending': sortAscending,
+        'groupBy': groupBy,
+      };
 }
 
 /// Widget de filtros avançados para relatórios
@@ -114,7 +114,7 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
   }
 
   void _resetFilters() {
-    final resetFilters = AdvancedFilters();
+    const resetFilters = AdvancedFilters();
     _updateFilters(resetFilters);
     widget.onReset?.call();
   }
@@ -233,8 +233,8 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
                   Text(
                     'Períodos Predefinidos',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -257,8 +257,8 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
                   Text(
                     'Período Personalizado',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -288,19 +288,21 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
                   const SizedBox(height: 16),
 
                   // Filtros por pessoa
-                  if (widget.showStudentFilter && widget.students.isNotEmpty) ...[
+                  if (widget.showStudentFilter &&
+                      widget.students.isNotEmpty) ...[
                     Text(
                       'Estudante',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
                       value: _filters.studentId,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                       hint: const Text('Todos os estudantes'),
                       items: [
@@ -308,10 +310,11 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
                           value: null,
                           child: Text('Todos os estudantes'),
                         ),
-                        ...widget.students.map((student) => DropdownMenuItem<String>(
-                          value: student['id'],
-                          child: Text(student['name'] ?? 'Sem nome'),
-                        )),
+                        ...widget.students
+                            .map((student) => DropdownMenuItem<String>(
+                                  value: student['id'],
+                                  child: Text(student['name'] ?? 'Sem nome'),
+                                )),
                       ],
                       onChanged: (value) {
                         _updateFilters(_filters.copyWith(studentId: value));
@@ -320,19 +323,21 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
                     const SizedBox(height: 16),
                   ],
 
-                  if (widget.showSupervisorFilter && widget.supervisors.isNotEmpty) ...[
+                  if (widget.showSupervisorFilter &&
+                      widget.supervisors.isNotEmpty) ...[
                     Text(
                       'Supervisor',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
                       value: _filters.supervisorId,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                       hint: const Text('Todos os supervisores'),
                       items: [
@@ -340,10 +345,11 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
                           value: null,
                           child: Text('Todos os supervisores'),
                         ),
-                        ...widget.supervisors.map((supervisor) => DropdownMenuItem<String>(
-                          value: supervisor['id'],
-                          child: Text(supervisor['name'] ?? 'Sem nome'),
-                        )),
+                        ...widget.supervisors
+                            .map((supervisor) => DropdownMenuItem<String>(
+                                  value: supervisor['id'],
+                                  child: Text(supervisor['name'] ?? 'Sem nome'),
+                                )),
                       ],
                       onChanged: (value) {
                         _updateFilters(_filters.copyWith(supervisorId: value));
@@ -357,8 +363,8 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
                     Text(
                       'Status',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     const SizedBox(height: 8),
                     Wrap(
@@ -379,8 +385,8 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
                     Text(
                       'Filtro por Horas',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     const SizedBox(height: 8),
                     Row(
@@ -390,13 +396,15 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
                             decoration: const InputDecoration(
                               labelText: 'Horas mínimas',
                               border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
                             ),
                             keyboardType: TextInputType.number,
                             initialValue: _filters.minHours?.toString(),
                             onChanged: (value) {
                               final hours = double.tryParse(value);
-                              _updateFilters(_filters.copyWith(minHours: hours));
+                              _updateFilters(
+                                  _filters.copyWith(minHours: hours));
                             },
                           ),
                         ),
@@ -406,13 +414,15 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
                             decoration: const InputDecoration(
                               labelText: 'Horas máximas',
                               border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
                             ),
                             keyboardType: TextInputType.number,
                             initialValue: _filters.maxHours?.toString(),
                             onChanged: (value) {
                               final hours = double.tryParse(value);
-                              _updateFilters(_filters.copyWith(maxHours: hours));
+                              _updateFilters(
+                                  _filters.copyWith(maxHours: hours));
                             },
                           ),
                         ),
@@ -430,26 +440,35 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
                           children: [
                             Text(
                               'Ordenar por',
-                              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                             ),
                             const SizedBox(height: 8),
                             DropdownButtonFormField<String>(
                               value: _filters.sortBy,
                               decoration: const InputDecoration(
                                 border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
                               ),
                               items: const [
-                                DropdownMenuItem(value: 'date', child: Text('Data')),
-                                DropdownMenuItem(value: 'hours', child: Text('Horas')),
-                                DropdownMenuItem(value: 'student', child: Text('Estudante')),
-                                DropdownMenuItem(value: 'status', child: Text('Status')),
+                                DropdownMenuItem(
+                                    value: 'date', child: Text('Data')),
+                                DropdownMenuItem(
+                                    value: 'hours', child: Text('Horas')),
+                                DropdownMenuItem(
+                                    value: 'student', child: Text('Estudante')),
+                                DropdownMenuItem(
+                                    value: 'status', child: Text('Status')),
                               ],
                               onChanged: (value) {
                                 if (value != null) {
-                                  _updateFilters(_filters.copyWith(sortBy: value));
+                                  _updateFilters(
+                                      _filters.copyWith(sortBy: value));
                                 }
                               },
                             ),
@@ -463,27 +482,37 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
                           children: [
                             Text(
                               'Agrupar por',
-                              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                             ),
                             const SizedBox(height: 8),
                             DropdownButtonFormField<String>(
                               value: _filters.groupBy,
                               decoration: const InputDecoration(
                                 border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
                               ),
                               items: const [
-                                DropdownMenuItem(value: 'none', child: Text('Nenhum')),
-                                DropdownMenuItem(value: 'day', child: Text('Dia')),
-                                DropdownMenuItem(value: 'week', child: Text('Semana')),
-                                DropdownMenuItem(value: 'month', child: Text('Mês')),
-                                DropdownMenuItem(value: 'student', child: Text('Estudante')),
+                                DropdownMenuItem(
+                                    value: 'none', child: Text('Nenhum')),
+                                DropdownMenuItem(
+                                    value: 'day', child: Text('Dia')),
+                                DropdownMenuItem(
+                                    value: 'week', child: Text('Semana')),
+                                DropdownMenuItem(
+                                    value: 'month', child: Text('Mês')),
+                                DropdownMenuItem(
+                                    value: 'student', child: Text('Estudante')),
                               ],
                               onChanged: (value) {
                                 if (value != null) {
-                                  _updateFilters(_filters.copyWith(groupBy: value));
+                                  _updateFilters(
+                                      _filters.copyWith(groupBy: value));
                                 }
                               },
                             ),
@@ -499,11 +528,14 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
                   CheckboxListTile(
                     title: const Text('Ordem crescente'),
                     subtitle: Text(
-                      _filters.sortAscending ? 'Menor para maior' : 'Maior para menor',
+                      _filters.sortAscending
+                          ? 'Menor para maior'
+                          : 'Maior para menor',
                     ),
                     value: _filters.sortAscending,
                     onChanged: (value) {
-                      _updateFilters(_filters.copyWith(sortAscending: value ?? false));
+                      _updateFilters(
+                          _filters.copyWith(sortAscending: value ?? false));
                     },
                     contentPadding: EdgeInsets.zero,
                   ),
@@ -526,7 +558,7 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
 
   Widget _buildStatusChip(String label, String status) {
     final isSelected = _filters.statuses.contains(status);
-    
+
     return FilterChip(
       label: Text(label),
       selected: isSelected,
@@ -576,35 +608,35 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
 
   String _getActiveFiltersDescription() {
     final descriptions = <String>[];
-    
+
     if (_filters.startDate != null || _filters.endDate != null) {
       descriptions.add('Período personalizado');
     }
-    
+
     if (_filters.studentId != null) {
       descriptions.add('Estudante específico');
     }
-    
+
     if (_filters.supervisorId != null) {
       descriptions.add('Supervisor específico');
     }
-    
+
     if (_filters.statuses.isNotEmpty) {
       descriptions.add('${_filters.statuses.length} status');
     }
-    
+
     if (_filters.minHours != null || _filters.maxHours != null) {
       descriptions.add('Filtro de horas');
     }
-    
+
     if (_filters.sortBy != 'date') {
       descriptions.add('Ordenação: ${_filters.sortBy}');
     }
-    
+
     if (_filters.groupBy != 'none') {
       descriptions.add('Agrupamento: ${_filters.groupBy}');
     }
-    
+
     return descriptions.join(' • ');
   }
 }

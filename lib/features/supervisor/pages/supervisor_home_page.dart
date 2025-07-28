@@ -98,7 +98,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Lottie.asset(
-                        AssetAnimations.supervisorPageAnimation,
+                        AssetAnimations.supervisor,
                         height: 120,
                         repeat: true,
                       ),

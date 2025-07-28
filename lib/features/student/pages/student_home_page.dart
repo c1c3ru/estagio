@@ -73,7 +73,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Lottie.asset(
-                    AssetAnimations.studentPageAnimation,
+                    AssetAnimations.student,
                     height: 120,
                     repeat: true,
                   ),

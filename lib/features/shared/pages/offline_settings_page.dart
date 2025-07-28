@@ -97,9 +97,9 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
     } catch (e) {
       if (!mounted) return; // Check if widget is still mounted
       FeedbackService.showErrorDialog(
-        context, // Pass context with named parameter
+        context: context,
         title: 'Erro ao carregar dados',
-        'Não foi possível carregar as informações offline: $e',
+        message: 'Não foi possível carregar as informações offline: $e',
       );
     }
   }
@@ -109,7 +109,7 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
       if (!mounted) return; // Check if widget is still mounted
       FeedbackService.showError(
           context,
-          'Dispositivo offline - não é possível sincronizar');
+          message: 'Dispositivo offline - não é possível sincronizar');
       return;
     }
 
@@ -122,17 +122,17 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
           if (!mounted) return; // Check if widget is still mounted
           if (success) {
             FeedbackService.showSuccess(
-                context, 'Sincronização concluída!');
+                context, message: 'Sincronização concluída!');
           } else {
             FeedbackService.showError(
-                context, 'Falha na sincronização');
+                context, message: 'Falha na sincronização');
           }
         },
       );
     } catch (e) {
       if (!mounted) return; // Check if widget is still mounted
       FeedbackService.showError(
-          context, 'Erro na sincronização');
+          context, message: 'Erro na sincronização');
     }
   }
 
@@ -158,11 +158,11 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
             if (!mounted) return; // Check if widget is still mounted
             if (success) {
               FeedbackService.showSuccess(
-                  context, 'Cache limpo com sucesso!');
+                  context, message: 'Cache limpo com sucesso!');
               await _loadOfflineData();
             } else {
               FeedbackService.showError(
-                  context, 'Erro ao limpar cache');
+                  context, message: 'Erro ao limpar cache');
             }
           },
         );
