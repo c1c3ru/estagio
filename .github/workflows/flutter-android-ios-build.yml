@@ -33,6 +33,11 @@ jobs:
         with:
           name: app-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+      - name: Upload APK como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
 
   build-ios:
     runs-on: macos-latest
@@ -55,6 +60,11 @@ jobs:
           for app in *.app; do
             /usr/bin/xcrun -sdk iphoneos PackageApplication -v "$app" -o "../../ipa/${app%.app}.ipa";
           done
+      - name: Upload IPA como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-ipa
+          path: build/ios/ipa/*.ipa
       - name: Upload IPA como artefato
         uses: actions/upload-artifact@v4
         with:

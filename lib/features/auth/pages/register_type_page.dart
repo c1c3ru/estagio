@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:gestao_de_estagio/features/shared/widgets/student_animation.dart';
+import 'package:gestao_de_estagio/features/shared/widgets/supervisor_animation.dart';
+import 'package:gestao_de_estagio/features/shared/widgets/password_reset_animation.dart';
 
 class RegisterTypePage extends StatelessWidget {
   const RegisterTypePage({super.key});

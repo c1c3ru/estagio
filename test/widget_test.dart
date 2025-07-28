@@ -1,9 +1,3 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
 
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,6 +12,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
 
 import 'widget_test.mocks.dart';
+import 'package:gestao_de_estagio/features/shared/widgets/student_animation.dart';
+import 'package:gestao_de_estagio/features/shared/widgets/supervisor_animation.dart';
+import 'package:gestao_de_estagio/features/shared/widgets/password_reset_animation.dart';
 
 @GenerateMocks([AuthGuard, GetAuthStateChangesUsecase])
 void main() {
@@ -73,13 +70,13 @@ void main() {
   group('Animation Widgets Tests', () {
     testWidgets('Animation widgets should not cause overflow',
         (WidgetTester tester) async {
-      // Test StudentAnimation
+      // Test /* StudentAnimation removido */
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
               child: Column(
-                children: const [
+                children: [
                   StudentAnimation(size: 120),
                   SizedBox(height: 20),
                   Text('Test content'),
@@ -94,13 +91,13 @@ void main() {
       // Should not throw overflow errors
       expect(find.byType(StudentAnimation), findsOneWidget);
 
-      // Test SupervisorAnimation
+      // Test /* SupervisorAnimation removido */
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
               child: Column(
-                children: const [
+                children: [
                   SupervisorAnimation(size: 120),
                   SizedBox(height: 20),
                   Text('Test content'),
@@ -114,13 +111,13 @@ void main() {
 
       expect(find.byType(SupervisorAnimation), findsOneWidget);
 
-      // Test PasswordResetAnimation
+      // Test /* PasswordResetAnimation removido */
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
               child: Column(
-                children: const [
+                children: [
                   PasswordResetAnimation(size: 200),
                   SizedBox(height: 20),
                   Text('Test content'),
@@ -146,7 +143,7 @@ void main() {
           home: Scaffold(
             body: SingleChildScrollView(
               child: Column(
-                children: const [
+                children: [
                   StudentAnimation(size: 120),
                   SizedBox(height: 20),
                   Text('Test content on small screen'),
@@ -169,7 +166,7 @@ void main() {
           home: Scaffold(
             body: SingleChildScrollView(
               child: Column(
-                children: const [
+                children: [
                   SupervisorAnimation(size: 120),
                   SizedBox(height: 20),
                   Text('Test content on large screen'),

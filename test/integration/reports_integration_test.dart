@@ -130,10 +130,10 @@ void main() {
         );
 
         expect(reportResult.isRight(), true);
-        final report = reportResult.getOrElse(() => throw Exception('Failed to generate report'));
+        final report = reportResult.??(() => throw Exception('Failed to generate report'));
 
         // Act
-        final exportResult = await reportService.exportReportToCSV(
+        final exportResult = await reportService.exportToCSV(
           report: report,
           filename: 'test_report.csv',
         );
@@ -162,7 +162,7 @@ void main() {
         );
 
         expect(reportResult.isRight(), true);
-        final report = reportResult.getOrElse(() => throw Exception('Failed to generate report'));
+        final report = reportResult.??(() => throw Exception('Failed to generate report'));
 
         // Act
         final exportResult = await reportService.exportReportToJSON(
@@ -194,18 +194,18 @@ void main() {
         );
 
         expect(reportResult.isRight(), true);
-        final report = reportResult.getOrElse(() => throw Exception('Failed to generate report'));
+        final report = reportResult.??(() => throw Exception('Failed to generate report'));
 
-        final exportResult = await reportService.exportReportToCSV(
+        final exportResult = await reportService.exportToCSV(
           report: report,
           filename: 'test_share_report.csv',
         );
 
         expect(exportResult.isRight(), true);
-        final filePath = exportResult.getOrElse(() => throw Exception('Failed to export report'));
+        final filePath = exportResult.??(() => throw Exception('Failed to export report'));
 
         // Act
-        final shareResult = await reportService.shareReportFile(
+        final shareResult = await reportService.shareReport(
           filePath: filePath,
           subject: 'Test Report',
         );
