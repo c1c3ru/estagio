@@ -1,6 +1,7 @@
 // lib/features/shared/pages/offline_settings_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:gestao_de_estagio/core/utils/navigator_key.dart';
 import '../../../core/services/sync_service.dart';
 import '../../../core/services/connectivity_service.dart';
 import '../../../core/services/cache_service.dart';
@@ -139,7 +140,7 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
       if (confirmed != true) return;
       // ignore: use_build_context_synchronously
       await FeedbackService.executeWithFeedback(
-        context,
+        navigatorKey.currentContext!,
         operation: () async {
           await _cacheService.clearAllCache();
           await _loadOfflineData();
@@ -148,7 +149,8 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
       );
 
       if (!mounted) return;
-      FeedbackService.showSuccess(context, 'Cache limpo com sucesso!');
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Cache limpo com sucesso!')));
     } catch (e) {
       if (!mounted) return;
       FeedbackService.showError(context, 'Erro ao limpar cache: $e');

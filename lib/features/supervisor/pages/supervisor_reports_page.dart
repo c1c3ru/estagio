@@ -217,15 +217,16 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
         );
       }
 
-      Navigator.of(context).pop(); // Fechar loading
       if (!mounted) return;
+      Navigator.of(context).pop(); // Fechar loading
       await _reportService.shareReport(
         filePath,
         subject:
             'Relatório de ${reportType == 'performance' ? 'Performance' : 'Contratos'} - Supervisor',
       );
-
       if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Relatório compartilhado com sucesso!')));
+      Navigator.of(context).pop(); // Fechar loading
       FeedbackService.showSuccess(
         context,
         'Relatório exportado com sucesso!',

@@ -336,12 +336,11 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                               ],
                             ),
                           );
+                          final bloc = BlocProvider.of<SupervisorBloc>(context, listen: false);
                           if (!mounted) return;
                           if (confirm == true) {
-                            BlocProvider.of<SupervisorBloc>(context,
-                                    listen: false)
-                                .add(DeleteStudentBySupervisorEvent(
-                                    studentId: student.id));
+                            bloc.add(DeleteStudentBySupervisorEvent(
+                                studentId: student.id));
                           }
                         },
                       ),

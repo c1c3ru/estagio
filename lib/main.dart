@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'core/utils/navigator_key.dart';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -176,8 +176,7 @@ Future<void> main() async {
           themeMode: themeService.themeMode,
           routerConfig: Modular.routerConfig,
           debugShowCheckedModeBanner: false,
-          navigatorKey: navigatorKey, // Chave global para navegação segura
-          builder: (context, child) {
+                    builder: (context, child) {
             // Configurar otimizações de performance para a UI
             return child ?? const SizedBox();
           },

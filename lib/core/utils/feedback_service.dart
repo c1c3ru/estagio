@@ -542,7 +542,7 @@ class FeedbackService {
     while (attempt < maxRetries) {
       try {
         final result = await FeedbackService.executeWithFeedback<T>(
-          context,
+          navigatorKey.currentContext!,
           operation: operation,
           loadingMessage: loadingMessage,
           successMessage: successMessage,
@@ -561,7 +561,7 @@ class FeedbackService {
         } else {
           // Mostra erro e pergunta se deseja tentar novamente
           final retry = await showDialog<bool>(
-            context: navigatorKey.currentContext!, // Uso seguro da chave global
+            context: navigatorKey.currentContext!, 
             builder: (dialogContext) => AlertDialog(
               title: const Text('Erro na operação'),
               content: Text(
