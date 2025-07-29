@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
+// Exports centralizados dos widgets de animação
+export 'package:gestao_de_estagio/features/shared/widgets/student_animation.dart';
+export 'package:gestao_de_estagio/features/shared/widgets/supervisor_animation.dart';
+export 'package:gestao_de_estagio/features/shared/widgets/password_reset_animation.dart';
+
 class AssetAnimations {
   static const String notFound404 = 'assets/animations/404_not_found_animation.json';
   static const String loading = 'assets/animations/Loading_animations.json';

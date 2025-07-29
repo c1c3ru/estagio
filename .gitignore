@@ -79,7 +79,7 @@ yarn-error.log*
 credentials.json
 service-account.json
 *secret*
-*password*
+#*password*
 *api_key*
 
 # Arquivos de configuração local

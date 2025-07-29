@@ -14,9 +14,7 @@ import 'package:flutter/material.dart';
 import 'widget_test.mocks.dart';
 import 'package:gestao_de_estagio/core/services/notification_service.dart';
 import 'mocks/mock_notification_service.dart';
-import 'package:gestao_de_estagio/features/shared/widgets/student_animation.dart';
-import 'package:gestao_de_estagio/features/shared/widgets/supervisor_animation.dart';
-import 'package:gestao_de_estagio/features/shared/widgets/password_reset_animation.dart';
+import 'package:gestao_de_estagio/core/animations.dart';
 
 @GenerateMocks([AuthGuard, GetAuthStateChangesUsecase])
 void main() {
@@ -82,7 +80,7 @@ void main() {
             body: SingleChildScrollView(
               child: Column(
                 children: [
-                  StudentAnimation(size: 120),
+                  StudentAnimation(width: 120, height: 120),
                   SizedBox(height: 20),
                   Text('Test content'),
                 ],
@@ -103,7 +101,7 @@ void main() {
             body: SingleChildScrollView(
               child: Column(
                 children: [
-                  SupervisorAnimation(size: 120),
+                  SupervisorAnimation(width: 120, height: 120),
                   SizedBox(height: 20),
                   Text('Test content'),
                 ],
@@ -123,7 +121,7 @@ void main() {
             body: SingleChildScrollView(
               child: Column(
                 children: [
-                  PasswordResetAnimation(size: 200),
+                  PasswordResetAnimation(width: 200, height: 200),
                   SizedBox(height: 20),
                   Text('Test content'),
                 ],
@@ -149,7 +147,7 @@ void main() {
             body: SingleChildScrollView(
               child: Column(
                 children: [
-                  StudentAnimation(size: 120),
+                  StudentAnimation(width: 120, height: 120),
                   SizedBox(height: 20),
                   Text('Test content on small screen'),
                 ],
@@ -172,7 +170,7 @@ void main() {
             body: SingleChildScrollView(
               child: Column(
                 children: [
-                  SupervisorAnimation(size: 120),
+                  SupervisorAnimation(width: 120, height: 120),
                   SizedBox(height: 20),
                   Text('Test content on large screen'),
                 ],
