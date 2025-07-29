@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'navigator_key.dart';
 import '../constants/app_colors.dart';
 // import '../constants/app_strings.dart'; // Removed: Unused import
 import '../../features/shared/animations/loading_animation.dart';
@@ -487,56 +488,40 @@ class FeedbackService {
     VoidCallback? onSuccess,
     VoidCallback? onError,
   }) async {
-    // Mostra loading
+    // Captura referências antes do await para evitar uso de context após operações assíncronas
+    
+    final messenger = ScaffoldMessenger.of(context);
+
     if (loadingMessage != null) {
-      FeedbackService.showLoading(context,
-          message: loadingMessage); // Explicitly call static method
+      messenger.showSnackBar(
+        SnackBar(content: Text(loadingMessage)),
+      );
     }
 
     try {
-      // Executa operação
       final result = await operation();
-
-      // Esconde loading
-      if (loadingMessage != null) {
-        if (!context.mounted) return result; // Guard BuildContext usage
-        FeedbackService.hideLoading(context); // Explicitly call static method
-      }
-
-      // Mostra sucesso
+      // Fecha loading
+      navigatorKey.currentState?.pop();
       if (showSuccessToast && successMessage != null) {
-        if (!context.mounted) return result; // Guard BuildContext usage
-        FeedbackService.showSuccess(
-            context, successMessage); // Explicitly call static method
+        messenger.showSnackBar(
+          SnackBar(content: Text(successMessage)),
+        );
       }
-
       onSuccess?.call();
       return result;
     } catch (error) {
-      // Esconde loading
-      if (loadingMessage != null) {
-        if (!context.mounted) rethrow; // Guard BuildContext usage
-        FeedbackService.hideLoading(context); // Explicitly call static method
-      }
-
-      // Mostra erro
+      navigatorKey.currentState?.pop();
       final errorMessage = errorMessageBuilder?.call(error) ??
           'Ocorreu um erro inesperado. Tente novamente.';
-
       if (showErrorDialog) {
-        if (!context.mounted) rethrow; // Guard BuildContext usage
-        FeedbackService.showErrorDialog(
-          // Explicitly call static method
-          context,
-          title: 'Erro',
-          message: errorMessage,
+        messenger.showSnackBar(
+          SnackBar(content: Text(errorMessage)),
         );
       } else {
-        if (!context.mounted) rethrow; // Guard BuildContext usage
-        FeedbackService.showError(
-            context, errorMessage); // Explicitly call static method
+        messenger.showSnackBar(
+          SnackBar(content: Text(errorMessage)),
+        );
       }
-
       onError?.call();
       rethrow;
     }
@@ -551,62 +536,59 @@ class FeedbackService {
     String? successMessage,
     String Function(dynamic error, int attempt)? errorMessageBuilder,
   }) async {
+    
+    final messenger = ScaffoldMessenger.of(context);
     int attempt = 0;
-
     while (attempt < maxRetries) {
       try {
-        // ignore: use_build_context_synchronously
-        return await FeedbackService.executeWithFeedback<T>(
-          // Explicitly call static method
+        final result = await FeedbackService.executeWithFeedback<T>(
           context,
           operation: operation,
           loadingMessage: loadingMessage,
           successMessage: successMessage,
           showErrorDialog: false,
         );
+        return result;
       } catch (error) {
         attempt++;
-
+        final errorMessage = errorMessageBuilder?.call(error, attempt) ??
+            'Operação falhou após $maxRetries tentativas.';
         if (attempt >= maxRetries) {
-          // Última tentativa falhou
-          final errorMessage = errorMessageBuilder?.call(error, attempt) ??
-              'Operação falhou após $maxRetries tentativas.';
-
-          // ignore: use_build_context_synchronously
-          if (!context.mounted) rethrow; // Guard BuildContext usage
-          FeedbackService.showErrorDialog(
-            // Explicitly call static method
-            context,
-            title: 'Erro',
-            message: errorMessage,
+          messenger.showSnackBar(
+            SnackBar(content: Text(errorMessage)),
           );
-          rethrow;
+          throw Exception(errorMessage);
         } else {
-          // Mostra erro e pergunta se quer tentar novamente
-          // ignore: use_build_context_synchronously
-          if (!context.mounted) rethrow; // Guard BuildContext usage
-          final retry = await FeedbackService.showConfirmationDialog(
-            // Explicitly call static method
-            context,
-            title: 'Erro na operação',
-            message:
-                'Tentativa $attempt de $maxRetries falhou. Tentar novamente?',
-            confirmText: 'Tentar novamente',
-            cancelText: 'Cancelar',
-            icon: Icons.refresh,
+          // Mostra erro e pergunta se deseja tentar novamente
+          final retry = await showDialog<bool>(
+            context: navigatorKey.currentContext!, // Uso seguro da chave global
+            builder: (dialogContext) => AlertDialog(
+              title: const Text('Erro na operação'),
+              content: Text(
+                  'Tentativa $attempt de $maxRetries falhou. Tentar novamente?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: const Text('Tentar novamente'),
+                ),
+              ],
+            ),
           );
-
           if (retry != true) {
-            rethrow;
+            throw Exception(errorMessage);
           }
         }
       }
     }
-
     throw Exception('Operação falhou após $maxRetries tentativas');
   }
 
-  // Previne instanciação
+
+  // Previne instanciação da classe
   FeedbackService._();
 }
 
@@ -642,7 +624,7 @@ class ErrorDialog extends StatelessWidget {
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text(
-              'Fechar'), // Used AppStrings.close before, now hardcoded
+              'Fechar'), // Antes usava AppStrings.close, agora valor fixo
         ),
         if (onRetry != null)
           ElevatedButton(
@@ -651,7 +633,7 @@ class ErrorDialog extends StatelessWidget {
               onRetry!();
             },
             child: const Text(
-                'Tentar novamente'), // Used AppStrings.tryAgain before, now hardcoded
+                'Tentar novamente'), // Antes usava AppStrings.tryAgain, agora valor fixo
           ),
       ],
     );

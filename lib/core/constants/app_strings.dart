@@ -1,5 +1,5 @@
 class AppStrings {
-  // General
+  // Geral
   static const String appName = 'Estagio';
   static const String loading = 'Carregando...';
   static const String error = 'Erro';

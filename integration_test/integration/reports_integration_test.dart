@@ -63,8 +63,6 @@ void main() {
       testWidgets('should generate student performance report successfully', (tester) async {
         // Arrange
         const supervisorId = 'test-supervisor-id';
-        final startDate = DateTime.now().subtract(const Duration(days: 30));
-        final endDate = DateTime.now();
 
         // Act
         final result = await reportService.generateStudentPerformanceReport(
@@ -88,8 +86,6 @@ void main() {
       testWidgets('should generate contract report successfully', (tester) async {
         // Arrange
         const supervisorId = 'test-supervisor-id';
-        final startDate = DateTime.now().subtract(const Duration(days: 30));
-        final endDate = DateTime.now();
 
         // Act
         final result = await reportService.generateContractReport(

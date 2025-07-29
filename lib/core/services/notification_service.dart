@@ -2,12 +2,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 // Import condicional para firebase_core
 // ignore: uri_does_not_exist
-import 'package:firebase_core/firebase_core.dart' if (dart.library.html) 'package:gestao_de_estagio/core/services/firebase_core_stub.dart';
 // Mantém para kDebugMode
 // import 'package:flutter/material.dart'; // Removido: Unused import
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -72,7 +71,8 @@ class NotificationPayload {
 
 class NotificationService {
   static NotificationService? _testInstance;
-  static NotificationService get instance => _testInstance ??= NotificationService._internal();
+  static NotificationService get instance =>
+      _testInstance ??= NotificationService._internal();
   static set instance(NotificationService value) => _testInstance = value;
   factory NotificationService() => instance;
   NotificationService._internal();
@@ -94,6 +94,7 @@ class NotificationService {
       if (kDebugMode) print('⚠️ safeInitializeFirebase: $e');
     }
   }
+
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
