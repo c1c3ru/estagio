@@ -12,12 +12,17 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
 
 import 'widget_test.mocks.dart';
+import 'package:gestao_de_estagio/core/services/notification_service.dart';
+import 'mocks/mock_notification_service.dart';
 import 'package:gestao_de_estagio/features/shared/widgets/student_animation.dart';
 import 'package:gestao_de_estagio/features/shared/widgets/supervisor_animation.dart';
 import 'package:gestao_de_estagio/features/shared/widgets/password_reset_animation.dart';
 
 @GenerateMocks([AuthGuard, GetAuthStateChangesUsecase])
 void main() {
+  setUpAll(() {
+    NotificationService.instance = MockNotificationService();
+  });
   late MockGetAuthStateChangesUsecase mockGetAuthStateChangesUsecase;
 
   // Grupo para testes que precisam do Modular e Supabase

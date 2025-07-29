@@ -6,7 +6,8 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:gestao_de_estagio/main.dart' as app;
-import 'package:gestao_de_estagio/app_module.dart';
+
+import 'test_app_module.dart';
 import 'package:gestao_de_estagio/core/services/report_service.dart';
 import 'package:gestao_de_estagio/features/student/pages/student_reports_page.dart';
 import 'package:gestao_de_estagio/features/supervisor/pages/supervisor_reports_page.dart';
@@ -27,7 +28,7 @@ void main() {
       );
 
       // Configurar módulo de teste
-      Modular.bindModule(AppModule());
+      Modular.bindModule(TestAppModule());
       reportService = Modular.get<ReportService>();
     });
 
