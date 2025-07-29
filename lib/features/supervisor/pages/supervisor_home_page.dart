@@ -315,28 +315,24 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                           );
                         },
                         onDelete: (student) async {
+                          final bloc = BlocProvider.of<SupervisorBloc>(context, listen: false);
                           final confirm = await showDialog<bool>(
                             context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Remover estudante'),
-                              content: Text(
-                                  'Tem certeza que deseja remover o estudante "${student.fullName}"? Esta ação não pode ser desfeita.'),
+                            builder: (dialogContext) => AlertDialog(
+                              title: const Text('Remover Estudante'),
+                              content: Text('Tem certeza que deseja remover o estudante "${student.fullName}"? Esta ação não pode ser desfeita.'),
                               actions: [
                                 TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(false),
+                                  onPressed: () => Navigator.of(dialogContext).pop(false),
                                   child: const Text('Cancelar'),
                                 ),
                                 TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(true),
-                                  child: const Text('Remover',
-                                      style: TextStyle(color: Colors.red)),
+                                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                                  child: const Text('Remover', style: TextStyle(color: Colors.red)),
                                 ),
                               ],
                             ),
                           );
-                          final bloc = BlocProvider.of<SupervisorBloc>(context, listen: false);
                           if (!mounted) return;
                           if (confirm == true) {
                             bloc.add(DeleteStudentBySupervisorEvent(
