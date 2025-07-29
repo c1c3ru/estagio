@@ -555,6 +555,7 @@ class FeedbackService {
 
     while (attempt < maxRetries) {
       try {
+        // ignore: use_build_context_synchronously
         return await FeedbackService.executeWithFeedback<T>(
           // Explicitly call static method
           context,

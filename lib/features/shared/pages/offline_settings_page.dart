@@ -54,19 +54,13 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
         // Mostrar feedback baseado no status
         switch (status) {
           case SyncStatus.synced:
-            FeedbackService.showSuccess(
-                context,
-                'Sincronização concluída!');
+            FeedbackService.showSuccess(context, 'Sincronização concluída!');
             break;
           case SyncStatus.syncError:
-            FeedbackService.showError(
-                context,
-                'Erro na sincronização');
+            FeedbackService.showError(context, 'Erro na sincronização');
             break;
           case SyncStatus.partialSync:
-            FeedbackService.showWarning(
-                context,
-                'Sincronização parcial');
+            FeedbackService.showWarning(context, 'Sincronização parcial');
             break;
           default:
             break;
@@ -108,31 +102,28 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
     if (!_isOnline) {
       if (!mounted) return; // Check if widget is still mounted
       FeedbackService.showError(
-          context,
-          'Dispositivo offline - não é possível sincronizar');
+          context, 'Dispositivo offline - não é possível sincronizar');
       return;
     }
 
     try {
+      // ignore: use_build_context_synchronously
       await FeedbackService.executeWithFeedback(
         context,
         operation: () async {
           final success = await _syncService.forcSync();
           if (!mounted) return; // Check if widget is still mounted
           if (success) {
-            FeedbackService.showSuccess(
-                context, 'Sincronização concluída!');
+            FeedbackService.showSuccess(context, 'Sincronização concluída!');
           } else {
-            FeedbackService.showError(
-                context, 'Falha na sincronização');
+            FeedbackService.showError(context, 'Falha na sincronização');
           }
         },
         loadingMessage: 'Sincronizando dados...',
       );
     } catch (e) {
       if (!mounted) return; // Check if widget is still mounted
-      FeedbackService.showError(
-          context, 'Erro na sincronização');
+      FeedbackService.showError(context, 'Erro na sincronização');
     }
   }
 
@@ -141,11 +132,12 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
       final confirmed = await FeedbackService.showConfirmationDialog(
         context,
         title: 'Limpar Cache',
-        message: 'Tem certeza que deseja limpar todo o cache? Esta ação não pode ser desfeita.',
+        message:
+            'Tem certeza que deseja limpar todo o cache? Esta ação não pode ser desfeita.',
       );
 
       if (confirmed != true) return;
-
+      // ignore: use_build_context_synchronously
       await FeedbackService.executeWithFeedback(
         context,
         operation: () async {
@@ -156,17 +148,16 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
       );
 
       if (!mounted) return;
-      FeedbackService.showSuccess(
-          context, 'Cache limpo com sucesso!');
+      FeedbackService.showSuccess(context, 'Cache limpo com sucesso!');
     } catch (e) {
       if (!mounted) return;
-      FeedbackService.showError(
-          context, 'Erro ao limpar cache: $e');
+      FeedbackService.showError(context, 'Erro ao limpar cache: $e');
     }
   }
 
   Future<void> _clearExpiredData() async {
     try {
+      // ignore: use_build_context_synchronously
       await FeedbackService.executeWithFeedback(
         context,
         operation: () async {
@@ -175,14 +166,13 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
         },
         loadingMessage: 'Limpando dados expirados...',
       );
-
+      // ignore: use_build_context_synchronously
       if (!mounted) return;
       FeedbackService.showSuccess(
           context, 'Dados expirados limpos com sucesso!');
     } catch (e) {
       if (!mounted) return;
-      FeedbackService.showError(
-          context, 'Erro ao limpar dados expirados: $e');
+      FeedbackService.showError(context, 'Erro ao limpar dados expirados: $e');
     }
   }
 
