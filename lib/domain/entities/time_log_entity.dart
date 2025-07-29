@@ -112,6 +112,17 @@ class TimeLogEntity extends Equatable {
     }
   }
 
+  DateTime? get checkOutDateTime {
+    if (checkOutTime == null) return null;
+    try {
+      final parts = checkOutTime!.split(':');
+      return DateTime(logDate.year, logDate.month, logDate.day,
+          int.parse(parts[0]), int.parse(parts[1]));
+    } catch (_) {
+      return null;
+    }
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

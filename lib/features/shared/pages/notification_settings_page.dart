@@ -86,77 +86,69 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
   }
 
   Future<void> _requestNotificationPermission() async {
-    try {
-      // Access static methods directly from FeedbackService class with named parameters
-      await FeedbackService.executeWithFeedback(
-        context,
-        operation: () async {
-          final granted = await _notificationService.requestPermission();
-          if (granted) {
-            if (!mounted) return; // Check if widget is still mounted
-            FeedbackService.showSuccess(
-                context,
-                'Permissão concedida!');
-          } else {
-            if (!mounted) return; // Check if widget is still mounted
-            FeedbackService.showError(
-                context,
-                'Permissão negada');
-          }
-        },
-      );
-    } catch (e) {
-      if (!mounted) return; // Check if widget is still mounted
-      FeedbackService.showError(
-          context,
-          'Erro ao solicitar permissão');
-    }
+    await FeedbackService.executeWithFeedback(
+      context,
+      loadingMessage: 'Solicitando permissão...',
+      operation: () async {
+        final granted = await _notificationService.requestPermission();
+        if (!mounted) return;
+        setState(() {
+          _notificationsEnabled = granted;
+        });
+      },
+      onSuccess: () {
+        if (!mounted) return;
+        FeedbackService.showSuccess(context, 'Permissão atualizada!');
+      },
+      onError: () {
+        if (!mounted) return;
+        FeedbackService.showError(context, 'Falha ao solicitar permissão.');
+      },
+    );
   }
 
   Future<void> _toggleDailyReminders(bool enabled) async {
-    try {
-      await FeedbackService.executeWithFeedback(
-        context,
-        operation: () async {
-          await _reminderService.setDailyRemindersEnabled(enabled);
-          if (!mounted) return; // Check if widget is still mounted
-          setState(() => _dailyRemindersEnabled = enabled);
-
-          FeedbackService.showSuccess(
-            context,
-            enabled ? 'Lembretes habilitados!' : 'Lembretes desabilitados!',
-          );
-        },
-      );
-    } catch (e) {
-      if (!mounted) return; // Check if widget is still mounted
-      FeedbackService.showError(
+    await FeedbackService.executeWithFeedback(
+      context,
+      loadingMessage: 'Salvando preferência...',
+      operation: () => _reminderService.setDailyRemindersEnabled(enabled),
+      onSuccess: () {
+        if (!mounted) return;
+        setState(() {
+          _dailyRemindersEnabled = enabled;
+        });
+        FeedbackService.showSuccess(
           context,
-          'Erro ao alterar configuração');
-    }
+          'Lembretes diários ${enabled ? 'ativados' : 'desativados'}.',
+        );
+      },
+      onError: () {
+        if (!mounted) return;
+        FeedbackService.showError(context, 'Erro ao atualizar lembretes.');
+      },
+    );
   }
 
   Future<void> _toggleContractReminders(bool enabled) async {
-    try {
-      await FeedbackService.executeWithFeedback(
-        context,
-        operation: () async {
-          await _reminderService.setContractRemindersEnabled(enabled);
-          if (!mounted) return; // Check if widget is still mounted
-          setState(() => _contractRemindersEnabled = enabled);
-
-          FeedbackService.showSuccess(
-            context,
-            enabled ? 'Alertas habilitados!' : 'Alertas desabilitados!',
-          );
-        },
-      );
-    } catch (e) {
-      if (!mounted) return; // Check if widget is still mounted
-      FeedbackService.showError(
+    await FeedbackService.executeWithFeedback(
+      context,
+      loadingMessage: 'Salvando preferência...',
+      operation: () => _reminderService.setContractRemindersEnabled(enabled),
+      onSuccess: () {
+        if (!mounted) return;
+        setState(() {
+          _contractRemindersEnabled = enabled;
+        });
+        FeedbackService.showSuccess(
           context,
-          'Erro ao alterar configuração');
-    }
+          'Alertas de contrato ${enabled ? 'ativados' : 'desativados'}.',
+        );
+      },
+      onError: () {
+        if (!mounted) return;
+        FeedbackService.showError(context, 'Erro ao atualizar alertas.');
+      },
+    );
   }
 
   Future<void> _selectTime(bool isCheckIn) async {
@@ -176,59 +168,52 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     );
 
     if (picked != null) {
-      try {
-        await FeedbackService.executeWithFeedback(
-          context: context,
-          operationName: 'Atualizando horário...',
-          operation: () async {
+      if (!mounted) return;
+      await FeedbackService.executeWithFeedback(
+        context,
+        loadingMessage: 'Salvando horário...',
+        operation: () => _reminderService.setReminderTimes(
+          checkInHour: isCheckIn ? picked.hour : _checkInTime.hour,
+          checkInMinute: isCheckIn ? picked.minute : _checkInTime.minute,
+          checkOutHour: !isCheckIn ? picked.hour : _checkOutTime.hour,
+          checkOutMinute: !isCheckIn ? picked.minute : _checkOutTime.minute,
+        ),
+        onSuccess: () {
+          if (!mounted) return;
+          setState(() {
             if (isCheckIn) {
-              setState(() => _checkInTime = picked);
+              _checkInTime = picked;
             } else {
-              setState(() => _checkOutTime = picked);
+              _checkOutTime = picked;
             }
-
-            await _reminderService.setReminderTimes(
-              checkInHour: _checkInTime.hour,
-              checkInMinute: _checkInTime.minute,
-              checkOutHour: _checkOutTime.hour,
-              checkOutMinute: _checkOutTime.minute,
-            );
-            if (!mounted) return; // Check if widget is still mounted
-            FeedbackService.showSuccess(
-                context: context, message: 'Horário atualizado!');
-          },
-        );
-      } catch (e) {
-        if (!mounted) return; // Check if widget is still mounted
-        FeedbackService.showError(
-            context: context, message: 'Erro ao atualizar horário');
-      }
+          });
+          FeedbackService.showSuccess(context, 'Horário atualizado!');
+        },
+        onError: () {
+          if (!mounted) return;
+          FeedbackService.showError(context, 'Erro ao salvar horário.');
+        },
+      );
     }
   }
 
   Future<void> _testNotification() async {
-    try {
-      await FeedbackService.executeWithFeedback(
-        context: context,
-        operationName: 'Enviando notificação de teste...',
-        operation: () async {
-          await _notificationService.showNotification(
-            title: 'Teste de Notificação',
-            body: 'Esta é uma notificação de teste do sistema de estágio!',
-            data: {
-              'payload': 'test_notification'
-            }, // 'payload' is now part of 'data' map
-          );
-          if (!mounted) return; // Check if widget is still mounted
-          FeedbackService.showSuccess(
-              context: context, message: 'Notificação enviada!');
-        },
-      );
-    } catch (e) {
-      if (!mounted) return; // Check if widget is still mounted
-      FeedbackService.showError(
-          context: context, message: 'Erro ao enviar notificação');
-    }
+    await FeedbackService.executeWithFeedback(
+      context,
+      loadingMessage: 'Enviando notificação de teste...',
+      operation: () => _notificationService.showNotification(
+        title: 'Notificação de Teste',
+        body: 'Esta é uma notificação de teste do sistema.',
+      ),
+      onSuccess: () {
+        if (!mounted) return;
+        FeedbackService.showSuccess(context, 'Notificação de teste enviada!');
+      },
+      onError: () {
+        if (!mounted) return;
+        FeedbackService.showError(context, 'Falha ao enviar notificação.');
+      },
+    );
   }
 
   @override

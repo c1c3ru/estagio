@@ -75,7 +75,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
 
       // Buscar estudantes do supervisor
       final studentsResult =
-          await studentRepository.getStudentsBySupervisor(supervisorId!);
+          await studentRepository.getStudentsBySupervisor(supervisorId);
 
       studentsResult.fold(
         (failure) {
@@ -93,7 +93,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
           final timeLogsResult =
               await timeLogRepository.getTimeLogsBySupervisor(supervisorId!);
           final contractsResult =
-              await contractRepository.getContractsBySupervisor(supervisorId!);
+              await contractRepository.getContractsBySupervisor(supervisorId);
 
           timeLogsResult.fold(
             (failure) {
@@ -116,7 +116,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                       .subtract(Duration(days: int.parse(_selectedPeriod)));
                   final filteredTimeLogs = timeLogs
                       .where((log) =>
-                          DateTime.parse(log.createdAt).isAfter(cutoffDate))
+                          log.createdAt.isAfter(cutoffDate))
                       .toList();
 
                   // Filtrar por estudante se selecionado
@@ -135,7 +135,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                   // Gerar relatórios
                   final performanceReport =
                       await _reportService.generateStudentPerformanceReport(
-                    supervisorId: supervisorId,
+                    supervisorId: supervisorId ?? '',
                     students: finalStudents,
                     timeLogs: finalTimeLogs.map((log) => log.toJson()).toList(),
                     contracts:
@@ -146,7 +146,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                       await _reportService.generateContractReport(
                     contracts:
                         contracts.map((contract) => contract.toJson()).toList(),
-                    supervisorId: supervisorId,
+                    supervisorId: supervisorId ?? '',
                   );
 
                   if (mounted) {
@@ -218,21 +218,21 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
       }
 
       Navigator.of(context).pop(); // Fechar loading
-
+      if (!mounted) return;
       await _reportService.shareReport(
         filePath,
         subject:
             'Relatório de ${reportType == 'performance' ? 'Performance' : 'Contratos'} - Supervisor',
       );
 
+      if (!mounted) return;
       FeedbackService.showSuccess(
         context,
         'Relatório exportado com sucesso!',
       );
     } catch (e) {
-      Navigator.of(context).pop(); // Fechar loading
-      // ignore: use_build_context_synchronously
       if (!mounted) return;
+      Navigator.of(context).pop(); // Fechar loading
       FeedbackService.showError(
         context,
         'Erro ao exportar relatório: $e',

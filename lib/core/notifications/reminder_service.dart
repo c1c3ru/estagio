@@ -3,7 +3,7 @@ import '../services/notification_service.dart';
 import '../../domain/entities/student_entity.dart';
 import '../../domain/entities/contract_entity.dart';
 import '../utils/date_utils.dart';
-import 'notification_helper.dart';
+
 
 /// Configurações de lembrete
 class ReminderSettings {
@@ -81,7 +81,7 @@ class ReminderService {
     advanceDays: 7, // 7 dias antes do vencimento
   );
 
-  ReminderService(this._notificationService, this._notificationHelper);
+  ReminderService(this._notificationService);
 
   /// Agenda lembretes de check-in para um estudante
   Future<void> scheduleCheckInReminders({

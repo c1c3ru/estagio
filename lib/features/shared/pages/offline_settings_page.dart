@@ -96,8 +96,8 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
       });
     } catch (e) {
       if (!mounted) return; // Check if widget is still mounted
-      FeedbackService.showErrorDialog(
-        context: context,
+      FeedbackService.showConfirmationDialog(
+        context,
         title: 'Erro ao carregar dados',
         message: 'Não foi possível carregar as informações offline: $e',
       );
@@ -109,68 +109,59 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
       if (!mounted) return; // Check if widget is still mounted
       FeedbackService.showError(
           context,
-          message: 'Dispositivo offline - não é possível sincronizar');
+          'Dispositivo offline - não é possível sincronizar');
       return;
     }
 
     try {
       await FeedbackService.executeWithFeedback(
         context,
-        loadingMessage: 'Sincronizando dados...',
         operation: () async {
           final success = await _syncService.forcSync();
           if (!mounted) return; // Check if widget is still mounted
           if (success) {
             FeedbackService.showSuccess(
-                context, message: 'Sincronização concluída!');
+                context, 'Sincronização concluída!');
           } else {
             FeedbackService.showError(
-                context, message: 'Falha na sincronização');
+                context, 'Falha na sincronização');
           }
         },
+        loadingMessage: 'Sincronizando dados...',
       );
     } catch (e) {
       if (!mounted) return; // Check if widget is still mounted
       FeedbackService.showError(
-          context, message: 'Erro na sincronização');
+          context, 'Erro na sincronização');
     }
   }
 
   Future<void> _clearCache() async {
-    // Access static method directly and provide named parameters
-    final confirmed = await FeedbackService.showConfirmationDialog(
-      context,
-      title: 'Limpar Cache',
-      message:
-          'Tem certeza que deseja limpar todos os dados offline? Esta ação não pode ser desfeita.',
-      confirmText: 'Limpar',
-      cancelText: 'Cancelar',
-    );
+    try {
+      final confirmed = await FeedbackService.showConfirmationDialog(
+        context,
+        title: 'Limpar Cache',
+        message: 'Tem certeza que deseja limpar todo o cache? Esta ação não pode ser desfeita.',
+      );
 
-    // Unchecked use of nullable value: confirmed can be null. Check if it's true.
-    if (confirmed == true) {
-      try {
-        await FeedbackService.executeWithFeedback(
-          context,
-          loadingMessage: 'Limpando cache...',
-          operation: () async {
-            final success = await _syncService.clearAllData();
-            if (!mounted) return; // Check if widget is still mounted
-            if (success) {
-              FeedbackService.showSuccess(
-                  context, message: 'Cache limpo com sucesso!');
-              await _loadOfflineData();
-            } else {
-              FeedbackService.showError(
-                  context, message: 'Erro ao limpar cache');
-            }
-          },
-        );
-      } catch (e) {
-        if (!mounted) return; // Check if widget is still mounted
-        FeedbackService.showError(
-            context, 'Erro ao limpar cache');
-      }
+      if (confirmed != true) return;
+
+      await FeedbackService.executeWithFeedback(
+        context,
+        operation: () async {
+          await _cacheService.clearAllCache();
+          await _loadOfflineData();
+        },
+        loadingMessage: 'Limpando cache...',
+      );
+
+      if (!mounted) return;
+      FeedbackService.showSuccess(
+          context, 'Cache limpo com sucesso!');
+    } catch (e) {
+      if (!mounted) return;
+      FeedbackService.showError(
+          context, 'Erro ao limpar cache: $e');
     }
   }
 
@@ -178,21 +169,20 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
     try {
       await FeedbackService.executeWithFeedback(
         context,
-        loadingMessage: 'Limpando dados expirados...',
         operation: () async {
-          final deletedCount = await _cacheService.clearExpiredData();
-          if (!mounted) return; // Check if widget is still mounted
-          FeedbackService.showSuccess(
-            context,
-            '$deletedCount itens expirados removidos!',
-          );
+          await _cacheService.clearExpiredData();
           await _loadOfflineData();
         },
+        loadingMessage: 'Limpando dados expirados...',
       );
+
+      if (!mounted) return;
+      FeedbackService.showSuccess(
+          context, 'Dados expirados limpos com sucesso!');
     } catch (e) {
-      if (!mounted) return; // Check if widget is still mounted
+      if (!mounted) return;
       FeedbackService.showError(
-          context, 'Erro ao limpar dados expirados');
+          context, 'Erro ao limpar dados expirados: $e');
     }
   }
 

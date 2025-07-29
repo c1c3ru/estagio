@@ -45,9 +45,9 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
       final state = studentBloc.state;
       String? studentId;
       if (state is StudentDashboardLoadSuccess) {
-        studentId = (state as StudentDashboardLoadSuccess).student.id;
+        studentId = state.student.id;
       } else if (state is StudentDetailsLoaded) {
-        studentId = (state as StudentDetailsLoaded).student.id;
+        studentId = state.student.id;
       }
 
       if (studentId == null) {
@@ -62,8 +62,8 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
       final timeLogRepository = Modular.get<ITimeLogRepository>();
       final contractRepository = Modular.get<IContractRepository>();
 
-      final timeLogsResult = await timeLogRepository.getTimeLogsByStudent(studentId!);
-      final contractsResult = await contractRepository.getContractsByStudent(studentId!);
+      final timeLogsResult = await timeLogRepository.getTimeLogsByStudent(studentId);
+      final contractsResult = await contractRepository.getContractsByStudent(studentId);
 
       timeLogsResult.fold(
         (failure) {
@@ -75,7 +75,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
         (timeLogs) async {
           // Gerar relatório de horas
           final timeLogReport = await _reportService.generateTimeLogReport(
-            studentId: studentId,
+            studentId: studentId!,
             startDate: _startDate,
             endDate: _endDate,
             timeLogs: timeLogs.map((log) => log.toJson()).toList(),
@@ -94,7 +94,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                   await _reportService.generateContractReport(
                 contracts:
                     contracts.map((contract) => contract.toJson()).toList(),
-                studentId: studentId,
+                studentId: studentId!,
               );
 
               if (mounted) {
@@ -172,6 +172,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
         );
       }
 
+      if (!mounted) return;
       Navigator.of(context).pop(); // Fechar loading
 
       await _reportService.shareReport(
@@ -180,12 +181,15 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
             'Relatório de Horas - ${_startDate.day}/${_startDate.month}/${_startDate.year} a ${_endDate.day}/${_endDate.month}/${_endDate.year}',
       );
 
+      if (!mounted) return;
       FeedbackService.showSuccess(
         context,
         'Relatório exportado com sucesso!',
       );
     } catch (e) {
+      if (!mounted) return;
       Navigator.of(context).pop(); // Fechar loading
+      if (!mounted) return;
       FeedbackService.showError(
         context,
         'Erro ao exportar relatório: $e',
@@ -307,7 +311,12 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                       mainAxisSpacing: 16,
                       children: [
                         StatsSummaryCard(
-  title: 'Total de Horas',
+                          title: 'Total de Horas',
+                          value: _currentReport!.totalHours.toStringAsFixed(1),
+                          icon: Icons.access_time,
+                          color: Theme.of(context).primaryColor,
+                          subtitle: 'Horas acumuladas',
+                        ),
                         StatsSummaryCard(
                           title: 'Dias Trabalhados',
                           value: _currentReport!.totalDays.toString(),
@@ -318,9 +327,16 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                         StatsSummaryCard(
                           title: 'Média Diária',
                           value: _currentReport!.averageHoursPerDay.toStringAsFixed(1),
-                          icon: Icons.trending_up,
-                          color: Colors.orange,
+                          icon: Icons.show_chart,
+                          color: Colors.blue,
                           subtitle: 'Horas por dia',
+                        ),
+                        StatsSummaryCard(
+                          title: 'Contratos Ativos',
+                          value: _contractReport?.activeContracts.toString() ?? '0',
+                          icon: Icons.assignment,
+                          color: Colors.orange,
+                          subtitle: 'Contratos em andamento',
                         ),
                         StatsSummaryCard(
                           title: 'Registros',
@@ -336,9 +352,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
 
                     // Gráfico de barras - horas por dia da semana
                     WeeklyHoursBarChart(
-                      data: _currentReport!.hoursByWeekday.entries.map((e) => {'label': e.key, 'value': e.value}).toList(),
-                      title: 'Horas por Semana',
-                      height: 180,
+                      data: _currentReport!.hoursByWeekday.entries.map((e) => {'label': e.key.toString(), 'value': e.value}).toList(),
                     ),
 
                     const SizedBox(height: 16),
@@ -346,7 +360,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                     // Gráfico de linha - horas por semana
                     if (_currentReport!.hoursByWeek.isNotEmpty)
                       TimeSeriesLineChart(
-                        data: _currentReport!.hoursByWeek,
+                        data: _currentReport!.hoursByWeek.entries.map((e) => {'label': e.key, 'value': e.value}).toList(),
                       ),
 
                     const SizedBox(height: 16),
@@ -354,7 +368,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                     // Gráfico de linha - horas por mês
                     if (_currentReport!.hoursByMonth.isNotEmpty)
                       TimeSeriesLineChart(
-                        data: _currentReport!.hoursByMonth,
+                        data: _currentReport!.hoursByMonth.entries.map((e) => {'label': e.key, 'value': e.value}).toList(),
                       ),
 
                     const SizedBox(height: 16),
@@ -363,9 +377,13 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
                     if (_contractReport != null &&
                         _contractReport!.activeContracts > 0)
                       ProgressCard(
-                        title: 'Progresso do Contrato',
-                        progress: _contractReport!.progress,
-                        subtitle: 'Horas cumpridas',
+                        title: 'Contratos Ativos',
+                        progress: (_contractReport!.activeContracts.toDouble() /
+                                (_contractReport!.totalContracts.toDouble() > 0
+                                    ? _contractReport!.totalContracts.toDouble()
+                                    : 1.0))
+                            .clamp(0.0, 1.0),
+                        subtitle: '${_contractReport!.activeContracts} de ${_contractReport!.totalContracts} contratos ativos',
                       ),
 
                     const SizedBox(height: 24),

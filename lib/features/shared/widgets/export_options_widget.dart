@@ -1,5 +1,6 @@
 // lib/features/shared/widgets/export_options_widget.dart
 import 'package:flutter/material.dart';
+import 'dart:convert';
 
 /// Configurações de exportação
 class ExportConfig {
