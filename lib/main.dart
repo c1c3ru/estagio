@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -91,8 +92,15 @@ Future<void> main() async {
   }
 
   try {
-    // Initialize Notification Service
-    if (!kIsWeb) { // Notificações push não funcionam na web
+    // Inicializar Firebase para FCM (push notifications)
+    if (!kIsWeb) {
+      try {
+        await Firebase.initializeApp();
+        if (kDebugMode) print('✅ Firebase inicializado (para FCM)');
+      } catch (e) {
+        if (kDebugMode) print('⚠️ Erro ao inicializar Firebase: $e');
+      }
+      // Initialize Notification Service
       final notificationService = NotificationService();
       final initialized = await notificationService.initialize();
       if (kDebugMode) {

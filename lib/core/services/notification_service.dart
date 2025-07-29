@@ -4,6 +4,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
+// Import condicional para firebase_core
+// ignore: uri_does_not_exist
+import 'package:firebase_core/firebase_core.dart' if (dart.library.html) 'package:gestao_de_estagio/core/services/firebase_core_stub.dart';
 // Mantém para kDebugMode
 // import 'package:flutter/material.dart'; // Removido: Unused import
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -67,11 +71,29 @@ class NotificationPayload {
 }
 
 class NotificationService {
-  static final NotificationService _instance = NotificationService._internal();
-  factory NotificationService() => _instance;
+  static NotificationService? _testInstance;
+  static NotificationService get instance => _testInstance ??= NotificationService._internal();
+  static set instance(NotificationService value) => _testInstance = value;
+  factory NotificationService() => instance;
   NotificationService._internal();
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+
+  /// Inicializa o Firebase de forma segura (apenas se não for web)
+  Future<void> safeInitializeFirebase() async {
+    if (kIsWeb) return;
+    try {
+      // Só inicializa se firebase_core estiver disponível
+      // e se não estiver inicializado ainda
+      // ignore: undefined_prefixed_name
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp();
+      }
+    } catch (e) {
+      // Em ambiente de teste ou se firebase_core não estiver disponível, ignore
+      if (kDebugMode) print('⚠️ safeInitializeFirebase: $e');
+    }
+  }
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
@@ -113,6 +135,8 @@ class NotificationService {
       // Inicializa notificações locais
       await _initializeLocalNotifications();
 
+      // Inicializa Firebase (caso necessário)
+      await safeInitializeFirebase();
       // Inicializa Firebase Messaging
       await _initializeFirebaseMessaging();
 
