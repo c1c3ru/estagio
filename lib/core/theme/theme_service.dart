@@ -299,13 +299,10 @@ class ThemeService extends ChangeNotifier {
       ),
 
       // Cards
-      cardTheme: CardThemeData(
-        elevation: _config.highContrast ? 8 : 2,
+      cardTheme: const CardThemeData(
+        elevation: 2,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: _config.highContrast
-              ? BorderSide(color: colorScheme.outline, width: 1)
-              : BorderSide.none,
+          borderRadius: BorderRadius.all(Radius.circular(12)),
         ),
       ),
 
