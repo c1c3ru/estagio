@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    // O plugin do Flutter deve ser aplicado por último
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -11,13 +11,16 @@ android {
     ndkVersion = "27.0.12077973"
 
     compileOptions {
+        // Garante suporte total ao Java 17
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-        languageVersion = "1.6"
+        // Corrige incompatibilidade de versões JVM
+        jvmTarget = "17"
+        // Usa versão de linguagem Kotlin compatível
+        languageVersion = "1.8"
     }
 
     defaultConfig {
@@ -31,13 +34,12 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // TODO: Substituir por chave de assinatura própria
             signingConfig = signingConfigs.getByName("debug")
         }
     }
 
-    // Configurações para resolver problemas de plugins
+    // Configurações para evitar erros de lint em plugins
     lint {
         disable += "InvalidPackage"
         checkReleaseBuilds = false
@@ -45,6 +47,7 @@ android {
 }
 
 kotlin {
+    // Força uso do JDK 17 em todos os módulos Kotlin
     jvmToolchain(17)
 }
 
