@@ -48,9 +48,9 @@ dependencies:
   
   # Notifications
   firebase_messaging: ^14.7.10
-  flutter_local_notifications: ^16.3.2
+  flutter_local_notifications: ^19.4.0
   permission_handler: ^11.2.0
-  timezone: ^0.9.2
+  timezone: ^0.10.1
   
   # Environment & Config
   flutter_dotenv: ^5.1.0
