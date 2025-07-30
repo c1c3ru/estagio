@@ -92,12 +92,12 @@ class ThemeService extends ChangeNotifier {
   ThemeService._internal();
 
   static const String _themeConfigKey = 'theme_config';
-  
+
   ThemeConfig _config = const ThemeConfig();
   SharedPreferences? _prefs;
 
   ThemeConfig get config => _config;
-  
+
   /// Inicializar serviço de temas
   Future<void> initialize() async {
     _prefs = await SharedPreferences.getInstance();
@@ -133,17 +133,17 @@ class ThemeService extends ChangeNotifier {
     _config = newConfig;
     await _saveThemeConfig();
     notifyListeners();
-    
+
     // Atualizar status bar
     _updateSystemUI();
   }
 
   /// Alternar entre tema claro e escuro
   Future<void> toggleTheme() async {
-    final newThemeType = _config.themeType == AppThemeType.light 
-        ? AppThemeType.dark 
+    final newThemeType = _config.themeType == AppThemeType.light
+        ? AppThemeType.dark
         : AppThemeType.light;
-    
+
     await updateThemeConfig(_config.copyWith(themeType: newThemeType));
   }
 
@@ -159,12 +159,14 @@ class ThemeService extends ChangeNotifier {
 
   /// Alternar alto contraste
   Future<void> toggleHighContrast() async {
-    await updateThemeConfig(_config.copyWith(highContrast: !_config.highContrast));
+    await updateThemeConfig(
+        _config.copyWith(highContrast: !_config.highContrast));
   }
 
   /// Alternar movimento reduzido
   Future<void> toggleReducedMotion() async {
-    await updateThemeConfig(_config.copyWith(reducedMotion: !_config.reducedMotion));
+    await updateThemeConfig(
+        _config.copyWith(reducedMotion: !_config.reducedMotion));
   }
 
   /// Resetar para configurações padrão
@@ -218,28 +220,27 @@ class ThemeService extends ChangeNotifier {
 
   Future<void> _loadThemeConfig() async {
     if (_prefs == null) return;
-    
+
     final configJson = _prefs!.getString(_themeConfigKey);
     if (configJson != null) {
       try {
-        final Map<String, dynamic> json = 
-            Map<String, dynamic>.from(
-              // Simulação de parsing JSON - em produção usaria dart:convert
-              _parseJsonString(configJson),
-            );
+        final Map<String, dynamic> json = Map<String, dynamic>.from(
+          // Simulação de parsing JSON - em produção usaria dart:convert
+          _parseJsonString(configJson),
+        );
         _config = ThemeConfig.fromJson(json);
       } catch (e) {
         // Se houver erro, usar configuração padrão
         _config = const ThemeConfig();
       }
     }
-    
+
     notifyListeners();
   }
 
   Future<void> _saveThemeConfig() async {
     if (_prefs == null) return;
-    
+
     final configJson = _config.toJson().toString();
     await _prefs!.setString(_themeConfigKey, configJson);
   }
@@ -267,35 +268,34 @@ class ThemeService extends ChangeNotifier {
     };
 
     final primaryColor = primaryColors[scheme] ?? Colors.blue;
-    
-    return isDark 
-        ? ColorScheme.fromSeed(seedColor: primaryColor, brightness: Brightness.dark)
-        : ColorScheme.fromSeed(seedColor: primaryColor, brightness: Brightness.light);
+
+    return isDark
+        ? ColorScheme.fromSeed(
+            seedColor: primaryColor, brightness: Brightness.dark)
+        : ColorScheme.fromSeed(
+            seedColor: primaryColor, brightness: Brightness.light);
   }
-
-
 
   ThemeData _buildTheme(ColorScheme colorScheme, Brightness brightness) {
     final isDark = brightness == Brightness.dark;
-    
+
     // Configurações de texto baseadas na configuração
     final textTheme = _buildTextTheme(isDark);
-    
+
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       brightness: brightness,
       textTheme: textTheme,
-      
+
       // AppBar
       appBarTheme: AppBarTheme(
         centerTitle: true,
         elevation: 0,
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
-        systemOverlayStyle: isDark 
-            ? SystemUiOverlayStyle.light 
-            : SystemUiOverlayStyle.dark,
+        systemOverlayStyle:
+            isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       ),
 
       // Cards
@@ -303,7 +303,7 @@ class ThemeService extends ChangeNotifier {
         elevation: _config.highContrast ? 8 : 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: _config.highContrast 
+          side: _config.highContrast
               ? BorderSide(color: colorScheme.outline, width: 1)
               : BorderSide.none,
         ),
@@ -323,18 +323,18 @@ class ThemeService extends ChangeNotifier {
       // Input fields
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: isDark 
+        fillColor: isDark
             ? colorScheme.surfaceVariant.withOpacity(0.3)
             : colorScheme.surfaceVariant.withOpacity(0.5),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: _config.highContrast 
+          borderSide: _config.highContrast
               ? BorderSide(color: colorScheme.outline, width: 2)
               : BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: _config.highContrast 
+          borderSide: _config.highContrast
               ? BorderSide(color: colorScheme.outline)
               : BorderSide.none,
         ),
@@ -359,7 +359,7 @@ class ThemeService extends ChangeNotifier {
       ),
 
       // Animações
-      pageTransitionsTheme: _config.reducedMotion 
+      pageTransitionsTheme: _config.reducedMotion
           ? const PageTransitionsTheme(
               builders: {
                 TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
@@ -370,8 +370,8 @@ class ThemeService extends ChangeNotifier {
 
       // Divisores
       dividerTheme: DividerThemeData(
-        color: _config.highContrast 
-            ? colorScheme.outline 
+        color: _config.highContrast
+            ? colorScheme.outline
             : colorScheme.outlineVariant,
         thickness: _config.highContrast ? 2 : 1,
       ),
@@ -380,7 +380,7 @@ class ThemeService extends ChangeNotifier {
       chipTheme: ChipThemeData(
         backgroundColor: colorScheme.surfaceVariant,
         selectedColor: colorScheme.primaryContainer,
-        side: _config.highContrast 
+        side: _config.highContrast
             ? BorderSide(color: colorScheme.outline)
             : null,
       ),
@@ -388,68 +388,83 @@ class ThemeService extends ChangeNotifier {
   }
 
   TextTheme _buildTextTheme(bool isDark) {
-    final baseTextTheme = isDark 
-        ? Typography.material2021().white 
+    final baseTextTheme = isDark
+        ? Typography.material2021().white
         : Typography.material2021().black;
 
     final fontSizeMultiplier = _config.fontSize / 14.0;
-    
+
     return baseTextTheme.copyWith(
       displayLarge: baseTextTheme.displayLarge?.copyWith(
-        fontSize: (baseTextTheme.displayLarge?.fontSize ?? 57) * fontSizeMultiplier,
+        fontSize:
+            (baseTextTheme.displayLarge?.fontSize ?? 57) * fontSizeMultiplier,
         fontWeight: _config.highContrast ? FontWeight.bold : FontWeight.normal,
       ),
       displayMedium: baseTextTheme.displayMedium?.copyWith(
-        fontSize: (baseTextTheme.displayMedium?.fontSize ?? 45) * fontSizeMultiplier,
+        fontSize:
+            (baseTextTheme.displayMedium?.fontSize ?? 45) * fontSizeMultiplier,
         fontWeight: _config.highContrast ? FontWeight.bold : FontWeight.normal,
       ),
       displaySmall: baseTextTheme.displaySmall?.copyWith(
-        fontSize: (baseTextTheme.displaySmall?.fontSize ?? 36) * fontSizeMultiplier,
+        fontSize:
+            (baseTextTheme.displaySmall?.fontSize ?? 36) * fontSizeMultiplier,
         fontWeight: _config.highContrast ? FontWeight.bold : FontWeight.normal,
       ),
       headlineLarge: baseTextTheme.headlineLarge?.copyWith(
-        fontSize: (baseTextTheme.headlineLarge?.fontSize ?? 32) * fontSizeMultiplier,
+        fontSize:
+            (baseTextTheme.headlineLarge?.fontSize ?? 32) * fontSizeMultiplier,
         fontWeight: _config.highContrast ? FontWeight.bold : FontWeight.normal,
       ),
       headlineMedium: baseTextTheme.headlineMedium?.copyWith(
-        fontSize: (baseTextTheme.headlineMedium?.fontSize ?? 28) * fontSizeMultiplier,
+        fontSize:
+            (baseTextTheme.headlineMedium?.fontSize ?? 28) * fontSizeMultiplier,
         fontWeight: _config.highContrast ? FontWeight.w600 : FontWeight.normal,
       ),
       headlineSmall: baseTextTheme.headlineSmall?.copyWith(
-        fontSize: (baseTextTheme.headlineSmall?.fontSize ?? 24) * fontSizeMultiplier,
+        fontSize:
+            (baseTextTheme.headlineSmall?.fontSize ?? 24) * fontSizeMultiplier,
         fontWeight: _config.highContrast ? FontWeight.w600 : FontWeight.normal,
       ),
       titleLarge: baseTextTheme.titleLarge?.copyWith(
-        fontSize: (baseTextTheme.titleLarge?.fontSize ?? 22) * fontSizeMultiplier,
+        fontSize:
+            (baseTextTheme.titleLarge?.fontSize ?? 22) * fontSizeMultiplier,
         fontWeight: _config.highContrast ? FontWeight.w600 : FontWeight.w500,
       ),
       titleMedium: baseTextTheme.titleMedium?.copyWith(
-        fontSize: (baseTextTheme.titleMedium?.fontSize ?? 16) * fontSizeMultiplier,
+        fontSize:
+            (baseTextTheme.titleMedium?.fontSize ?? 16) * fontSizeMultiplier,
         fontWeight: _config.highContrast ? FontWeight.w600 : FontWeight.w500,
       ),
       titleSmall: baseTextTheme.titleSmall?.copyWith(
-        fontSize: (baseTextTheme.titleSmall?.fontSize ?? 14) * fontSizeMultiplier,
+        fontSize:
+            (baseTextTheme.titleSmall?.fontSize ?? 14) * fontSizeMultiplier,
         fontWeight: _config.highContrast ? FontWeight.w600 : FontWeight.w500,
       ),
       bodyLarge: baseTextTheme.bodyLarge?.copyWith(
-        fontSize: (baseTextTheme.bodyLarge?.fontSize ?? 16) * fontSizeMultiplier,
+        fontSize:
+            (baseTextTheme.bodyLarge?.fontSize ?? 16) * fontSizeMultiplier,
       ),
       bodyMedium: baseTextTheme.bodyMedium?.copyWith(
-        fontSize: (baseTextTheme.bodyMedium?.fontSize ?? 14) * fontSizeMultiplier,
+        fontSize:
+            (baseTextTheme.bodyMedium?.fontSize ?? 14) * fontSizeMultiplier,
       ),
       bodySmall: baseTextTheme.bodySmall?.copyWith(
-        fontSize: (baseTextTheme.bodySmall?.fontSize ?? 12) * fontSizeMultiplier,
+        fontSize:
+            (baseTextTheme.bodySmall?.fontSize ?? 12) * fontSizeMultiplier,
       ),
       labelLarge: baseTextTheme.labelLarge?.copyWith(
-        fontSize: (baseTextTheme.labelLarge?.fontSize ?? 14) * fontSizeMultiplier,
+        fontSize:
+            (baseTextTheme.labelLarge?.fontSize ?? 14) * fontSizeMultiplier,
         fontWeight: _config.highContrast ? FontWeight.w600 : FontWeight.w500,
       ),
       labelMedium: baseTextTheme.labelMedium?.copyWith(
-        fontSize: (baseTextTheme.labelMedium?.fontSize ?? 12) * fontSizeMultiplier,
+        fontSize:
+            (baseTextTheme.labelMedium?.fontSize ?? 12) * fontSizeMultiplier,
         fontWeight: _config.highContrast ? FontWeight.w600 : FontWeight.w500,
       ),
       labelSmall: baseTextTheme.labelSmall?.copyWith(
-        fontSize: (baseTextTheme.labelSmall?.fontSize ?? 11) * fontSizeMultiplier,
+        fontSize:
+            (baseTextTheme.labelSmall?.fontSize ?? 11) * fontSizeMultiplier,
         fontWeight: _config.highContrast ? FontWeight.w600 : FontWeight.w500,
       ),
     );
@@ -457,14 +472,15 @@ class ThemeService extends ChangeNotifier {
 
   void _updateSystemUI() {
     final isDark = _config.themeType == AppThemeType.dark;
-    
+
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
         statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
         systemNavigationBarColor: isDark ? Colors.black : Colors.white,
-        systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        systemNavigationBarIconBrightness:
+            isDark ? Brightness.light : Brightness.dark,
       ),
     );
   }
