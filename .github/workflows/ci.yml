@@ -18,14 +18,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Configura Flutter na versão correta
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
+          cache: false   # garante que não usa Flutter antigo
+
+      # Mostra versão real do Flutter (debug)
+      - run: flutter --version
+      - run: flutter clean
+
+      # Cache de pacotes Dart/Flutter
       - uses: actions/cache@v3
         with:
-          path: ~/.pub-cache
+          path: |
+            ~/.pub-cache
+            .dart_tool
           key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+
       - run: flutter pub get
       - run: dart format --output=none --set-exit-if-changed .
       - run: dart analyze --fatal-infos
@@ -43,7 +54,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
+          cache: false
+      - run: flutter --version
       - run: flutter pub get
       - run: flutter build apk --release
       - uses: actions/upload-artifact@v3
@@ -59,7 +71,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
+          cache: false
+      - run: flutter --version
       - run: flutter pub get
       - run: flutter build ipa --release
       - uses: actions/upload-artifact@v3
