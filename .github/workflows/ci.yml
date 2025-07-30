@@ -18,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: echo "YAML atualizado - commit $(git rev-parse HEAD)"
+      - run: env | grep FLUTTER || true
 
       # Configura Flutter na versão correta
       - uses: subosito/flutter-action@v2
@@ -51,6 +53,8 @@ jobs:
     needs: analyze-and-test
     steps:
       - uses: actions/checkout@v4
+      - run: echo "YAML atualizado - commit $(git rev-parse HEAD)"
+      - run: env | grep FLUTTER || true
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
@@ -68,6 +72,8 @@ jobs:
     needs: analyze-and-test
     steps:
       - uses: actions/checkout@v4
+      - run: echo "YAML atualizado - commit $(git rev-parse HEAD)"
+      - run: env | grep FLUTTER || true
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
