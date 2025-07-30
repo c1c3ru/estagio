@@ -420,15 +420,13 @@ class NotificationService {
       body,
       tz.TZDateTime.from(scheduledDate, tz.local),
       notificationDetails,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       payload: jsonEncode(payload.toJson()),
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
     );
 
     logger.i('Notificação local agendada para: $scheduledDate');
   }
 
-  /// Cancela notificação agendada
   Future<void> cancelScheduledNotification(String id) async {
     await _localNotifications.cancel(id.hashCode);
     logger.i('Notificação cancelada: $id');

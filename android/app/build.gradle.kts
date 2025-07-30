@@ -17,19 +17,15 @@ android {
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
+        languageVersion = "1.6"
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.estagio"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = 1
         versionName = "1.0.0"
-        
-        // Configurações para resolver problemas de compatibilidade
         multiDexEnabled = true
     }
 
@@ -40,12 +36,16 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
-    
+
     // Configurações para resolver problemas de plugins
     lint {
         disable += "InvalidPackage"
         checkReleaseBuilds = false
     }
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 flutter {

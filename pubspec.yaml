@@ -57,7 +57,7 @@ dependencies:
   
   # Production Monitoring & Analytics
   firebase_performance: ^0.9.3+6
-  sentry_flutter: ^7.14.0
+  sentry_flutter: ^7.17.0
   device_info_plus: ^9.1.1
   package_info_plus: ^4.2.0
   firebase_crashlytics: ^3.4.8
