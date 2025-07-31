@@ -48,6 +48,7 @@ android {
     kotlin {
         jvmToolchain(17)
     }
+<<<<<<< HEAD
 
     configurations.all {
         resolutionStrategy {
@@ -70,6 +71,8 @@ android {
             jvmTarget = "17"
         }
     }
+=======
+>>>>>>> 436faa9d6cf37e499f04cda11fdca1d5c628188d
 }
 
 dependencies {
