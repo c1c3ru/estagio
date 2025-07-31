@@ -1,7 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <uses-permission android:name="android.permission.INTERNET" />
     <application
-        android:label="estagio"
+        android:label="gestao_de_estagio"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

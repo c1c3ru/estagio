@@ -19,15 +19,3 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
-
-subprojects {
-    afterEvaluate { project ->
-        if (project.plugins.hasPlugin('kotlin-android')) {
-            project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-                kotlinOptions {
-                    jvmTarget = "17"
-                }
-            }
-        }
-    }
-}
