@@ -27,8 +27,8 @@ android {
         // Para compatibilidade com plugins recentes
         minSdk = 23
         targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        versionCode = project.findProperty("flutter.versionCode")?.toString()?.toInt() ?: 1
+        versionName = project.findProperty("flutter.versionName")?.toString() ?: "1.0"
     }
 
     buildTypes {
