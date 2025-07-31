@@ -48,12 +48,11 @@ android {
     kotlin {
         jvmToolchain(17)
     }
-<<<<<<< HEAD
 
     configurations.all {
         resolutionStrategy {
             eachDependency {
-                if (it.module.toString() == "com.android.tools.build:gradle") {
+                if (it.requested.group == "com.android.tools.build" && it.requested.name == "gradle") {
                     useVersion("7.3.0") // Use a compatible Gradle version
                 }
             }
@@ -61,18 +60,21 @@ android {
     }
 
     tasks.withType<JavaCompile> {
-        if (name.contains("compileReleaseJavaWithJavac") && (path.contains(":device_info_plus") || path.contains(":package_info_plus"))) {
-            options.release.set(17) as Any
-        }
+        // Configure Java compilation to use release 17 for specific modules
+        options.release.set(17)
     }
+}
 
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = "17"
+// Also explicitly set the source and target compatibility for these modules if needed
+subprojects {
+    afterEvaluate { project ->
+        if (project.path == ":device_info_plus" || project.path == ":package_info_plus" || project.path == ":shared_preferences_android") {
+            project.tasks.withType<JavaCompile> {
+                sourceCompatibility = JavaVersion.VERSION_17
+                targetCompatibility = JavaVersion.VERSION_17
+            }
         }
     }
-=======
->>>>>>> 436faa9d6cf37e499f04cda11fdca1d5c628188d
 }
 
 dependencies {
