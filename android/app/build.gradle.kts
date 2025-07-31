@@ -52,7 +52,7 @@ android {
     configurations.all {
         resolutionStrategy {
             eachDependency {
-                if (it.requested.module.toString() == "com.android.tools.build:gradle") {
+                if (it.module.toString() == "com.android.tools.build:gradle") {
                     useVersion("7.3.0") // Use a compatible Gradle version
                 }
             }
