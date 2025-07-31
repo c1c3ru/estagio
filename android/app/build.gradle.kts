@@ -44,11 +44,36 @@ android {
         disable += "InvalidPackage"
         checkReleaseBuilds = false
     }
+
+    kotlin {
+        jvmToolchain(17)
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            eachDependency {
+                if (it.requested.module.toString() == "com.android.tools.build:gradle") {
+                    useVersion("7.3.0") // Use a compatible Gradle version
+                }
+            }
+        }
+    }
+
+    tasks.withType<JavaCompile> {
+        if (name.contains("compileReleaseJavaWithJavac") && (path.contains(":device_info_plus") || path.contains(":package_info_plus"))) {
+            options.release.set(17) as Any
+        }
+    }
+
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = "17"
+        }
+    }
 }
 
-kotlin {
-    // Força uso do JDK 17 em todos os módulos Kotlin
-    jvmToolchain(17)
+dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.0") // Or the Kotlin version you are using
 }
 
 flutter {
