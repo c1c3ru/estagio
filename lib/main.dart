@@ -1,187 +1,106 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_modular/flutter_modular.dart';
 
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:intl/date_symbol_data_local.dart';
-import 'core/constants/app_constants.dart';
-import 'core/services/notification_service.dart';
-import 'core/services/reminder_service.dart';
-import 'core/services/performance_service.dart';
-import 'core/theme/theme_service.dart';
-
-Future<void> main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  runApp(const MyApp());
+}
 
-  // Inicializar serviços de performance primeiro
-  final performanceService = PerformanceService();
-  performanceService.initialize();
-  
-  // Inicializar serviço de temas
-  final themeService = ThemeService();
-  await themeService.initialize();
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-  if (kDebugMode) {
-    print('🟡 main: Iniciando aplicação...');
-    if (!kIsWeb) {
-      print('🟡 main: Platform: ${Platform.operatingSystem}');
-    } else {
-      print('🟡 main: Platform: Web');
-    }
-    print('🟡 main: Web: $kIsWeb');
-  }
-
-  try {
-    // Carregar variáveis de ambiente
-    await performanceService.measureOperation('load_env', () async {
-      await dotenv.load(fileName: ".env");
-    });
-    if (kDebugMode) {
-      print('✅ Variáveis de ambiente carregadas');
-    }
-  } catch (e) {
-    if (kDebugMode) {
-      print('⚠️ Erro ao carregar .env: $e');
-      print('⚠️ Tentando continuar sem arquivo .env...');
-    }
-  }
-
-  try {
-    // Configuração específica para web
-    if (kIsWeb) {
-      if (kDebugMode) {
-        print('🌐 Configurando para web...');
-      }
-    }
-
-    // Inicializar Supabase
-    await performanceService.measureOperation('init_supabase', () async {
-      await Supabase.initialize(
-        url: AppConstants.supabaseUrl,
-        anonKey: AppConstants.supabaseAnonKey,
-      );
-    });
-    if (kDebugMode) {
-      print('✅ Supabase inicializado com sucesso');
-    }
-  } catch (e) {
-    if (kDebugMode) {
-      print('⚠️ Erro ao inicializar Supabase: $e');
-    }
-    if (kDebugMode) {
-      print(
-          '⚠️ Verifique se as credenciais do Supabase estão configuradas corretamente');
-    }
-    // Não vamos parar a execução do app por causa do erro do Supabase
-    // O app deve funcionar mesmo sem Supabase configurado
-  }
-
-  try {
-    // Initialize SharedPreferences
-    await SharedPreferences.getInstance();
-    if (kDebugMode) {
-      print('✅ SharedPreferences inicializado com sucesso');
-    }
-  } catch (e) {
-    if (kDebugMode) {
-      print('⚠️ Erro ao inicializar SharedPreferences: $e');
-    }
-  }
-
-  try {
-    // Inicializar Firebase para FCM (push notifications)
-    if (!kIsWeb) {
-      try {
-        await Firebase.initializeApp();
-        if (kDebugMode) print('✅ Firebase inicializado (para FCM)');
-      } catch (e) {
-        if (kDebugMode) print('⚠️ Erro ao inicializar Firebase: $e');
-      }
-      // Initialize Notification Service
-      final notificationService = NotificationService();
-      final initialized = await notificationService.initialize();
-      if (kDebugMode) {
-        if (initialized) {
-          print('✅ Serviço de notificações inicializado com sucesso');
-        } else {
-          print('⚠️ Falha ao inicializar serviço de notificações');
-        }
-      }
-
-      // Initialize Reminder Service
-      if (initialized) {
-        final reminderService = ReminderService();
-        final reminderInitialized = await reminderService.initialize();
-        if (kDebugMode) {
-          if (reminderInitialized) {
-            print('✅ Serviço de lembretes inicializado com sucesso');
-          } else {
-            print('⚠️ Falha ao inicializar serviço de lembretes');
-          }
-        }
-      }
-    } else {
-      if (kDebugMode) {
-        print('🌐 Notificações push não suportadas na web');
-      }
-    }
-  } catch (e) {
-    if (kDebugMode) {
-      print('⚠️ Erro ao inicializar serviços de notificação: $e');
-    }
-  }
-
-  try {
-    // Initialize date formatting
-    await initializeDateFormatting('pt_BR', null);
-    if (kDebugMode) {
-      print('✅ Formatação de data inicializada com sucesso');
-    }
-  } catch (e) {
-    if (kDebugMode) {
-      print('⚠️ Erro ao inicializar formatação de data: $e');
-    }
-  }
-
-  // Pré-carregar dados críticos se usuário estiver logado
-  final currentUser = Supabase.instance.client.auth.currentUser;
-  if (currentUser != null) {
-    await performanceService.preloadCriticalData(
-      userId: currentUser.id,
-      userType: 'student', // Determinar tipo baseado nos dados do usuário
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Sistema de Estágio',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+      ),
+      home: const LoginPage(),
+      debugShowCheckedModeBanner: false,
     );
   }
+}
 
-  // Configurar otimizações de UI
-  performanceService.configureUIOptimizations();
+class LoginPage extends StatelessWidget {
+  const LoginPage({super.key});
 
-  if (kDebugMode) {
-    print('🟡 main: Executando app...');
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Sistema de Estágio'),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.school,
+                size: 80,
+                color: Colors.blue,
+              ),
+              SizedBox(height: 24),
+              Text(
+                'Bem-vindo ao Sistema de Estágio',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 16),
+              Text(
+                'O aplicativo está funcionando corretamente!',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 32),
+              Card(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Status do Sistema',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.check_circle, color: Colors.green),
+                          SizedBox(width: 8),
+                          Text('Flutter: Funcionando'),
+                        ],
+                      ),
+                      SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.check_circle, color: Colors.green),
+                          SizedBox(width: 8),
+                          Text('Interface: Carregada'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
-
-  runApp(
-    ListenableBuilder(
-      listenable: ThemeService(),
-      builder: (context, child) {
-        final themeService = ThemeService();
-        
-        return MaterialApp.router(
-          title: 'Sistema de Estágio',
-          theme: themeService.lightTheme,
-          darkTheme: themeService.darkTheme,
-          themeMode: themeService.themeMode,
-          routerConfig: Modular.routerConfig,
-          debugShowCheckedModeBanner: false,
-                    builder: (context, child) {
-            // Configurar otimizações de performance para a UI
-            return child ?? const SizedBox();
-          },
-        );
-      },
-    ),
-  );
 }
