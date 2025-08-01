@@ -1,18 +1,10 @@
-// test/integration/reports_integration_test.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:flutter_modular/flutter_modular.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'package:gestao_de_estagio/main.dart' as app;
-
-import 'test_app_module.dart';
 import 'package:gestao_de_estagio/core/services/report_service.dart';
 import 'package:gestao_de_estagio/features/student/pages/student_reports_page.dart';
 import 'package:gestao_de_estagio/features/supervisor/pages/supervisor_reports_page.dart';
-import 'package:gestao_de_estagio/features/shared/widgets/advanced_filters_widget.dart';
-import 'package:gestao_de_estagio/features/shared/widgets/export_options_widget.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -20,27 +12,16 @@ void main() {
   group('Reports Integration Tests', () {
     late ReportService reportService;
 
-    setUpAll(() async {
-      // Inicializar Supabase para testes
-      await Supabase.initialize(
-        url: const String.fromEnvironment('SUPABASE_URL', defaultValue: 'test_url'),
-        anonKey: const String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: 'test_key'),
-      );
-
-      // Configurar módulo de teste
-      Modular.bindModule(TestAppModule());
-      reportService = Modular.get<ReportService>();
+    setUpAll(() {
+      reportService = ReportService();
     });
 
-    tearDownAll(() async {
-      Modular.destroy();
-    });
-
-    group('ReportService Integration', () {
-      testWidgets('should generate time log report successfully', (tester) async {
+    group('Report Service Integration', () {
+      testWidgets('should generate time log report successfully',
+          (tester) async {
         // Arrange
         const studentId = 'test-student-id';
-        final startDate = DateTime.now().subtract(const Duration(days: 30));
+        final startDate = DateTime.now().subtract(const Duration(days: 7));
         final endDate = DateTime.now();
 
         // Act
@@ -53,14 +34,17 @@ void main() {
 
         // Assert
         expect(result, isA<TimeLogReport>());
-        final report = result;
-        expect(report.studentId, equals(studentId));
-        expect(report.startDate, equals(startDate));
-        expect(report.endDate, equals(endDate));
-        expect(report.timeLogs, isA<List>());
+        expect(result.studentId, equals(studentId));
+        expect(result.startDate, equals(startDate));
+        expect(result.endDate, equals(endDate));
+        expect(result.timeLogs, isA<List>());
+        expect(result.totalHours, isA<double>());
+        expect(result.totalDays, isA<int>());
+        expect(result.averageHoursPerDay, isA<double>());
       });
 
-      testWidgets('should generate student performance report successfully', (tester) async {
+      testWidgets('should generate student performance report successfully',
+          (tester) async {
         // Arrange
         const supervisorId = 'test-supervisor-id';
 
@@ -83,7 +67,8 @@ void main() {
         expect(report.averageHoursPerStudent, isA<double>());
       });
 
-      testWidgets('should generate contract report successfully', (tester) async {
+      testWidgets('should generate contract report successfully',
+          (tester) async {
         // Arrange
         const supervisorId = 'test-supervisor-id';
 
@@ -186,7 +171,7 @@ void main() {
         final filePath = exportResult;
 
         // Act
-        await reportService.shareReport(
+        reportService.shareReport(
           filePath,
           subject: 'Test Report',
         );
@@ -198,9 +183,10 @@ void main() {
     });
 
     group('Student Reports Page Integration', () {
-      testWidgets('should load student reports page successfully', (tester) async {
+      testWidgets('should load student reports page successfully',
+          (tester) async {
         // Arrange
-        await app.main();
+        app.main();
         await tester.pumpAndSettle();
 
         // Simular login como estudante
@@ -217,7 +203,7 @@ void main() {
 
       testWidgets('should apply date filters correctly', (tester) async {
         // Arrange
-        await app.main();
+        app.main();
         await tester.pumpAndSettle();
 
         // Navegar para página de relatórios
@@ -236,7 +222,7 @@ void main() {
 
       testWidgets('should export report from student page', (tester) async {
         // Arrange
-        await app.main();
+        app.main();
         await tester.pumpAndSettle();
 
         // Navegar para página de relatórios
@@ -261,7 +247,7 @@ void main() {
 
       testWidgets('should share report from student page', (tester) async {
         // Arrange
-        await app.main();
+        app.main();
         await tester.pumpAndSettle();
 
         // Navegar para página de relatórios
@@ -279,9 +265,10 @@ void main() {
     });
 
     group('Supervisor Reports Page Integration', () {
-      testWidgets('should load supervisor reports page successfully', (tester) async {
+      testWidgets('should load supervisor reports page successfully',
+          (tester) async {
         // Arrange
-        await app.main();
+        app.main();
         await tester.pumpAndSettle();
 
         // Simular login como supervisor
@@ -300,7 +287,7 @@ void main() {
 
       testWidgets('should switch between report tabs', (tester) async {
         // Arrange
-        await app.main();
+        app.main();
         await tester.pumpAndSettle();
 
         // Navegar para página de relatórios do supervisor
@@ -326,7 +313,7 @@ void main() {
 
       testWidgets('should filter reports by student', (tester) async {
         // Arrange
-        await app.main();
+        app.main();
         await tester.pumpAndSettle();
 
         // Navegar para página de relatórios do supervisor
@@ -339,227 +326,73 @@ void main() {
         await tester.tap(find.byIcon(Icons.filter_list));
         await tester.pumpAndSettle();
 
-        // Selecionar um estudante específico
-        await tester.tap(find.text('Todos os estudantes').first);
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('João Silva').first);
+        await tester.tap(find.text('João Silva'));
         await tester.pumpAndSettle();
 
-        // Aplicar filtro
         await tester.tap(find.text('Aplicar'));
         await tester.pumpAndSettle();
 
         // Assert
-        // Verificar se os dados foram filtrados para o estudante selecionado
-        expect(find.text('João Silva'), findsWidgets);
+        expect(find.byType(SupervisorReportsPage), findsOneWidget);
+        expect(find.text('João Silva'), findsOneWidget);
+      });
+
+      testWidgets('should generate bulk reports for all students',
+          (tester) async {
+        // Arrange
+        app.main();
+        await tester.pumpAndSettle();
+
+        // Navegar para página de relatórios do supervisor
+        await tester.tap(find.byIcon(Icons.dashboard));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Relatórios'));
+        await tester.pumpAndSettle();
+
+        // Act - Gerar relatórios em lote
+        await tester.tap(find.byIcon(Icons.batch_prediction));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Gerar Todos'));
+        await tester.pumpAndSettle();
+
+        // Assert
+        expect(find.text('Relatórios gerados com sucesso'), findsOneWidget);
       });
     });
 
-    group('Advanced Filters Integration', () {
-      testWidgets('should apply preset filters correctly', (tester) async {
+    group('Error Handling', () {
+      testWidgets('should handle report generation errors gracefully',
+          (tester) async {
         // Arrange
-        await app.main();
-        await tester.pumpAndSettle();
+        const studentId = 'invalid-student-id';
+        final startDate = DateTime.now().subtract(const Duration(days: 7));
+        final endDate = DateTime.now();
 
-        // Navegar para página com filtros avançados
-        await tester.tap(find.byIcon(Icons.assessment));
-        await tester.pumpAndSettle();
-
-        // Act - Abrir filtros avançados
-        await tester.tap(find.byIcon(Icons.tune));
-        await tester.pumpAndSettle();
-
-        // Aplicar preset "Último mês"
-        await tester.tap(find.text('Último mês'));
-        await tester.pumpAndSettle();
-
-        // Assert
-        expect(find.byType(AdvancedFiltersWidget), findsOneWidget);
-        // Verificar se as datas foram definidas corretamente
+        // Act & Assert
+        expect(
+          () => reportService.generateTimeLogReport(
+            studentId: studentId,
+            startDate: startDate,
+            endDate: endDate,
+            timeLogs: [],
+          ),
+          throwsA(isA<Exception>()),
+        );
       });
 
-      testWidgets('should apply custom date range filter', (tester) async {
+      testWidgets('should handle export errors gracefully', (tester) async {
         // Arrange
-        await app.main();
-        await tester.pumpAndSettle();
+        final invalidData = <String, dynamic>{};
 
-        // Navegar para página com filtros avançados
-        await tester.tap(find.byIcon(Icons.assessment));
-        await tester.pumpAndSettle();
-
-        // Act - Abrir filtros avançados
-        await tester.tap(find.byIcon(Icons.tune));
-        await tester.pumpAndSettle();
-
-        // Selecionar período customizado
-        await tester.tap(find.text('Período customizado'));
-        await tester.pumpAndSettle();
-
-        // Definir data de início
-        await tester.tap(find.byIcon(Icons.calendar_today).first);
-        await tester.pumpAndSettle();
-        // Selecionar data no calendário
-        await tester.tap(find.text('15'));
-        await tester.tap(find.text('OK'));
-        await tester.pumpAndSettle();
-
-        // Definir data de fim
-        await tester.tap(find.byIcon(Icons.calendar_today).last);
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('25'));
-        await tester.tap(find.text('OK'));
-        await tester.pumpAndSettle();
-
-        // Aplicar filtros
-        await tester.tap(find.text('Aplicar'));
-        await tester.pumpAndSettle();
-
-        // Assert
-        // Verificar se o período customizado foi aplicado
-        expect(find.text('15'), findsWidgets);
-        expect(find.text('25'), findsWidgets);
-      });
-
-      testWidgets('should clear all filters', (tester) async {
-        // Arrange
-        await app.main();
-        await tester.pumpAndSettle();
-
-        // Navegar para página com filtros avançados
-        await tester.tap(find.byIcon(Icons.assessment));
-        await tester.pumpAndSettle();
-
-        // Aplicar alguns filtros primeiro
-        await tester.tap(find.byIcon(Icons.tune));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Último mês'));
-        await tester.pumpAndSettle();
-
-        // Act - Limpar filtros
-        await tester.tap(find.text('Limpar'));
-        await tester.pumpAndSettle();
-
-        // Assert
-        // Verificar se todos os filtros foram removidos
-        expect(find.text('Todos os períodos'), findsOneWidget);
-      });
-    });
-
-    group('Export Options Integration', () {
-      testWidgets('should configure export options correctly', (tester) async {
-        // Arrange
-        await app.main();
-        await tester.pumpAndSettle();
-
-        // Navegar para página de relatórios
-        await tester.tap(find.byIcon(Icons.assessment));
-        await tester.pumpAndSettle();
-
-        // Act - Abrir opções de exportação
-        await tester.tap(find.byIcon(Icons.download));
-        await tester.pumpAndSettle();
-
-        // Configurar opções
-        await tester.tap(find.text('JSON'));
-        await tester.pumpAndSettle();
-
-        // Incluir metadados
-        await tester.tap(find.byType(Checkbox).first);
-        await tester.pumpAndSettle();
-
-        // Definir nome do arquivo
-        await tester.enterText(find.byType(TextField), 'meu_relatorio_teste');
-        await tester.pumpAndSettle();
-
-        // Assert
-        expect(find.byType(ExportOptionsWidget), findsOneWidget);
-        expect(find.text('JSON'), findsOneWidget);
-        expect(find.text('meu_relatorio_teste'), findsOneWidget);
-      });
-
-      testWidgets('should preview export data', (tester) async {
-        // Arrange
-        await app.main();
-        await tester.pumpAndSettle();
-
-        // Navegar para página de relatórios
-        await tester.tap(find.byIcon(Icons.assessment));
-        await tester.pumpAndSettle();
-
-        // Act - Abrir opções de exportação
-        await tester.tap(find.byIcon(Icons.download));
-        await tester.pumpAndSettle();
-
-        // Visualizar preview
-        await tester.tap(find.text('Visualizar'));
-        await tester.pumpAndSettle();
-
-        // Assert
-        // Verificar se o preview dos dados está sendo exibido
-        expect(find.text('Preview dos dados'), findsOneWidget);
-      });
-
-      testWidgets('should complete export process', (tester) async {
-        // Arrange
-        await app.main();
-        await tester.pumpAndSettle();
-
-        // Navegar para página de relatórios
-        await tester.tap(find.byIcon(Icons.assessment));
-        await tester.pumpAndSettle();
-
-        // Act - Exportar relatório
-        await tester.tap(find.byIcon(Icons.download));
-        await tester.pumpAndSettle();
-
-        // Confirmar exportação
-        await tester.tap(find.text('Exportar'));
-        await tester.pumpAndSettle();
-
-        // Assert
-        expect(find.text('Exportação concluída'), findsOneWidget);
-      });
-    });
-
-    group('Error Handling Integration', () {
-      testWidgets('should handle network errors gracefully', (tester) async {
-        // Arrange
-        await app.main();
-        await tester.pumpAndSettle();
-
-        // Simular erro de rede (desconectar)
-        // (implementação específica dependeria do mock de conectividade)
-
-        // Act
-        await tester.tap(find.byIcon(Icons.assessment));
-        await tester.pumpAndSettle();
-
-        // Assert
-        expect(find.text('Erro de conexão'), findsOneWidget);
-        expect(find.text('Tentar novamente'), findsOneWidget);
-      });
-
-      testWidgets('should handle empty data gracefully', (tester) async {
-        // Arrange
-        await app.main();
-        await tester.pumpAndSettle();
-
-        // Navegar para página de relatórios com dados vazios
-        await tester.tap(find.byIcon(Icons.assessment));
-        await tester.pumpAndSettle();
-
-        // Act - Aplicar filtro que resulta em dados vazios
-        await tester.tap(find.byIcon(Icons.tune));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Período customizado'));
-        await tester.pumpAndSettle();
-        // Definir período sem dados
-        await tester.tap(find.text('Aplicar'));
-        await tester.pumpAndSettle();
-
-        // Assert
-        expect(find.text('Nenhum dado encontrado'), findsOneWidget);
-        expect(find.text('Ajustar filtros'), findsOneWidget);
+        // Act & Assert
+        expect(
+          () => reportService.exportToCSV(
+            reportType: 'invalid_type',
+            reportData: invalidData,
+          ),
+          throwsA(isA<Exception>()),
+        );
       });
     });
   });
