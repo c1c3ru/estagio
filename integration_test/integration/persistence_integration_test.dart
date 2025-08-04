@@ -16,7 +16,7 @@ void main() {
     late CacheService cacheService;
     late SyncService syncService;
 
-    setUpAll(() async {
+    setUp(() async {
       // Initialize the TestAppModule for dependency injection
       Modular.bindModule(TestAppModule());
       

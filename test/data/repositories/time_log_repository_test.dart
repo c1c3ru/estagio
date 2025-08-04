@@ -1,11 +1,8 @@
-import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:gestao_de_estagio/core/errors/app_exceptions.dart';
 import 'package:gestao_de_estagio/data/datasources/supabase/time_log_datasource.dart';
 import 'package:gestao_de_estagio/data/repositories/time_log_repository.dart';
-import 'package:gestao_de_estagio/domain/entities/time_log_entity.dart';
 
 import 'time_log_repository_test.mocks.dart';
 

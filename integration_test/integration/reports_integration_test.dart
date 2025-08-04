@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:gestao_de_estagio/main.dart' as app;
+import 'test_main.dart' as app;
 import 'package:gestao_de_estagio/core/services/report_service.dart';
 import 'package:gestao_de_estagio/features/student/pages/student_reports_page.dart';
 import 'package:gestao_de_estagio/features/supervisor/pages/supervisor_reports_page.dart';
