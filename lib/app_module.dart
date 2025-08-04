@@ -119,7 +119,6 @@ import 'features/supervisor/supervisor_module.dart';
 import 'core/guards/auth_guard.dart';
 
 import 'core/services/notification_service.dart';
-import 'core/services/notification_helper.dart';
 import 'core/services/reminder_service.dart';
 import 'core/services/connectivity_service.dart';
 import 'core/services/cache_service.dart';
@@ -225,7 +224,7 @@ class AppModule extends Module {
     i.addLazySingleton<GetAllTimeLogsForSupervisorUsecase>(
         () => GetAllTimeLogsForSupervisorUsecase(i()));
     i.addLazySingleton<ApproveOrRejectTimeLogUsecase>(
-        () => ApproveOrRejectTimeLogUsecase(i(), i(), i(), i()));
+        () => ApproveOrRejectTimeLogUsecase(i(), i(), i()));
 
     // Use Cases - TimeLog
     i.addLazySingleton<ClockInUsecase>(() => ClockInUsecase(i()));
@@ -254,7 +253,6 @@ class AppModule extends Module {
 
     // Services
     i.addSingleton<NotificationService>(() => NotificationService());
-    i.addSingleton<NotificationHelper>(() => NotificationHelper());
     i.addSingleton<ReminderService>(() => ReminderService());
     i.addSingleton<ConnectivityService>(() => ConnectivityService());
     i.addSingleton<CacheService>(() => CacheService());

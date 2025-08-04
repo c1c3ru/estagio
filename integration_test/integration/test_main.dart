@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:gestao_de_estagio/core/theme/theme_service.dart';
 import 'test_app_module.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  // Skip Firebase initialization entirely for tests to prevent platform channel errors
+  // Firebase is mocked in TestAppModule
 
   // Initialize theme service without Firebase
   await ThemeService().initialize();

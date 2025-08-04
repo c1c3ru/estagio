@@ -77,20 +77,21 @@ class NotificationService {
   factory NotificationService() => instance;
   NotificationService._internal();
 
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  FirebaseMessaging? _firebaseMessaging;
+  
+  FirebaseMessaging get firebaseMessaging {
+    _firebaseMessaging ??= FirebaseMessaging.instance;
+    return _firebaseMessaging!;
+  }
 
-  /// Inicializa o Firebase de forma segura (apenas se não for web)
+  /// Inicializa o Firebase de forma segura (apenas para mobile)
   Future<void> safeInitializeFirebase() async {
-    if (kIsWeb) return;
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
     try {
-      // Só inicializa se firebase_core estiver disponível
-      // e se não estiver inicializado ainda
-      // ignore: undefined_prefixed_name
       if (Firebase.apps.isEmpty) {
         await Firebase.initializeApp();
       }
     } catch (e) {
-      // Em ambiente de teste ou se firebase_core não estiver disponível, ignore
       if (kDebugMode) print('⚠️ safeInitializeFirebase: $e');
     }
   }
@@ -124,22 +125,20 @@ class NotificationService {
 
     try {
       // Inicializa timezones para zonedSchedule
-      tz_data.initializeTimeZones(); // Adicionado para resolver TZDateTime
-
-      // Solicita permissões
-      final hasPermission = await _requestPermissions();
-      if (!hasPermission) {
-        logger.w('Permissões de notificação negadas');
-        return false;
-      }
+      tz_data.initializeTimeZones();
 
       // Inicializa notificações locais
       await _initializeLocalNotifications();
 
-      // Inicializa Firebase (caso necessário)
-      await safeInitializeFirebase();
-      // Inicializa Firebase Messaging
-      await _initializeFirebaseMessaging();
+      // Apenas inicializa Firebase em plataformas móveis
+      if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+        await safeInitializeFirebase();
+        
+        final hasPermission = await _requestPermissions();
+        if (hasPermission) {
+          await _initializeFirebaseMessaging();
+        }
+      }
 
       // Carrega histórico de notificações
       await _loadNotificationHistory();
@@ -158,7 +157,7 @@ class NotificationService {
     try {
       // Permissão para notificações
       NotificationSettings settings =
-          await _firebaseMessaging.requestPermission(
+          await firebaseMessaging.requestPermission(
         alert: true,
         announcement: false,
         badge: true,
@@ -248,7 +247,7 @@ class NotificationService {
   /// Inicializa Firebase Messaging
   Future<void> _initializeFirebaseMessaging() async {
     // Obtém token FCM
-    _fcmToken = await _firebaseMessaging.getToken();
+    _fcmToken = await firebaseMessaging.getToken();
     logger.i('FCM Token: $_fcmToken');
 
     if (_fcmToken != null) {
@@ -263,7 +262,7 @@ class NotificationService {
     }
 
     // Listener para mudanças no token
-    _firebaseMessaging.onTokenRefresh.listen((token) {
+    firebaseMessaging.onTokenRefresh.listen((token) {
       _fcmToken = token;
       _tokenStreamController.add(token);
       _saveFcmToken(token);
@@ -275,7 +274,7 @@ class NotificationService {
     FirebaseMessaging.onMessageOpenedApp.listen(_handleBackgroundMessage);
 
     // Verifica se app foi aberto por notificação
-    final initialMessage = await _firebaseMessaging.getInitialMessage();
+    final initialMessage = await firebaseMessaging.getInitialMessage();
     if (initialMessage != null) {
       _handleBackgroundMessage(initialMessage);
     }
@@ -616,8 +615,12 @@ class NotificationService {
 
   /// Verifica se notificações estão habilitadas
   Future<bool> areNotificationsEnabled() async {
-    final settings = await _firebaseMessaging.getNotificationSettings();
-    return settings.authorizationStatus == AuthorizationStatus.authorized;
+    try {
+      final settings = await firebaseMessaging.getNotificationSettings();
+      return settings.authorizationStatus == AuthorizationStatus.authorized;
+    } catch (e) {
+      return false;
+    }
   }
 
   /// Solicita permissão para notificações

@@ -5,7 +5,7 @@ import '../constants/app_strings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'notification_service.dart';
-import 'notification_helper.dart'; // Mantém a importação para usar os métodos estáticos
+import 'package:gestao_de_estagio/core/services/notification_helper.dart'; // Mantém a importação para usar os métodos estáticos
 
 /// Serviço responsável por gerenciar lembretes automáticos
 /// para estudantes (check-in, check-out, contratos expirando, etc.)
