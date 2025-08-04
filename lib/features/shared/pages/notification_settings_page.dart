@@ -222,7 +222,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       appBar: AppBar(
         title: const Text('Configurações de Notificação'),
         backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.white,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -274,7 +274,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                   _notificationsEnabled
                       ? Icons.notifications
                       : Icons.notifications_off,
-                  color: _notificationsEnabled ? Colors.green : Colors.red,
+                  color: _notificationsEnabled ? AppColors.success : AppColors.error,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -302,7 +302,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                   label: const Text('Solicitar Permissão'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppColors.white,
                   ),
                 ),
               ),
@@ -392,7 +392,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 label: const Text('Enviar Teste'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.secondary,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppColors.white,
                 ),
               ),
             ),
