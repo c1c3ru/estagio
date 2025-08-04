@@ -92,12 +92,15 @@ class _SupervisorTimeApprovalPageState
   // Função para buscar o nome do estudante se não estiver no cache
   // Na prática, a lista de logs do BLoC/Usecase poderia já vir com os nomes dos estudantes (via join).
   // Esta é uma solução alternativa se a TimeLogEntity só tiver studentId.
-  Future<String> _getStudentName(
-      String studentId, supervisor_state.SupervisorState currentState) async {
+  /// Versão síncrona para evitar rebuilds infinitos no FutureBuilder
+  String _getStudentNameSync(
+      String studentId, supervisor_state.SupervisorState currentState) {
+    // Primeiro verifica o cache
     if (_studentNames.containsKey(studentId)) {
       return _studentNames[studentId]!;
     }
-    // Se o estado atual do dashboard tiver a lista de estudantes, podemos usá-la
+    
+    // Se o estado atual do dashboard tiver a lista de estudantes, usa ela
     if (currentState is supervisor_state.SupervisorDashboardLoadSuccess) {
       try {
         final student =
@@ -105,13 +108,11 @@ class _SupervisorTimeApprovalPageState
         _studentNames[studentId] = student.fullName;
         return student.fullName;
       } catch (e) {
-        // Estudante não encontrado na lista do dashboard, poderia buscar individualmente
+        // Estudante não encontrado na lista do dashboard
       }
     }
-    // Fallback: buscar o nome do estudante (isso pode ser ineficiente se feito para cada item da lista)
-    // O ideal é que o evento LoadAllTimeLogsForApprovalEvent já traga os nomes.
-    // Por agora, retornamos o ID.
-    // logger.w("Nome do estudante para ID $studentId não encontrado no cache nem no estado do dashboard.");
+    
+    // Fallback: retorna ID truncado para evitar operações assíncronas
     return 'ID: ${studentId.substring(0, 6)}...';
   }
 
@@ -247,18 +248,9 @@ class _SupervisorTimeApprovalPageState
                 itemCount: currentState.timeLogs.length,
                 itemBuilder: (context, index) {
                   final log = currentState.timeLogs[index];
-                  // Para obter o nome do estudante, você pode fazer um FutureBuilder aqui
-                  // ou garantir que a entidade TimeLogEntity já venha com o nome do estudante.
-                  // Por simplicidade, vou usar a função _getStudentName que pode ser otimizada.
-                  return FutureBuilder<String>(
-                      future: _getStudentName(
-                          log.studentId, currentState), // Passa o estado atual
-                      builder: (context, snapshot) {
-                        final studentName =
-                            snapshot.data ?? 'A carregar nome...';
-                        return _buildTimeLogApprovalCard(
-                            context, log, studentName);
-                      });
+                  // CORREÇÃO: Usar cache síncrono em vez de FutureBuilder para evitar loop infinito
+                  final studentName = _getStudentNameSync(log.studentId, currentState);
+                  return _buildTimeLogApprovalCard(context, log, studentName);
                 },
               ),
             );

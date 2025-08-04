@@ -518,57 +518,8 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
 
         const SizedBox(height: 24),
 
-        // Supervisor do contrato ativo
-        FutureBuilder<ContractEntity?>(
-          future: _getActiveContract(student.id),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: LinearProgressIndicator(),
-              );
-            }
-            final contract = snapshot.data;
-            if (contract == null || (contract.supervisorId ?? '').isEmpty) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  'Nenhum supervisor associado. A associação é feita ao criar um contrato. Caso não tenha contrato ativo, crie um novo contrato para associar um supervisor.',
-                  style: TextStyle(color: Colors.orange[800]),
-                  textAlign: TextAlign.center,
-                ),
-              );
-            }
-            return FutureBuilder<SupervisorEntity?>(
-              future: _getSupervisorById(contract.supervisorId ?? ''),
-              builder: (context, supSnapshot) {
-                if (supSnapshot.connectionState == ConnectionState.waiting) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.0),
-                    child: LinearProgressIndicator(),
-                  );
-                }
-                if (!supSnapshot.hasData || supSnapshot.data == null) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text(
-                      'Supervisor não encontrado. Verifique com o suporte.',
-                      style: TextStyle(color: Colors.red[800]),
-                      textAlign: TextAlign.center,
-                    ),
-                  );
-                }
-                final supervisor = supSnapshot.data!;
-                return _buildReadOnlyInfo(
-                  context,
-                  'Supervisor do Contrato Ativo',
-                  '${supervisor.position} - ${supervisor.department}',
-                  icon: Icons.verified_user_outlined,
-                );
-              },
-            );
-          },
-        ),
+        // Supervisor do contrato ativo (com cache para evitar loop infinito)
+        _buildSupervisorInfoWithCache(context, student.id),
 
         // Informações do contrato
         Text(
@@ -802,6 +753,104 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
             fontWeight: FontWeight.bold,
           ),
     );
+  }
+
+  // Cache para evitar rebuilds infinitos
+  ContractEntity? _cachedContract;
+  SupervisorEntity? _cachedSupervisor;
+  String? _lastStudentId;
+  bool _isLoadingContract = false;
+  bool _isLoadingSupervisor = false;
+
+  /// Versão inteligente com cache que preserva funcionalidade mas evita loop infinito
+  Widget _buildSupervisorInfoWithCache(BuildContext context, String studentId) {
+    // Se mudou o estudante, limpa o cache
+    if (_lastStudentId != studentId) {
+      _cachedContract = null;
+      _cachedSupervisor = null;
+      _lastStudentId = studentId;
+      _isLoadingContract = false;
+      _isLoadingSupervisor = false;
+    }
+
+    // Se já tem dados em cache, usa eles
+    if (_cachedContract != null && _cachedSupervisor != null) {
+      return _buildReadOnlyInfo(
+        context,
+        'Supervisor do Contrato Ativo',
+        '${_cachedSupervisor!.position} - ${_cachedSupervisor!.department}',
+        icon: Icons.verified_user_outlined,
+      );
+    }
+
+    // Se não tem contrato em cache e não está carregando, inicia carregamento
+    if (_cachedContract == null && !_isLoadingContract) {
+      _isLoadingContract = true;
+      _loadContractAndSupervisor(studentId);
+    }
+
+    // Enquanto carrega, mostra indicador
+    if (_isLoadingContract || _isLoadingSupervisor) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8.0),
+        child: LinearProgressIndicator(),
+      );
+    }
+
+    // Se não encontrou contrato
+    if (_cachedContract == null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Text(
+          'Nenhum supervisor associado. A associação é feita ao criar um contrato.',
+          style: TextStyle(color: Colors.orange[800]),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    // Se não encontrou supervisor
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Text(
+        'Supervisor não encontrado. Verifique com o suporte.',
+        style: TextStyle(color: Colors.red[800]),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+
+  /// Carrega contrato e supervisor de forma assíncrona mas controlada
+  Future<void> _loadContractAndSupervisor(String studentId) async {
+    try {
+      // Carrega contrato
+      final contract = await _getActiveContract(studentId);
+      if (mounted) {
+        setState(() {
+          _cachedContract = contract;
+          _isLoadingContract = false;
+        });
+
+        // Se tem contrato, carrega supervisor
+        if (contract != null && (contract.supervisorId ?? '').isNotEmpty) {
+          _isLoadingSupervisor = true;
+          final supervisor = await _getSupervisorById(contract.supervisorId!);
+          if (mounted) {
+            setState(() {
+              _cachedSupervisor = supervisor;
+              _isLoadingSupervisor = false;
+            });
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingContract = false;
+          _isLoadingSupervisor = false;
+        });
+      }
+    }
   }
 
   Future<ContractEntity?> _getActiveContract(String studentId) async {

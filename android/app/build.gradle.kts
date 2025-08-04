@@ -10,6 +10,10 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -22,13 +26,14 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.gestao_de_estagio"
-        // Para compatibilidade com plugins recentes
         minSdk = 23
         targetSdk = flutter.targetSdkVersion
         versionCode = project.findProperty("flutter.versionCode")?.toString()?.toInt() ?: 1
         versionName = project.findProperty("flutter.versionName")?.toString() ?: "1.0"
+        
+        // Reduzir logs de debug
+        buildConfigField("boolean", "DEBUG_LOGS", "false")
     }
 
     buildTypes {
