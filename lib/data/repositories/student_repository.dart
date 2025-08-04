@@ -2,6 +2,7 @@ import '../../domain/repositories/i_student_repository.dart';
 import '../../domain/entities/student_entity.dart';
 import '../../domain/entities/time_log_entity.dart';
 import '../../core/errors/app_exceptions.dart';
+import '../../core/utils/app_logger.dart';
 import '../datasources/supabase/student_datasource.dart';
 import '../datasources/supabase/time_log_datasource.dart';
 import '../models/student_model.dart';
@@ -107,9 +108,10 @@ class StudentRepository implements IStudentRepository {
       {required String studentId, String? notes}) async {
     try {
       // Implementação temporária
-      return const Left(
-          ServerFailure(message: 'Método checkIn não implementado'));
+      AppLogger.repository('Método checkIn não implementado foi chamado.');
+return const Left(NotImplementedFailure(message: 'Método checkIn não está disponível na versão atual'));
     } catch (e) {
+      AppLogger.error('Erro inesperado em checkIn', error: e);
       return Left(ServerFailure(message: e.toString()));
     }
   }
@@ -121,9 +123,10 @@ class StudentRepository implements IStudentRepository {
       String? description}) async {
     try {
       // Implementação temporária
-      return const Left(
-          ServerFailure(message: 'Método checkOut não implementado'));
+      AppLogger.repository('Método checkOut não implementado foi chamado.');
+return const Left(NotImplementedFailure(message: 'Método checkOut não está disponível na versão atual'));
     } catch (e) {
+      AppLogger.error('Erro inesperado em checkOut', error: e);
       return Left(ServerFailure(message: e.toString()));
     }
   }
@@ -137,9 +140,10 @@ class StudentRepository implements IStudentRepository {
       String? description}) async {
     try {
       // Implementação temporária
-      return const Left(
-          ServerFailure(message: 'Método createTimeLog não implementado'));
+      AppLogger.repository('Método createTimeLog não implementado foi chamado.');
+return const Left(NotImplementedFailure(message: 'Método createTimeLog não está disponível na versão atual'));
     } catch (e) {
+      AppLogger.error('Erro inesperado em createTimeLog', error: e);
       return Left(ServerFailure(message: e.toString()));
     }
   }
@@ -148,9 +152,10 @@ class StudentRepository implements IStudentRepository {
   Future<Either<AppFailure, void>> deleteTimeLog(String timeLogId) async {
     try {
       // Implementação temporária
-      return const Left(
-          ServerFailure(message: 'Método deleteTimeLog não implementado'));
+      AppLogger.repository('Método deleteTimeLog não implementado foi chamado.');
+return const Left(NotImplementedFailure(message: 'Método deleteTimeLog não está disponível na versão atual'));
     } catch (e) {
+      AppLogger.error('Erro inesperado em deleteTimeLog', error: e);
       return Left(ServerFailure(message: e.toString()));
     }
   }
@@ -206,9 +211,10 @@ class StudentRepository implements IStudentRepository {
       TimeLogEntity timeLog) async {
     try {
       // Implementação temporária
-      return const Left(
-          ServerFailure(message: 'Método updateTimeLog não implementado'));
+      AppLogger.repository('Método updateTimeLog não implementado foi chamado.');
+return const Left(NotImplementedFailure(message: 'Método updateTimeLog não está disponível na versão atual'));
     } catch (e) {
+      AppLogger.error('Erro inesperado em updateTimeLog', error: e);
       return Left(ServerFailure(message: e.toString()));
     }
   }

@@ -1,5 +1,7 @@
 // lib/core/services/sync_service.dart
 import 'dart:async';
+import '../utils/app_logger.dart';
+import '../constants/app_strings.dart';
 import 'package:flutter/foundation.dart';
 import 'connectivity_service.dart';
 import 'cache_service.dart';
@@ -307,7 +309,7 @@ class SyncService {
         } catch (e) {
           failureCount++;
           if (kDebugMode) {
-            print('❌ SyncService: Erro ao processar operação: $e');
+            AppLogger.error('\u001b[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e\u001b[0m');
           }
         }
       }
@@ -323,7 +325,7 @@ class SyncService {
       return failureCount == 0;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ SyncService: Erro na sincronização: $e');
+        AppLogger.error('\u001b[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e\u001b[0m');
       }
       _syncStatusController.add(SyncStatus.syncError);
       return false;
@@ -366,7 +368,7 @@ class SyncService {
       return true;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ SyncService: Erro ao executar operação $operationType: $e');
+        AppLogger.error('\u001b[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} [$operationType] - $e\u001b[0m');
       }
       return false;
     }

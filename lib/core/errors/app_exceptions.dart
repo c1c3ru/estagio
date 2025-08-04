@@ -81,6 +81,10 @@ class DatabaseFailure extends AppFailure {
   const DatabaseFailure(String message) : super(message: message);
 }
 
+class NotImplementedFailure extends AppFailure {
+  const NotImplementedFailure({required super.message, super.originalException});
+}
+
 class ServerFailure extends AppFailure {
   const ServerFailure({
     required super.message,

@@ -1,5 +1,7 @@
 // lib/core/services/cache_service.dart
 import 'dart:async';
+import '../utils/app_logger.dart';
+import '../constants/app_strings.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
@@ -153,7 +155,7 @@ class CacheService {
       return true;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ CacheService: Erro ao armazenar dados: $e');
+        AppLogger.error('\u001b[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e\u001b[0m');
       }
       return false;
     }
@@ -258,7 +260,7 @@ class CacheService {
       return true;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ CacheService: Erro ao remover dados: $e');
+        AppLogger.error('\u001b[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e\u001b[0m');
       }
       return false;
     }
@@ -392,7 +394,7 @@ class CacheService {
       return deletedCount;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ CacheService: Erro ao limpar dados expirados: $e');
+        AppLogger.error('\u001b[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e\u001b[0m');
       }
       return 0;
     }

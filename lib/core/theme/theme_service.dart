@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import '../utils/app_logger.dart';
 
 /// Tipos de tema disponíveis
 enum AppThemeType {
@@ -224,13 +226,10 @@ class ThemeService extends ChangeNotifier {
     final configJson = _prefs!.getString(_themeConfigKey);
     if (configJson != null) {
       try {
-        final Map<String, dynamic> json = Map<String, dynamic>.from(
-          // Simulação de parsing JSON - em produção usaria dart:convert
-          _parseJsonString(configJson),
-        );
+        final Map<String, dynamic> json = jsonDecode(configJson);
         _config = ThemeConfig.fromJson(json);
       } catch (e) {
-        // Se houver erro, usar configuração padrão
+        AppLogger.error('Erro ao carregar configuração de tema', error: e);
         _config = const ThemeConfig();
       }
     }
@@ -240,22 +239,15 @@ class ThemeService extends ChangeNotifier {
 
   Future<void> _saveThemeConfig() async {
     if (_prefs == null) return;
-
-    final configJson = _config.toJson().toString();
-    await _prefs!.setString(_themeConfigKey, configJson);
+    try {
+      final configJson = jsonEncode(_config.toJson());
+      await _prefs!.setString(_themeConfigKey, configJson);
+    } catch (e) {
+      AppLogger.error('Erro ao salvar configuração de tema', error: e);
+    }
   }
 
-  Map<String, dynamic> _parseJsonString(String jsonString) {
-    // Implementação simplificada - em produção usaria jsonDecode
-    return {
-      'themeType': 'system',
-      'colorScheme': 'blue',
-      'fontSize': 14.0,
-      'useSystemFont': false,
-      'highContrast': false,
-      'reducedMotion': false,
-    };
-  }
+  
 
   ColorScheme _getColorScheme(AppColorScheme scheme, bool isDark) {
     final Map<AppColorScheme, Color> primaryColors = {

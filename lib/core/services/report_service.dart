@@ -1,6 +1,8 @@
 // lib/core/services/report_service.dart
 import 'dart:convert';
 import 'dart:io';
+import '../utils/app_logger.dart';
+import '../constants/app_strings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -79,7 +81,7 @@ class ReportService {
       );
     } catch (e) {
       if (kDebugMode) {
-        print('❌ ReportService: Erro ao gerar relatório de horas: $e');
+        AppLogger.error('\u001b[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e\u001b[0m');
       }
       rethrow;
     }
@@ -160,7 +162,7 @@ class ReportService {
       );
     } catch (e) {
       if (kDebugMode) {
-        print('❌ ReportService: Erro ao gerar relatório de performance: $e');
+        AppLogger.error('\u001b[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e\u001b[0m');
       }
       rethrow;
     }
@@ -230,7 +232,7 @@ class ReportService {
       );
     } catch (e) {
       if (kDebugMode) {
-        print('❌ ReportService: Erro ao gerar relatório de contratos: $e');
+        AppLogger.error('\u001b[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e\u001b[0m');
       }
       rethrow;
     }

@@ -14,10 +14,10 @@ class NotificationPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Notificações'),
         actions: [
-          BlocBuilder<NotificationBloc, NotificationState>(
-            builder: (context, state) {
-              if (state is NotificationLoadAllSuccess &&
-                  state.unreadCount > 0) {
+          BlocSelector<NotificationBloc, NotificationState, int>(
+            selector: (state) => state is NotificationLoadAllSuccess ? state.unreadCount : 0,
+            builder: (context, unreadCount) {
+              if (unreadCount > 0) {
                 return TextButton(
                   onPressed: () {
                     context.read<NotificationBloc>().add(

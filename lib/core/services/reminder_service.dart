@@ -1,5 +1,7 @@
 // lib/core/services/reminder_service.dart
 import 'dart:async';
+import '../utils/app_logger.dart';
+import '../constants/app_strings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'notification_service.dart';
@@ -92,7 +94,7 @@ class ReminderService {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ ReminderService: Erro ao configurar lembretes diários: $e');
+        AppLogger.error('[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e[0m');
       }
     }
   }
@@ -138,7 +140,7 @@ class ReminderService {
       // }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ ReminderService: Erro ao verificar contratos expirando: $e');
+        AppLogger.error('[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e[0m');
       }
     }
   }
@@ -313,7 +315,7 @@ class ReminderService {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ ReminderService: Erro ao limpar lembretes: $e');
+        AppLogger.error('[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e[0m');
       }
     }
   }
