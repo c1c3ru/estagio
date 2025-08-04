@@ -3,15 +3,18 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
+import 'dart:async' as _i5;
 
-import 'package:flutter_bloc/flutter_bloc.dart' as _i5;
+import 'package:flutter_bloc/flutter_bloc.dart' as _i6;
+import 'package:gestao_de_estagio/features/auth/bloc/auth_bloc.dart' as _i9;
+import 'package:gestao_de_estagio/features/auth/bloc/auth_event.dart' as _i10;
+import 'package:gestao_de_estagio/features/auth/bloc/auth_state.dart' as _i4;
 import 'package:gestao_de_estagio/features/shared/bloc/time_log_bloc.dart'
     as _i2;
 import 'package:gestao_de_estagio/features/student/bloc/student_bloc.dart'
-    as _i6;
-import 'package:gestao_de_estagio/features/student/bloc/student_event.dart'
     as _i7;
+import 'package:gestao_de_estagio/features/student/bloc/student_event.dart'
+    as _i8;
 import 'package:gestao_de_estagio/features/student/bloc/student_state.dart'
     as _i3;
 import 'package:mockito/mockito.dart' as _i1;
@@ -50,6 +53,16 @@ class _FakeStudentState_1 extends _i1.SmartFake implements _i3.StudentState {
         );
 }
 
+class _FakeAuthState_2 extends _i1.SmartFake implements _i4.AuthState {
+  _FakeAuthState_2(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
 /// A class which mocks [TimeLogBloc].
 ///
 /// See the documentation for Mockito's code generation for more information.
@@ -68,10 +81,10 @@ class MockTimeLogBloc extends _i1.Mock implements _i2.TimeLogBloc {
       ) as _i2.TimeLogState);
 
   @override
-  _i4.Stream<_i2.TimeLogState> get stream => (super.noSuchMethod(
+  _i5.Stream<_i2.TimeLogState> get stream => (super.noSuchMethod(
         Invocation.getter(#stream),
-        returnValue: _i4.Stream<_i2.TimeLogState>.empty(),
-      ) as _i4.Stream<_i2.TimeLogState>);
+        returnValue: _i5.Stream<_i2.TimeLogState>.empty(),
+      ) as _i5.Stream<_i2.TimeLogState>);
 
   @override
   bool get isClosed => (super.noSuchMethod(
@@ -108,8 +121,8 @@ class MockTimeLogBloc extends _i1.Mock implements _i2.TimeLogBloc {
 
   @override
   void on<E extends _i2.TimeLogEvent>(
-    _i5.EventHandler<E, _i2.TimeLogState>? handler, {
-    _i5.EventTransformer<E>? transformer,
+    _i6.EventHandler<E, _i2.TimeLogState>? handler, {
+    _i6.EventTransformer<E>? transformer,
   }) =>
       super.noSuchMethod(
         Invocation.method(
@@ -122,7 +135,7 @@ class MockTimeLogBloc extends _i1.Mock implements _i2.TimeLogBloc {
 
   @override
   void onTransition(
-          _i5.Transition<_i2.TimeLogEvent, _i2.TimeLogState>? transition) =>
+          _i6.Transition<_i2.TimeLogEvent, _i2.TimeLogState>? transition) =>
       super.noSuchMethod(
         Invocation.method(
           #onTransition,
@@ -132,17 +145,17 @@ class MockTimeLogBloc extends _i1.Mock implements _i2.TimeLogBloc {
       );
 
   @override
-  _i4.Future<void> close() => (super.noSuchMethod(
+  _i5.Future<void> close() => (super.noSuchMethod(
         Invocation.method(
           #close,
           [],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  void onChange(_i5.Change<_i2.TimeLogState>? change) => super.noSuchMethod(
+  void onChange(_i6.Change<_i2.TimeLogState>? change) => super.noSuchMethod(
         Invocation.method(
           #onChange,
           [change],
@@ -186,7 +199,7 @@ class MockTimeLogBloc extends _i1.Mock implements _i2.TimeLogBloc {
 /// A class which mocks [StudentBloc].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockStudentBloc extends _i1.Mock implements _i6.StudentBloc {
+class MockStudentBloc extends _i1.Mock implements _i7.StudentBloc {
   MockStudentBloc() {
     _i1.throwOnMissingStub(this);
   }
@@ -201,10 +214,10 @@ class MockStudentBloc extends _i1.Mock implements _i6.StudentBloc {
       ) as _i3.StudentState);
 
   @override
-  _i4.Stream<_i3.StudentState> get stream => (super.noSuchMethod(
+  _i5.Stream<_i3.StudentState> get stream => (super.noSuchMethod(
         Invocation.getter(#stream),
-        returnValue: _i4.Stream<_i3.StudentState>.empty(),
-      ) as _i4.Stream<_i3.StudentState>);
+        returnValue: _i5.Stream<_i3.StudentState>.empty(),
+      ) as _i5.Stream<_i3.StudentState>);
 
   @override
   bool get isClosed => (super.noSuchMethod(
@@ -213,7 +226,7 @@ class MockStudentBloc extends _i1.Mock implements _i6.StudentBloc {
       ) as bool);
 
   @override
-  void add(_i7.StudentEvent? event) => super.noSuchMethod(
+  void add(_i8.StudentEvent? event) => super.noSuchMethod(
         Invocation.method(
           #add,
           [event],
@@ -222,7 +235,7 @@ class MockStudentBloc extends _i1.Mock implements _i6.StudentBloc {
       );
 
   @override
-  void onEvent(_i7.StudentEvent? event) => super.noSuchMethod(
+  void onEvent(_i8.StudentEvent? event) => super.noSuchMethod(
         Invocation.method(
           #onEvent,
           [event],
@@ -240,9 +253,9 @@ class MockStudentBloc extends _i1.Mock implements _i6.StudentBloc {
       );
 
   @override
-  void on<E extends _i7.StudentEvent>(
-    _i5.EventHandler<E, _i3.StudentState>? handler, {
-    _i5.EventTransformer<E>? transformer,
+  void on<E extends _i8.StudentEvent>(
+    _i6.EventHandler<E, _i3.StudentState>? handler, {
+    _i6.EventTransformer<E>? transformer,
   }) =>
       super.noSuchMethod(
         Invocation.method(
@@ -255,7 +268,7 @@ class MockStudentBloc extends _i1.Mock implements _i6.StudentBloc {
 
   @override
   void onTransition(
-          _i5.Transition<_i7.StudentEvent, _i3.StudentState>? transition) =>
+          _i6.Transition<_i8.StudentEvent, _i3.StudentState>? transition) =>
       super.noSuchMethod(
         Invocation.method(
           #onTransition,
@@ -265,17 +278,150 @@ class MockStudentBloc extends _i1.Mock implements _i6.StudentBloc {
       );
 
   @override
-  _i4.Future<void> close() => (super.noSuchMethod(
+  _i5.Future<void> close() => (super.noSuchMethod(
         Invocation.method(
           #close,
           [],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  void onChange(_i5.Change<_i3.StudentState>? change) => super.noSuchMethod(
+  void onChange(_i6.Change<_i3.StudentState>? change) => super.noSuchMethod(
+        Invocation.method(
+          #onChange,
+          [change],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void addError(
+    Object? error, [
+    StackTrace? stackTrace,
+  ]) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #addError,
+          [
+            error,
+            stackTrace,
+          ],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void onError(
+    Object? error,
+    StackTrace? stackTrace,
+  ) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #onError,
+          [
+            error,
+            stackTrace,
+          ],
+        ),
+        returnValueForMissingStub: null,
+      );
+}
+
+/// A class which mocks [AuthBloc].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockAuthBloc extends _i1.Mock implements _i9.AuthBloc {
+  MockAuthBloc() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i4.AuthState get state => (super.noSuchMethod(
+        Invocation.getter(#state),
+        returnValue: _FakeAuthState_2(
+          this,
+          Invocation.getter(#state),
+        ),
+      ) as _i4.AuthState);
+
+  @override
+  _i5.Stream<_i4.AuthState> get stream => (super.noSuchMethod(
+        Invocation.getter(#stream),
+        returnValue: _i5.Stream<_i4.AuthState>.empty(),
+      ) as _i5.Stream<_i4.AuthState>);
+
+  @override
+  bool get isClosed => (super.noSuchMethod(
+        Invocation.getter(#isClosed),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  _i5.Future<void> close() => (super.noSuchMethod(
+        Invocation.method(
+          #close,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  void add(_i10.AuthEvent? event) => super.noSuchMethod(
+        Invocation.method(
+          #add,
+          [event],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void onEvent(_i10.AuthEvent? event) => super.noSuchMethod(
+        Invocation.method(
+          #onEvent,
+          [event],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void emit(_i4.AuthState? state) => super.noSuchMethod(
+        Invocation.method(
+          #emit,
+          [state],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void on<E extends _i10.AuthEvent>(
+    _i6.EventHandler<E, _i4.AuthState>? handler, {
+    _i6.EventTransformer<E>? transformer,
+  }) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #on,
+          [handler],
+          {#transformer: transformer},
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void onTransition(
+          _i6.Transition<_i10.AuthEvent, _i4.AuthState>? transition) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #onTransition,
+          [transition],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void onChange(_i6.Change<_i4.AuthState>? change) => super.noSuchMethod(
         Invocation.method(
           #onChange,
           [change],

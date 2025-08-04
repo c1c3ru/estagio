@@ -62,10 +62,8 @@ void main() {
         app.main();
         await tester.pumpAndSettle();
 
-        // Set initial theme to light, then toggle to dark, then toggle back to light
+        // Set theme to light
         await themeService.toggleTheme(); // system -> light
-        await themeService.toggleTheme(); // light -> dark
-        await themeService.toggleTheme(); // dark -> light
         await themeService.setColorScheme(AppColorScheme.purple);
         // Theme config is automatically saved when changed
 

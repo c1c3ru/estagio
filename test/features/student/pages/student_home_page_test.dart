@@ -7,22 +7,28 @@ import 'package:gestao_de_estagio/features/student/pages/student_home_page.dart'
 import 'package:gestao_de_estagio/features/shared/bloc/time_log_bloc.dart';
 import 'package:gestao_de_estagio/features/student/bloc/student_bloc.dart';
 import 'package:gestao_de_estagio/features/student/bloc/student_state.dart';
+import 'package:gestao_de_estagio/features/auth/bloc/auth_bloc.dart';
+import 'package:gestao_de_estagio/features/auth/bloc/auth_state.dart';
 
 import 'student_home_page_test.mocks.dart';
 
-@GenerateMocks([TimeLogBloc, StudentBloc])
+@GenerateMocks([TimeLogBloc, StudentBloc, AuthBloc])
 void main() {
   late MockTimeLogBloc mockTimeLogBloc;
   late MockStudentBloc mockStudentBloc;
+  late MockAuthBloc mockAuthBloc;
 
   setUp(() {
     mockTimeLogBloc = MockTimeLogBloc();
     mockStudentBloc = MockStudentBloc();
+    mockAuthBloc = MockAuthBloc();
 
     when(mockTimeLogBloc.state).thenReturn(TimeLogInitial());
     when(mockStudentBloc.state).thenReturn(const StudentInitial());
+    when(mockAuthBloc.state).thenReturn(AuthInitial());
     when(mockTimeLogBloc.stream).thenAnswer((_) => const Stream.empty());
     when(mockStudentBloc.stream).thenAnswer((_) => const Stream.empty());
+    when(mockAuthBloc.stream).thenAnswer((_) => const Stream.empty());
   });
 
   Widget createWidgetUnderTest() {
@@ -31,6 +37,7 @@ void main() {
         providers: [
           BlocProvider<TimeLogBloc>.value(value: mockTimeLogBloc),
           BlocProvider<StudentBloc>.value(value: mockStudentBloc),
+          BlocProvider<AuthBloc>.value(value: mockAuthBloc),
         ],
         child: const StudentHomePage(),
       ),
