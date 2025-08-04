@@ -350,7 +350,7 @@ class ReportService {
     final buffer = StringBuffer();
     buffer.writeln('Data,Entrada,Saída,Total de Horas,Descrição,Status');
 
-    final timeLogs = reportData['timeLogs'] as List<Map<String, dynamic>>;
+    final timeLogs = reportData['timeLogs'] as List<Map<String, dynamic>>? ?? [];
     for (final log in timeLogs) {
       final date = DateTime.parse(log['created_at']).toLocal();
       final clockIn = log['clock_in_time'] != null 

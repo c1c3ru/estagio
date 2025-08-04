@@ -141,9 +141,9 @@ class FeedbackService {
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(20),
           ),
-          elevation: 6,
+          elevation: 0,
         ),
       );
   }
