@@ -6,6 +6,7 @@ import 'package:gestao_de_estagio/core/services/cache_service.dart';
 import 'package:gestao_de_estagio/core/services/sync_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'test_app_module.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -16,10 +17,10 @@ void main() {
     late SyncService syncService;
 
     setUpAll(() async {
-      // Initialize the app with TestAppModule first
-      app.main();
+      // Initialize the TestAppModule for dependency injection
+      Modular.bindModule(TestAppModule());
       
-      // Now we can get the services from Modular
+      // Get services from Modular and initialize them
       themeService = Modular.get<ThemeService>();
       await themeService.initialize();
       cacheService = Modular.get<CacheService>();
@@ -56,9 +57,10 @@ void main() {
         app.main();
         await tester.pumpAndSettle();
 
-        // Change theme settings
+        // Set initial theme to light, then toggle to dark, then toggle back to light
+        await themeService.toggleTheme(); // system -> light (or dark if system resolves to dark)
+        await themeService.toggleTheme(); // light -> dark (or dark -> light)
         await themeService.setColorScheme(AppColorScheme.purple);
-        await themeService.toggleTheme();
         // Theme config is automatically saved when changed
 
         // Simulate app restart

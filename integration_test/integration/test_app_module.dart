@@ -30,18 +30,30 @@ class MockCacheService implements CacheService {
     Duration? expiresIn,
     String syncStatus = 'synced',
   }) async {
-    _cache[key] = data;
+    final cacheEntry = Map<String, dynamic>.from(data);
+    cacheEntry['entityType'] = entityType;
+    cacheEntry['syncStatus'] = syncStatus;
+    
+    if (expiresIn != null) {
+      cacheEntry['expiresAt'] = DateTime.now().add(expiresIn).millisecondsSinceEpoch;
+    }
+    
+    _cache[key] = cacheEntry;
     return true;
   }
 
   @override
   Future<Map<String, dynamic>?> getCachedData(String key) async {
+    // Check if data is expired before returning
+    await clearExpiredData();
     return _cache[key];
   }
 
   @override
   Future<List<Map<String, dynamic>>> getCachedDataByType(
       String entityType) async {
+    // Check for expired data before returning
+    await clearExpiredData();
     return _cache.values
         .where((data) => data['entityType'] == entityType)
         .toList();
@@ -76,7 +88,7 @@ class MockCacheService implements CacheService {
 
   @override
   Future<List<Map<String, dynamic>>> getPendingOperations() async {
-    return _pendingOperations;
+    return List<Map<String, dynamic>>.from(_pendingOperations);
   }
 
   @override
@@ -91,7 +103,21 @@ class MockCacheService implements CacheService {
 
   @override
   Future<int> clearExpiredData() async {
-    return 0;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final expiredKeys = <String>[];
+    
+    _cache.forEach((key, value) {
+      final expiresAt = value['expiresAt'] as int?;
+      if (expiresAt != null && expiresAt < now) {
+        expiredKeys.add(key);
+      }
+    });
+    
+    for (final key in expiredKeys) {
+      _cache.remove(key);
+    }
+    
+    return expiredKeys.length;
   }
 
   @override
@@ -103,10 +129,11 @@ class MockCacheService implements CacheService {
 
   @override
   Future<Map<String, dynamic>> getCacheStats() async {
+    final expiredCount = await clearExpiredData();
     return {
       'totalCachedItems': _cache.length,
       'pendingOperations': _pendingOperations.length,
-      'expiredItems': 0,
+      'expiredItems': expiredCount,
       'isInitialized': _isInitialized,
     };
   }
@@ -118,7 +145,6 @@ class MockCacheService implements CacheService {
 }
 
 class MockSyncService implements SyncService {
-  final MockCacheService _cacheService = MockCacheService();
   bool _isInitialized = false;
   final bool _isSyncing = false;
 
@@ -133,7 +159,6 @@ class MockSyncService implements SyncService {
 
   @override
   Future<bool> initialize() async {
-    await _cacheService.initialize();
     _isInitialized = true;
     return true;
   }
@@ -145,23 +170,27 @@ class MockSyncService implements SyncService {
     required String entityType,
     Duration? expiresIn,
   }) async {
-    return await _cacheService.cacheData(
+    final cacheService = Modular.get<CacheService>();
+    return await cacheService.cacheData(
       key: key,
       data: data,
       entityType: entityType,
       expiresIn: expiresIn,
+      syncStatus: 'synced',
     );
   }
 
   @override
   Future<Map<String, dynamic>?> getDataCacheFirst(String key) async {
-    return await _cacheService.getCachedData(key);
+    final cacheService = Modular.get<CacheService>();
+    return await cacheService.getCachedData(key);
   }
 
   @override
   Future<List<Map<String, dynamic>>> getDataListCacheFirst(
       String entityType) async {
-    return await _cacheService.getCachedDataByType(entityType);
+    final cacheService = Modular.get<CacheService>();
+    return await cacheService.getCachedDataByType(entityType);
   }
 
   @override
@@ -171,7 +200,8 @@ class MockSyncService implements SyncService {
     String? entityId,
     required Map<String, dynamic> data,
   }) async {
-    return await _cacheService.addPendingOperation(
+    final cacheService = Modular.get<CacheService>();
+    return await cacheService.addPendingOperation(
       operationType: operationType,
       entityType: entityType,
       entityId: entityId,
@@ -186,7 +216,8 @@ class MockSyncService implements SyncService {
 
   @override
   Future<Map<String, dynamic>> getSyncStats() async {
-    final cacheStats = await _cacheService.getCacheStats();
+    final cacheService = Modular.get<CacheService>();
+    final cacheStats = await cacheService.getCacheStats();
     return {
       'isOnline': true,
       'isSyncing': _isSyncing,
@@ -201,12 +232,14 @@ class MockSyncService implements SyncService {
 
   @override
   Future<bool> clearAllData() async {
-    return await _cacheService.clearAllCache();
+    final cacheService = Modular.get<CacheService>();
+    return await cacheService.clearAllCache();
   }
 
   @override
   void dispose() {
-    _cacheService.dispose();
+    final cacheService = Modular.get<CacheService>();
+    cacheService.dispose();
     _isInitialized = false;
   }
 }
@@ -216,13 +249,11 @@ class TestAppModule extends AppModule {
   void binds(Injector i) {
     i.addSingleton<NotificationService>(MockNotificationService.new);
 
-    // Initialize mock services
+    // Register mock services
     final mockCacheService = MockCacheService();
-    mockCacheService.initialize();
     i.addSingleton<CacheService>(() => mockCacheService);
 
     final mockSyncService = MockSyncService();
-    mockSyncService.initialize();
     i.addSingleton<SyncService>(() => mockSyncService);
 
     // Register ThemeService
