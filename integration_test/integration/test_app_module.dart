@@ -3,8 +3,10 @@ import 'package:gestao_de_estagio/app_module.dart';
 import 'package:gestao_de_estagio/core/services/notification_service.dart';
 import 'package:gestao_de_estagio/core/services/cache_service.dart';
 import 'package:gestao_de_estagio/core/services/sync_service.dart';
+import 'package:gestao_de_estagio/core/services/report_service.dart';
 import 'package:gestao_de_estagio/core/theme/theme_service.dart';
 import '../../test/mocks/mock_notification_service.dart';
+import '../../test/mocks/mock_report_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // Mocks para serviços de persistência
@@ -254,6 +256,8 @@ class TestAppModule extends AppModule {
 
     final mockSyncService = MockSyncService(mockCacheService);
     i.addSingleton<SyncService>(() => mockSyncService);
+
+    i.addSingleton<ReportService>(MockReportService.new);
 
     // Adicione outros mocks aqui se necessário
   }

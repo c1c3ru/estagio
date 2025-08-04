@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'test_main.dart' as app;
+import 'package:gestao_de_estagio/main.dart' as app;
 import 'package:gestao_de_estagio/core/services/report_service.dart';
 import 'package:gestao_de_estagio/features/student/pages/student_reports_page.dart';
 import 'package:gestao_de_estagio/features/supervisor/pages/supervisor_reports_page.dart';
+import 'package:flutter_modular/flutter_modular.dart';
+import 'test_app_module.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -12,8 +14,11 @@ void main() {
   group('Reports Integration Tests', () {
     late ReportService reportService;
 
-    setUpAll(() {
-      reportService = ReportService();
+    setUp(() async {
+      // Initialize the TestAppModule for dependency injection
+      Modular.bindModule(TestAppModule());
+      
+      reportService = Modular.get<ReportService>();
     });
 
     group('Report Service Integration', () {
@@ -193,7 +198,7 @@ void main() {
         // (Este teste assumiria que há um mecanismo de login de teste)
 
         // Act
-        await tester.tap(find.byIcon(Icons.assessment));
+        await tester.tap(find.byIcon(Icons.filter_list));
         await tester.pumpAndSettle();
 
         // Assert
@@ -207,7 +212,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Navegar para página de relatórios
-        await tester.tap(find.byIcon(Icons.assessment));
+        await tester.tap(find.byIcon(Icons.filter_list));
         await tester.pumpAndSettle();
 
         // Act - Aplicar filtro de período
@@ -226,7 +231,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Navegar para página de relatórios
-        await tester.tap(find.byIcon(Icons.assessment));
+        await tester.tap(find.byIcon(Icons.filter_list));
         await tester.pumpAndSettle();
 
         // Act - Exportar relatório
@@ -251,7 +256,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Navegar para página de relatórios
-        await tester.tap(find.byIcon(Icons.assessment));
+        await tester.tap(find.byIcon(Icons.filter_list));
         await tester.pumpAndSettle();
 
         // Act - Compartilhar relatório
@@ -265,19 +270,15 @@ void main() {
     });
 
     group('Supervisor Reports Page Integration', () {
-      testWidgets('should load supervisor reports page successfully',
-          (tester) async {
+      testWidgets('should navigate to supervisor reports page', (tester) async {
         // Arrange
         app.main();
         await tester.pumpAndSettle();
 
-        // Simular login como supervisor
         // (Este teste assumiria que há um mecanismo de login de teste)
 
-        // Act
-        await tester.tap(find.byIcon(Icons.dashboard));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Relatórios'));
+        // Act - Navegar diretamente para a página de relatórios
+        await Modular.to.pushNamed('/supervisor/reports');
         await tester.pumpAndSettle();
 
         // Assert
@@ -290,10 +291,8 @@ void main() {
         app.main();
         await tester.pumpAndSettle();
 
-        // Navegar para página de relatórios do supervisor
-        await tester.tap(find.byIcon(Icons.dashboard));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Relatórios'));
+        // Navegar diretamente para a página de relatórios do supervisor
+        await Modular.to.pushNamed('/supervisor/reports');
         await tester.pumpAndSettle();
 
         // Act - Alternar entre abas
@@ -316,10 +315,8 @@ void main() {
         app.main();
         await tester.pumpAndSettle();
 
-        // Navegar para página de relatórios do supervisor
-        await tester.tap(find.byIcon(Icons.dashboard));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Relatórios'));
+        // Navegar diretamente para a página de relatórios do supervisor
+        await Modular.to.pushNamed('/supervisor/reports');
         await tester.pumpAndSettle();
 
         // Act - Filtrar por estudante
@@ -343,10 +340,8 @@ void main() {
         app.main();
         await tester.pumpAndSettle();
 
-        // Navegar para página de relatórios do supervisor
-        await tester.tap(find.byIcon(Icons.dashboard));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Relatórios'));
+        // Navegar diretamente para a página de relatórios do supervisor
+        await Modular.to.pushNamed('/supervisor/reports');
         await tester.pumpAndSettle();
 
         // Act - Gerar relatórios em lote

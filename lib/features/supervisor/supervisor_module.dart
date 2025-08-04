@@ -12,6 +12,7 @@ import 'pages/student_edit_page.dart';
 import 'pages/supervisor_list_page.dart';
 import 'pages/contract_page.dart';
 import 'pages/supervisor_student_list_page.dart';
+import 'pages/supervisor_reports_page.dart';
 
 // BLoCs
 import 'bloc/supervisor_bloc.dart';
@@ -87,6 +88,13 @@ class SupervisorModule extends Module {
         value: Modular.get<SupervisorBloc>(),
         child: const ContractPage(),
       ),
+      transition: TransitionType.fadeIn,
+    );
+    
+    // Rota para a página de relatórios
+    r.child(
+      '/reports',
+      child: (_) => const SupervisorReportsPage(),
       transition: TransitionType.fadeIn,
     );
   }

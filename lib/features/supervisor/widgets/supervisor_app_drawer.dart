@@ -77,6 +77,12 @@ class SupervisorAppDrawer extends StatelessWidget {
             isSelected: currentIndex == 1,
             onTap: () => Modular.to.navigate('/supervisor/profile'),
           ),
+          _buildDrawerItem(
+            icon: Icons.analytics_outlined,
+            title: 'Relatórios',
+            isSelected: currentIndex == 2,
+            onTap: () => Modular.to.navigate('/supervisor/reports'),
+          ),
           const Divider(thickness: 1, indent: 16, endIndent: 16),
           _buildDrawerItem(
             icon: Icons.logout,
@@ -133,6 +139,9 @@ class SupervisorBottomNavBar extends StatelessWidget {
             Modular.to.navigate('/supervisor/');
             break;
           case 1:
+            Modular.to.navigate('/supervisor/reports');
+            break;
+          case 2:
             Modular.to.navigate('/supervisor/profile');
             break;
         }
@@ -142,6 +151,11 @@ class SupervisorBottomNavBar extends StatelessWidget {
           icon: Icon(Icons.dashboard_outlined),
           activeIcon: Icon(Icons.dashboard),
           label: 'Dashboard',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.analytics_outlined),
+          activeIcon: Icon(Icons.analytics),
+          label: 'Relatórios',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person),

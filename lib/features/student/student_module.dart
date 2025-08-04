@@ -9,6 +9,7 @@ import 'pages/student_time_log_page.dart';
 import 'pages/student_profile_page.dart';
 import 'pages/student_colleagues_page.dart';
 import 'pages/contract_page.dart';
+import 'pages/student_reports_page.dart';
 
 // BLoCs
 import 'bloc/student_bloc.dart';
@@ -73,6 +74,13 @@ class StudentModule extends Module {
     r.child(
       '/colleagues',
       child: (_) => const StudentColleaguesPage(),
+      transition: TransitionType.fadeIn,
+    );
+
+    // Rota para a página de relatórios
+    r.child(
+      '/reports',
+      child: (_) => const StudentReportsPage(),
       transition: TransitionType.fadeIn,
     );
   }
