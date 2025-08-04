@@ -20,6 +20,11 @@ void main() {
       reportService = Modular.get<ReportService>();
     });
 
+    tearDown(() async {
+      // Clean up Modular bindings
+      cleanModular(); // This properly resets the Modular injector between tests
+    });
+
     group('Report Service Integration', () {
       testWidgets('should generate time log report successfully',
           (tester) async {
