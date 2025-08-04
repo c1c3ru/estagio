@@ -145,8 +145,11 @@ class MockCacheService implements CacheService {
 }
 
 class MockSyncService implements SyncService {
+  final MockCacheService cacheService;
   bool _isInitialized = false;
   final bool _isSyncing = false;
+
+  MockSyncService(this.cacheService);
 
   @override
   bool get isInitialized => _isInitialized;
@@ -170,7 +173,6 @@ class MockSyncService implements SyncService {
     required String entityType,
     Duration? expiresIn,
   }) async {
-    final cacheService = Modular.get<CacheService>();
     return await cacheService.cacheData(
       key: key,
       data: data,
@@ -182,14 +184,12 @@ class MockSyncService implements SyncService {
 
   @override
   Future<Map<String, dynamic>?> getDataCacheFirst(String key) async {
-    final cacheService = Modular.get<CacheService>();
     return await cacheService.getCachedData(key);
   }
 
   @override
   Future<List<Map<String, dynamic>>> getDataListCacheFirst(
       String entityType) async {
-    final cacheService = Modular.get<CacheService>();
     return await cacheService.getCachedDataByType(entityType);
   }
 
@@ -200,7 +200,6 @@ class MockSyncService implements SyncService {
     String? entityId,
     required Map<String, dynamic> data,
   }) async {
-    final cacheService = Modular.get<CacheService>();
     return await cacheService.addPendingOperation(
       operationType: operationType,
       entityType: entityType,
@@ -216,7 +215,6 @@ class MockSyncService implements SyncService {
 
   @override
   Future<Map<String, dynamic>> getSyncStats() async {
-    final cacheService = Modular.get<CacheService>();
     final cacheStats = await cacheService.getCacheStats();
     return {
       'isOnline': true,
@@ -232,13 +230,11 @@ class MockSyncService implements SyncService {
 
   @override
   Future<bool> clearAllData() async {
-    final cacheService = Modular.get<CacheService>();
     return await cacheService.clearAllCache();
   }
 
   @override
   void dispose() {
-    final cacheService = Modular.get<CacheService>();
     cacheService.dispose();
     _isInitialized = false;
   }
@@ -253,11 +249,11 @@ class TestAppModule extends AppModule {
     final mockCacheService = MockCacheService();
     i.addSingleton<CacheService>(() => mockCacheService);
 
-    final mockSyncService = MockSyncService();
-    i.addSingleton<SyncService>(() => mockSyncService);
-
-    // Register ThemeService
+    // Register ThemeService BEFORE SyncService since SyncService depends on it
     i.addSingleton<ThemeService>(() => ThemeService());
+
+    final mockSyncService = MockSyncService(mockCacheService);
+    i.addSingleton<SyncService>(() => mockSyncService);
 
     // Adicione outros mocks aqui se necessário
   }

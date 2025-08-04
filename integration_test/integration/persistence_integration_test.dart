@@ -20,11 +20,14 @@ void main() {
       // Initialize the TestAppModule for dependency injection
       Modular.bindModule(TestAppModule());
       
-      // Get services from Modular and initialize them
+      // Initialize services in correct order
+      // ThemeService first as others might depend on it
       themeService = Modular.get<ThemeService>();
       await themeService.initialize();
+      
       cacheService = Modular.get<CacheService>();
       await cacheService.initialize();
+      
       syncService = Modular.get<SyncService>();
       await syncService.initialize();
     });
@@ -37,16 +40,18 @@ void main() {
         await tester.pumpAndSettle();
 
         // Act - Change theme and save
+        // Theme starts as system, toggle twice to get to dark
+        await themeService.toggleTheme(); // system -> light
+        await themeService.toggleTheme(); // light -> dark
         await themeService.setColorScheme(AppColorScheme.green);
-        await themeService.toggleTheme();
         // Theme config is automatically saved when changed
 
-        // Restart app to test theme recovery
-        app.main();
-        await tester.pumpAndSettle();
+        // Create a new instance to test theme recovery
+        final newThemeService = ThemeService();
+        await newThemeService.initialize();
 
         // Assert
-        final restoredConfig = themeService.config;
+        final restoredConfig = newThemeService.config;
         expect(restoredConfig.themeType, AppThemeType.dark);
         expect(restoredConfig.colorScheme, AppColorScheme.green);
       });
@@ -58,8 +63,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // Set initial theme to light, then toggle to dark, then toggle back to light
-        await themeService.toggleTheme(); // system -> light (or dark if system resolves to dark)
-        await themeService.toggleTheme(); // light -> dark (or dark -> light)
+        await themeService.toggleTheme(); // system -> light
+        await themeService.toggleTheme(); // light -> dark
+        await themeService.toggleTheme(); // dark -> light
         await themeService.setColorScheme(AppColorScheme.purple);
         // Theme config is automatically saved when changed
 

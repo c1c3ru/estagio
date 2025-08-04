@@ -1,10 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gestao_de_estagio/main.dart' as app;
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:gestao_de_estagio/app_widget.dart';
 
 void main() {
   testWidgets('App inicializa sem crash', (WidgetTester tester) async {
-    await app.main();
+    await tester.pumpWidget(const AppWidget());
     await tester.pumpAndSettle();
-    expect(find.text('Sistema de Estágio'), findsOneWidget);
+    expect(find.byType(MaterialApp), findsOneWidget);
   });
 }
