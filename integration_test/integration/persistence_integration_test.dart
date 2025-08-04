@@ -40,9 +40,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Act - Change theme and save
-        // Theme starts as system, toggle twice to get to dark
         await themeService.toggleTheme(); // system -> light
-        await themeService.toggleTheme(); // light -> dark
         await themeService.setColorScheme(AppColorScheme.green);
         // Theme config is automatically saved when changed
 
@@ -52,7 +50,7 @@ void main() {
 
         // Assert
         final restoredConfig = newThemeService.config;
-        expect(restoredConfig.themeType, AppThemeType.dark);
+        expect(restoredConfig.themeType, AppThemeType.light);
         expect(restoredConfig.colorScheme, AppColorScheme.green);
       });
 
