@@ -406,6 +406,102 @@ jobs:
 - **Sauce Labs**: Testes automatizados
 - **BrowserStack**: Testes de aplicações web
 
+## Monitoramento de Performance e Erros
+
+Durante os testes em dispositivos reais, é importante monitorar a performance da aplicação e coletar informações sobre erros que possam ocorrer. Isso ajuda a identificar problemas que só aparecem em ambiente de produção.
+
+### Firebase Performance Monitoring
+
+O Firebase Performance Monitoring já está listado nas dependências do projeto, mas ainda não está implementado. Durante os testes em dispositivos reais, você deve:
+
+1. Verificar se o Firebase Performance Monitoring está corretamente configurado
+2. Monitorar métricas como tempo de carregamento das telas principais
+3. Verificar o tempo de resposta das operações de rede
+4. Monitorar uso de memória e CPU durante operações intensivas
+
+Para configurar o monitoramento:
+
+```dart
+// Exemplo de uso do Firebase Performance Monitoring
+import 'package:firebase_performance/firebase_performance.dart';
+
+final performance = FirebasePerformance.instance;
+final trace = performance.newTrace('load_dashboard_data');
+
+await trace.start();
+try {
+  // Operação que deseja monitorar
+  await loadDashboardData();
+  
+  // Adicionar métricas customizadas
+  trace.incrementMetric('student_count', students.length);
+  trace.incrementMetric('time_log_count', timeLogs.length);
+} catch (e) {
+  trace.incrementMetric('error_count', 1);
+  throw e;
+} finally {
+  await trace.stop();
+}
+```
+
+### Sentry
+
+O Sentry está listado no pubspec.yaml como comentário, mas não está implementado. Para monitoramento de erros em produção:
+
+1. Remover o comentário da dependência `sentry_flutter` no pubspec.yaml
+2. Configurar o Sentry na inicialização do app em `main.dart`
+3. Adicionar captura de erros em operações críticas
+
+```dart
+// Configuração do Sentry em main.dart
+import 'package:sentry_flutter/sentry_flutter.dart';
+
+Future<void> main() async {
+  await SentryFlutter.init(
+    (options) => options.dsn = 'YOUR_SENTRY_DSN',
+    appRunner: () => runApp(MyApp()),
+  );
+}
+
+// Captura de erros em operações críticas
+try {
+  await criticalOperation();
+} catch (error, stackTrace) {
+  await Sentry.captureException(error, stackTrace: stackTrace);
+  // Tratamento do erro
+}
+```
+
+### Firebase Crashlytics
+
+Similar ao Sentry, o Firebase Crashlytics pode ser usado para monitorar crashes em produção:
+
+1. Adicionar a dependência `firebase_crashlytics` ao pubspec.yaml
+2. Configurar o Crashlytics na inicialização do app
+3. Registrar erros não fatais para análise
+
+```dart
+// Configuração do Crashlytics
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  
+  // Passar todos os erros não tratados para o Crashlytics
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
+  
+  runApp(MyApp());
+}
+
+// Registrar erros não fatais
+try {
+  await someOperation();
+} catch (error, stackTrace) {
+  await FirebaseCrashlytics.instance.recordError(error, stackTrace);
+}
+```
+
 ## Checklist de Release
 
 ### Pré-Release

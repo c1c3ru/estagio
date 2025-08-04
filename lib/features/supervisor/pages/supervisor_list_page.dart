@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import '../../../domain/entities/supervisor_entity.dart';
 import '../../../core/constants/app_colors.dart';
 import '../bloc/supervisor_bloc.dart';
 import '../bloc/supervisor_event.dart';
@@ -53,23 +54,28 @@ class _SupervisorListPageState extends State<SupervisorListPage> {
             ),
           ],
         ),
-        body: BlocBuilder<SupervisorBloc, SupervisorState>(
-          builder: (context, state) {
-            if (state is SupervisorLoading) {
+        body: BlocSelector<SupervisorBloc, SupervisorState, List<SupervisorEntity>>(
+          selector: (state) {
+            if (state is SupervisorListLoadSuccess) {
+              return state.supervisors;
+            }
+            return [];
+          },
+          builder: (context, supervisors) {
+            final fullState = BlocProvider.of<SupervisorBloc>(context).state;
+            if (fullState is SupervisorLoading) {
               return const Center(child: CircularProgressIndicator());
             }
-            if (state is SupervisorListLoadSuccess) {
-              final supervisors = state.supervisors;
-              if (supervisors.isEmpty) {
-                return const Center(
-                    child: Text('Nenhum supervisor cadastrado.'));
-              }
-              return ListView.separated(
-                padding: const EdgeInsets.all(16.0),
-                itemCount: supervisors.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
-                itemBuilder: (context, index) {
-                  final supervisor = supervisors[index];
+            if (supervisors.isEmpty) {
+              return const Center(
+                  child: Text('Nenhum supervisor cadastrado.'));
+            }
+            return ListView.separated(
+              padding: const EdgeInsets.all(16.0),
+              itemCount: supervisors.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              itemBuilder: (context, index) {
+                final supervisor = supervisors[index];
                   return Card(
                     child: ListTile(
                       title: Text(
@@ -139,11 +145,6 @@ class _SupervisorListPageState extends State<SupervisorListPage> {
                   );
                 },
               );
-            }
-            if (state is SupervisorOperationFailure) {
-              return Center(child: Text('Erro: ${state.message}'));
-            }
-            return const Center(child: CircularProgressIndicator());
           },
         ),
         floatingActionButton: FloatingActionButton(
