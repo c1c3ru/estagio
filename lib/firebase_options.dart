@@ -44,38 +44,38 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDemoWebApiKey123456789',
+    apiKey: 'AIzaSyB3L0-aeC7XLnaVjz4L5lf41e9-ImeIQ50',
     appId: '1:123456789:web:abcdef123456789',
     messagingSenderId: '123456789',
-    projectId: 'gestao-de-estagio-demo',
-    authDomain: 'gestao-de-estagio-demo.firebaseapp.com',
-    storageBucket: 'gestao-de-estagio-demo.appspot.com',
+    projectId: 'estagio-1d091',
+    authDomain: 'estagio-1d091.firebaseapp.com',
+    storageBucket: 'estagio-1d091.appspot.com',
     measurementId: 'G-ABCDEFGHIJ',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDemoAndroidApiKey123456789',
+    apiKey: 'AIzaSyB3L0-aeC7XLnaVjz4L5lf41e9-ImeIQ50',
     appId: '1:123456789:android:abcdef123456789',
     messagingSenderId: '123456789',
-    projectId: 'gestao-de-estagio-demo',
-    storageBucket: 'gestao-de-estagio-demo.appspot.com',
+    projectId: 'estagio-1d091',
+    storageBucket: 'estagio-1d091.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDemoIosApiKey123456789',
+    apiKey: 'AIzaSyB3L0-aeC7XLnaVjz4L5lf41e9-ImeIQ50',
     appId: '1:123456789:ios:abcdef123456789',
     messagingSenderId: '123456789',
-    projectId: 'gestao-de-estagio-demo',
-    storageBucket: 'gestao-de-estagio-demo.appspot.com',
+    projectId: 'estagio-1d091',
+    storageBucket: 'estagio-1d091.appspot.com',
     iosBundleId: 'com.example.gestaoDeEstagio',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDemoMacosApiKey123456789',
+    apiKey: 'AIzaSyB3L0-aeC7XLnaVjz4L5lf41e9-ImeIQ50',
     appId: '1:123456789:macos:abcdef123456789',
     messagingSenderId: '123456789',
-    projectId: 'gestao-de-estagio-demo',
-    storageBucket: 'gestao-de-estagio-demo.appspot.com',
+    projectId: 'estagio-1d091',
+    storageBucket: 'estagio-1d091.appspot.com',
     iosBundleId: 'com.example.gestaoDeEstagio',
   );
 }

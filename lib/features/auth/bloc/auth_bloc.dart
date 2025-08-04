@@ -54,37 +54,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     _authStateSubscription = _getAuthStateChangesUseCase.call().listen(
       (user) {
         if (kDebugMode) {
-          print('🟡 AuthBloc: AuthStateChanged recebido: ${user?.email}');
+          print('🟡 AuthBloc: AuthStateChanged recebido: ${user?.email ?? "null"}');
         }
-
-        if (user != null) {
-          // Verificar se o perfil está completo
-          if (_isProfileComplete(user)) {
-            if (kDebugMode) {
-              print(
-                  '🟡 AuthBloc: AuthStateChanged - Perfil completo, emitindo AuthSuccess');
-            }
-            add(AuthStateChanged(user));
-          } else {
-            if (kDebugMode) {
-              print(
-                  '🟡 AuthBloc: AuthStateChanged - Perfil incompleto, emitindo AuthProfileIncomplete');
-            }
-            add(AuthStateChanged(user));
-          }
-        } else {
-          if (kDebugMode) {
-            print(
-                '🟡 AuthBloc: AuthStateChanged - Usuário nulo, emitindo AuthUnauthenticated');
-          }
-          add(const AuthStateChanged(null));
-        }
+        add(AuthStateChanged(user));
       },
       onError: (error) {
         if (kDebugMode) {
           print('🔴 AuthBloc: Erro na escuta de auth state: $error');
         }
-        // Log do erro apenas, sem emitir estado
+        // Emitir estado não autenticado em caso de erro
+        add(const AuthStateChanged(null));
       },
     );
   }
@@ -291,13 +270,26 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthStateChanged event,
     Emitter<AuthState> emit,
   ) {
+    if (kDebugMode) {
+      print('🟡 AuthBloc: _onAuthStateChanged - user: ${event.user?.email ?? "null"}');
+    }
+    
     if (event.user != null) {
       if (_isProfileComplete(event.user!)) {
+        if (kDebugMode) {
+          print('🟡 AuthBloc: Emitindo AuthSuccess');
+        }
         emit(AuthSuccess(event.user!));
       } else {
+        if (kDebugMode) {
+          print('🟡 AuthBloc: Emitindo AuthProfileIncomplete');
+        }
         emit(AuthProfileIncomplete(event.user!));
       }
     } else {
+      if (kDebugMode) {
+        print('🟡 AuthBloc: Emitindo AuthUnauthenticated');
+      }
       emit(const AuthUnauthenticated());
     }
   }

@@ -81,6 +81,7 @@ service-account.json
 *secret*
 #*password*
 *api_key*
+estagio-*.json
 
 # Arquivos de configuração local
 local.properties
