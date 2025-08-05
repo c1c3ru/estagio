@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import 'package:gestao_de_estagio/features/shared/widgets/email_confirmation_animation.dart';
+import '../../shared/animations/lottie_animations.dart';
 
 class EmailConfirmationPage extends StatelessWidget {
   final String email;
@@ -31,12 +31,9 @@ class EmailConfirmationPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const EmailConfirmationAnimation(size: 120),
-              const SizedBox(height: 32),
-              const Icon(
-                Icons.email_outlined,
-                size: 80,
-                color: AppColors.primary,
+              const AppLottieAnimation(
+                assetPath: LottieAssetPaths.emailConfirmation,
+                height: 120,
               ),
               const SizedBox(height: 32),
               const Text(

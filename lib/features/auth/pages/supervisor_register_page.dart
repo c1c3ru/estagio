@@ -12,7 +12,7 @@ import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart' as custom_auth;
 import '../widgets/auth_text_field.dart';
 import '../../../core/utils/feedback_service.dart';
-import 'package:gestao_de_estagio/features/shared/widgets/supervisor_animation.dart';
+import '../../shared/animations/lottie_animations.dart';
 
 class SupervisorRegisterPage extends StatefulWidget {
   const SupervisorRegisterPage({super.key});
@@ -100,7 +100,10 @@ class _SupervisorRegisterPageState extends State<SupervisorRegisterPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Animação de supervisor no topo
-                      const SupervisorAnimation(size: 120),
+                      const AppLottieAnimation(
+                        assetPath: LottieAssetPaths.supervisor,
+                        height: 120,
+                      ),
                       const SizedBox(height: 16),
                       const Text(
                         'Cadastrar Supervisor',

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gestao_de_estagio/core/animations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../shared/animations/lottie_animations.dart';
 import '../../../core/constants/app_colors.dart';
 import '../bloc/student_bloc.dart';
 import '../bloc/student_event.dart';
@@ -14,7 +14,6 @@ import '../../../domain/entities/contract_entity.dart';
 import '../../../core/enums/contract_status.dart';
 import '../../../domain/usecases/supervisor/get_all_supervisors_usecase.dart';
 import '../../../domain/entities/supervisor_entity.dart';
-import 'package:lottie/lottie.dart';
 
 class StudentHomePage extends StatefulWidget {
   const StudentHomePage({super.key});
@@ -72,10 +71,9 @@ class _StudentHomePageState extends State<StudentHomePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Lottie.asset(
-                    AssetAnimations.student,
+                  const AppLottieAnimation(
+                    assetPath: LottieAssetPaths.student,
                     height: 120,
-                    repeat: true,
                   ),
                   const SizedBox(height: 24),
                   const Text(

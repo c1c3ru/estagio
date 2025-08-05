@@ -119,7 +119,7 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
             children: [
               const Center(
                 child: AppLottieAnimation(
-                  assetPath: 'assets/animations/Formulario_animation.json',
+                  assetPath: LottieAssetPaths.form,
                   height: 140,
                 ),
               ),

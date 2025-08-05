@@ -1,9 +1,8 @@
 // lib/features/auth/presentation/pages/forgot_password_page.dart
 import 'package:flutter/material.dart';
-import 'package:gestao_de_estagio/core/animations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:lottie/lottie.dart';
+import '../../shared/animations/lottie_animations.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/validators.dart';
@@ -89,10 +88,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    Lottie.asset(
-                      AssetAnimations.passwordReset,
+                    const AppLottieAnimation(
+                      assetPath: LottieAssetPaths.passwordReset,
                       height: 160,
-                      repeat: true,
                     ),
                     const SizedBox(height: 32),
                     Text(

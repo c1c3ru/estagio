@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
-import 'package:gestao_de_estagio/core/animations.dart';
+import '../animations/lottie_animations.dart';
 
 /// Widget reutilizável para exibir a animação de página não encontrada (404).
 class NotFound404Animation extends StatelessWidget {
@@ -19,8 +18,8 @@ class NotFound404Animation extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: padding ?? const EdgeInsets.symmetric(vertical: 16),
-      child: Lottie.asset(
-        AssetAnimations.notFound404,
+      child: AppLottieAnimation(
+        assetPath: LottieAssetPaths.notFound,
         height: height,
         repeat: repeat,
       ),

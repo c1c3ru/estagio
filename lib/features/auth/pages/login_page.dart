@@ -79,7 +79,7 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   const SizedBox(height: 64),
                   const AppLottieAnimation(
-                    assetPath: 'assets/animations/intership_animations.json',
+                    assetPath: LottieAssetPaths.internship,
                     height: 180,
                   ),
                   const SizedBox(height: 32),

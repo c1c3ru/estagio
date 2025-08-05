@@ -196,9 +196,9 @@ void main() {
           (tester) async {
         // Arrange & Act - Directly pump the StudentReportsPage widget
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
-              body: const StudentReportsPage(),
+              body: StudentReportsPage(),
             ),
           ),
         );
@@ -212,9 +212,9 @@ void main() {
       testWidgets('should apply date filters correctly', (tester) async {
         // Arrange & Act - Directly pump the StudentReportsPage widget
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
-              body: const StudentReportsPage(),
+              body: StudentReportsPage(),
             ),
           ),
         );
@@ -233,9 +233,9 @@ void main() {
       testWidgets('should export report from student page', (tester) async {
         // Arrange & Act - Directly pump the StudentReportsPage widget
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
-              body: const StudentReportsPage(),
+              body: StudentReportsPage(),
             ),
           ),
         );
@@ -248,9 +248,9 @@ void main() {
       testWidgets('should share report from student page', (tester) async {
         // Arrange & Act - Directly pump the StudentReportsPage widget
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
-              body: const StudentReportsPage(),
+              body: StudentReportsPage(),
             ),
           ),
         );

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:gestao_de_estagio/core/animations.dart';
+import '../../shared/animations/lottie_animations.dart';
 
 class RegisterTypePage extends StatelessWidget {
   const RegisterTypePage({super.key});
@@ -25,7 +25,11 @@ class RegisterTypePage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Animação de formulário no topo
-              const PasswordResetAnimation(width: 200, height: 200),
+              const AppLottieAnimation(
+                assetPath: LottieAssetPaths.form,
+                width: 200,
+                height: 200,
+              ),
               const SizedBox(height: 32),
               Text(
                 'Escolha seu tipo de conta',
@@ -58,7 +62,11 @@ class RegisterTypePage extends StatelessWidget {
                     description:
                         'Cadastre-se como estudante para registrar e acompanhar seu estágio.',
                     onTap: () => Modular.to.pushNamed('/auth/register-student'),
-                    animation: const StudentAnimation(width: 80, height: 80),
+                    animation: const AppLottieAnimation(
+                      assetPath: LottieAssetPaths.student,
+                      width: 80,
+                      height: 80,
+                    ),
                   ),
                   _RegisterTypeCard(
                     icon: Icons.business_center_outlined,
@@ -67,7 +75,11 @@ class RegisterTypePage extends StatelessWidget {
                         'Cadastre-se como supervisor para gerenciar estágios e estudantes.',
                     onTap: () =>
                         Modular.to.pushNamed('/auth/register-supervisor'),
-                    animation: const SupervisorAnimation(width: 80, height: 80),
+                    animation: const AppLottieAnimation(
+                      assetPath: LottieAssetPaths.supervisor,
+                      width: 80,
+                      height: 80,
+                    ),
                   ),
                 ],
               ),
