@@ -291,7 +291,7 @@ class ThemeService extends ChangeNotifier {
       ),
 
       // Cards
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme.of(context).copyWith(
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
