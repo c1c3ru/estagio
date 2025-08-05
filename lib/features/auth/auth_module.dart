@@ -12,7 +12,13 @@ class AuthModule extends Module {
 
   @override
   void routes(RouteManager r) {
-    r.child('/', child: (context) => const LoginPage());
+    r.child(
+      '/',
+      child: (context) => BlocProvider(
+        create: (_) => Modular.get<AuthBloc>(),
+        child: const LoginPage(),
+      ),
+    );
     r.child('/register', child: (context) => const RegisterTypePage());
     r.child('/email-confirmation',
         child: (context) => EmailConfirmationPage(
