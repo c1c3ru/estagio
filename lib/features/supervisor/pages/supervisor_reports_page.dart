@@ -24,6 +24,16 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Relatórios de Supervisão'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              Navigator.of(context).pushReplacementNamed('/supervisor/');
+            }
+          },
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list),
