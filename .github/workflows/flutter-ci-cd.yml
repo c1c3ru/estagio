@@ -46,11 +46,14 @@ jobs:
           name: app-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
-      - name: Deploy to Google Play (Fastlane)
+      - name: Setup Ruby for Fastlane
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.1'
+
+      - name: Deploy to Google Play (Fastlane)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         env:
           SUPPLY_JSON_KEY: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
         run: |

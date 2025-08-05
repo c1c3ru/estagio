@@ -26,13 +26,10 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
         title: const Text('Relatórios de Supervisão'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-            } else {
-              Navigator.of(context).pushReplacementNamed('/supervisor/');
-            }
-          },
+          onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
+            '/supervisor/',
+            (route) => false,
+          ),
         ),
         actions: [
           IconButton(
