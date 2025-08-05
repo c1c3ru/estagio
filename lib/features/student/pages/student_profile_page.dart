@@ -460,7 +460,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                             horizontal: 24, vertical: 12),
                       ),
                       onPressed: () {
-                        Modular.to.pushNamed('/supervisor/list');
+                        Modular.to.pushNamed('/supervisor/students');
                       },
                     ),
                   ),
