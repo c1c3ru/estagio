@@ -45,6 +45,7 @@ class AuthDatasource implements IAuthDatasource {
     String? supervisorId,
     String? course,
     String? advisorName,
+    String? department,
     String? classShift,
     String? internshipShift,
     String? birthDate,
@@ -59,6 +60,9 @@ class AuthDatasource implements IAuthDatasource {
           'full_name': fullName,
           'role': role.toString(),
           if (registration != null) 'registration': registration,
+          if (course != null) 'course': course,
+          if (advisorName != null) 'advisor_name': advisorName,
+          if (department != null) 'department': department,
         },
       );
 
@@ -298,7 +302,7 @@ class AuthDatasource implements IAuthDatasource {
               'id': user.id,
               'full_name': user.userMetadata?['full_name'] ?? 'Supervisor',
               'job_code': user.userMetadata?['registration'],
-              'department': 'Não informado',
+              'department': user.userMetadata?['department'] ?? 'Não informado',
             };
             
             if (kDebugMode) {
@@ -307,7 +311,7 @@ class AuthDatasource implements IAuthDatasource {
               print('📋 User metadata: ${user.userMetadata}');
             }
             
-            final result = await _supabaseClient.from('supervisors').insert(insertData);
+            await _supabaseClient.from('supervisors').insert(insertData);
             
             if (kDebugMode) {
               print('✅ Registro de supervisor criado com sucesso');

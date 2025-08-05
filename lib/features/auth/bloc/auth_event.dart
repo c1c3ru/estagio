@@ -38,6 +38,7 @@ class RegisterRequested extends AuthEvent {
   final String? supervisorId;
   final String? course;
   final String? advisorName;
+  final String? department;
   final ClassShift? classShift;
   final InternshipShift? internshipShift;
   final DateTime? birthDate;
@@ -54,6 +55,7 @@ class RegisterRequested extends AuthEvent {
     this.supervisorId,
     this.course,
     this.advisorName,
+    this.department,
     this.classShift,
     this.internshipShift,
     this.birthDate,
@@ -72,6 +74,7 @@ class RegisterRequested extends AuthEvent {
         supervisorId,
         course,
         advisorName,
+        department,
         classShift,
         internshipShift,
         birthDate,

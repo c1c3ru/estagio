@@ -52,6 +52,7 @@ class _SupervisorRegisterPageState extends State<SupervisorRegisterPage> {
           password: _passwordController.text,
           role: UserRole.supervisor,
           registration: _registrationController.text.trim(),
+          department: _departmentController.text.trim(),
         ),
       );
     }

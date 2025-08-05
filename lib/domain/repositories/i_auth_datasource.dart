@@ -14,6 +14,7 @@ abstract class IAuthDatasource {
     String? supervisorId,
     String? course,
     String? advisorName,
+    String? department,
     String? classShift,
     String? internshipShift,
     String? birthDate,

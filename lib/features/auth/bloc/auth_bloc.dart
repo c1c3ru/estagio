@@ -145,6 +145,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       birthDate: event.birthDate,
       contractStartDate: event.contractStartDate,
       contractEndDate: event.contractEndDate,
+      department: event.department,
     );
     result.fold(
       (failure) => emit(AuthFailure(failure.message)),
