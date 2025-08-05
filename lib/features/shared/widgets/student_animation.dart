@@ -12,8 +12,23 @@ class StudentAnimation extends StatelessWidget {
       width: size,
       height: size,
       child: Lottie.asset(
-        'assets/animations/student_page_animation.json',
+        'assets/animations/student_page_animation .json',
         fit: fit,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(size / 2),
+            ),
+            child: Icon(
+              Icons.school,
+              size: size * 0.6,
+              color: Colors.blue.shade400,
+            ),
+          );
+        },
       ),
     );
   }

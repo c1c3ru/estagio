@@ -7,6 +7,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app_module.dart';
+import 'app_widget.dart';
 import 'core/theme/theme_service.dart';
 import 'core/utils/module_guard.dart';
 import 'firebase_options.dart';
@@ -22,7 +23,7 @@ Future<void> main() async {
 
   await _initializeServices();
   
-  runApp(ModularApp(module: AppModule(), child: const MyApp()));
+  runApp(ModularApp(module: AppModule(), child: const AppWidget()));
 }
 
 Future<void> _initializeServices() async {
@@ -94,27 +95,4 @@ Future<void> _initializeTheme() async {
   }
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Sistema de Estágio',
-      theme: _buildTheme(),
-      routeInformationParser: Modular.routeInformationParser,
-      routerDelegate: Modular.routerDelegate,
-      debugShowCheckedModeBanner: false,
-    );
-  }
-  
-  ThemeData _buildTheme() {
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.blue,
-        brightness: Brightness.light,
-      ),
-    );
-  }
-}

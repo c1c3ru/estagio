@@ -10,8 +10,13 @@ class AuthDatasource implements IAuthDatasource {
   AuthDatasource(this._supabaseClient);
 
   @override
-  Stream<Map<String, dynamic>?> getAuthStateChanges() =>
-      _supabaseClient.auth.onAuthStateChange.map((event) {
+  Stream<Map<String, dynamic>?> getAuthStateChanges() => _supabaseClient
+      .auth.onAuthStateChange
+      .where((event) => 
+          event.event == AuthChangeEvent.signedIn || 
+          event.event == AuthChangeEvent.signedOut ||
+          event.event == AuthChangeEvent.tokenRefreshed)
+      .map((event) {
         final session = event.session;
         if (session == null) return null;
         return {
@@ -26,7 +31,8 @@ class AuthDatasource implements IAuthDatasource {
               ? DateTime.parse(session.user.updatedAt!).toIso8601String()
               : null,
         };
-      });
+      })
+      .distinct();
 
   @override
   Future<Map<String, dynamic>> signUpWithEmailAndPassword({
@@ -90,16 +96,7 @@ class AuthDatasource implements IAuthDatasource {
         print('🔐 Tentando fazer login com email: $email');
       }
 
-      // Testar conectividade primeiro
-      await testConnection();
-
-      // Limpar sessão anterior se existir
-      await _supabaseClient.auth.signOut();
-      if (kDebugMode) {
-        print('🧹 Sessão anterior limpa');
-      }
-
-      // Tentar login de forma mais simples
+      // Tentar login
       if (kDebugMode) {
         print('🔑 Fazendo login...');
       }
@@ -259,6 +256,9 @@ class AuthDatasource implements IAuthDatasource {
       if (kDebugMode) {
         print('🔍 Verificando dados para usuário ${user.id} com role: $role');
       }
+      
+      // Primeiro, garantir que existe na tabela users
+      await _ensureUserInUsersTable(user, role);
 
       if (role == 'student') {
         // Apenas verificar se existe, não criar automaticamente
@@ -280,7 +280,6 @@ class AuthDatasource implements IAuthDatasource {
           }
         }
       } else if (role == 'supervisor') {
-        // Apenas verificar se existe, não criar automaticamente
         final existingSupervisor = await _supabaseClient
             .from('supervisors')
             .select('id')
@@ -289,10 +288,37 @@ class AuthDatasource implements IAuthDatasource {
 
         if (existingSupervisor == null) {
           if (kDebugMode) {
-            print(
-                '⚠️ Nenhum dado de supervisor encontrado para ${user.id} - usuário precisa completar cadastro');
+            print('🔧 Criando registro de supervisor para ${user.id}');
+            print('📋 Dados do usuário: ${user.userMetadata}');
           }
-          // Não criar automaticamente - deixar o usuário completar o cadastro
+          
+          try {
+            // Criar registro básico na tabela supervisors
+            final insertData = {
+              'id': user.id,
+              'full_name': user.userMetadata?['full_name'] ?? 'Supervisor',
+              'job_code': user.userMetadata?['registration'],
+              'department': 'Não informado',
+            };
+            
+            if (kDebugMode) {
+              print('📋 Dados para inserção: $insertData');
+              print('🔑 User ID: ${user.id}');
+              print('📋 User metadata: ${user.userMetadata}');
+            }
+            
+            final result = await _supabaseClient.from('supervisors').insert(insertData);
+            
+            if (kDebugMode) {
+              print('✅ Registro de supervisor criado com sucesso');
+            }
+          } catch (insertError) {
+            if (kDebugMode) {
+              print('❌ Erro detalhado ao criar supervisor: $insertError');
+              print('❌ Tipo do erro: ${insertError.runtimeType}');
+            }
+            // Não rethrow para não impedir o login
+          }
         } else {
           if (kDebugMode) {
             print('✅ Dados de supervisor encontrados para usuário ${user.id}');
@@ -666,6 +692,65 @@ class AuthDatasource implements IAuthDatasource {
           print(
               '💡 Solução: Verificar as políticas de segurança no painel do Supabase');
         }
+      }
+    }
+  }
+  
+  /// Garante que o usuário existe na tabela public.users
+  Future<void> _ensureUserInUsersTable(User user, String role) async {
+    try {
+      final existingUser = await _supabaseClient
+          .from('users')
+          .select('id, role')
+          .eq('id', user.id)
+          .maybeSingle();
+          
+      if (existingUser == null) {
+        if (kDebugMode) {
+          print('🔧 Criando usuário na tabela users');
+        }
+        
+        final userData = {
+          'id': user.id,
+          'email': user.email,
+          'role': role,
+          'matricula': user.userMetadata?['registration'],
+        };
+        
+        if (kDebugMode) {
+          print('📋 Dados do usuário: $userData');
+        }
+        
+        await _supabaseClient.from('users').insert(userData);
+        
+        if (kDebugMode) {
+          print('✅ Usuário criado na tabela users');
+        }
+      } else {
+        // Verificar se o role está correto
+        final currentRole = existingUser['role'] as String?;
+        if (currentRole != role) {
+          if (kDebugMode) {
+            print('🔄 Atualizando role de $currentRole para $role');
+          }
+          
+          await _supabaseClient
+              .from('users')
+              .update({'role': role})
+              .eq('id', user.id);
+              
+          if (kDebugMode) {
+            print('✅ Role atualizado na tabela users');
+          }
+        } else {
+          if (kDebugMode) {
+            print('✅ Usuário já existe na tabela users com role correto');
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Erro ao criar/atualizar usuário na tabela users: $e');
       }
     }
   }

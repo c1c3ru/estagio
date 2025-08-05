@@ -51,7 +51,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthResetPasswordRequested>(_onResetPasswordRequested);
 
     // Iniciar a escuta de mudanças de estado de autenticação
-    _authStateSubscription = _getAuthStateChangesUseCase.call().listen(
+    _authStateSubscription = _getAuthStateChangesUseCase.call()
+        .distinct((previous, next) {
+          // Evitar processar o mesmo usuário repetidamente
+          if (previous == null && next == null) return true;
+          if (previous == null || next == null) return false;
+          return previous.id == next.id;
+        })
+        .listen(
       (user) {
         if (kDebugMode) {
           print('🟡 AuthBloc: AuthStateChanged recebido: ${user?.email ?? "null"}');
@@ -270,28 +277,43 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthStateChanged event,
     Emitter<AuthState> emit,
   ) {
-    if (kDebugMode) {
-      print('🟡 AuthBloc: _onAuthStateChanged - user: ${event.user?.email ?? "null"}');
-    }
+    // Evitar emissões desnecessárias que causam piscar na UI
+    final currentState = state;
     
     if (event.user != null) {
-      if (_isProfileComplete(event.user!)) {
+      final newState = _isProfileComplete(event.user!) 
+          ? AuthSuccess(event.user!) 
+          : AuthProfileIncomplete(event.user!);
+      
+      // Só emitir se o estado realmente mudou
+      if (!_isSameAuthState(currentState, newState)) {
         if (kDebugMode) {
-          print('🟡 AuthBloc: Emitindo AuthSuccess');
+          print('🟡 AuthBloc: Emitindo ${newState.runtimeType}');
         }
-        emit(AuthSuccess(event.user!));
-      } else {
-        if (kDebugMode) {
-          print('🟡 AuthBloc: Emitindo AuthProfileIncomplete');
-        }
-        emit(AuthProfileIncomplete(event.user!));
+        emit(newState);
       }
     } else {
-      if (kDebugMode) {
-        print('🟡 AuthBloc: Emitindo AuthUnauthenticated');
+      if (currentState is! AuthUnauthenticated) {
+        if (kDebugMode) {
+          print('🟡 AuthBloc: Emitindo AuthUnauthenticated');
+        }
+        emit(const AuthUnauthenticated());
       }
-      emit(const AuthUnauthenticated());
     }
+  }
+  
+  bool _isSameAuthState(AuthState current, AuthState newState) {
+    if (current.runtimeType != newState.runtimeType) return false;
+    
+    if (current is AuthSuccess && newState is AuthSuccess) {
+      return current.user.id == newState.user.id;
+    }
+    
+    if (current is AuthProfileIncomplete && newState is AuthProfileIncomplete) {
+      return current.user.id == newState.user.id;
+    }
+    
+    return current.runtimeType == newState.runtimeType;
   }
 
   Future<void> _onResetPasswordRequested(

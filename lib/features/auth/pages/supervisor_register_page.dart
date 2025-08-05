@@ -45,7 +45,7 @@ class _SupervisorRegisterPageState extends State<SupervisorRegisterPage> {
 
   void _onRegisterPressed() {
     if (_formKey.currentState?.validate() ?? false) {
-      Modular.get<AuthBloc>().add(
+      BlocProvider.of<AuthBloc>(context).add(
         RegisterRequested(
           fullName: _nameController.text.trim(),
           email: _emailController.text.trim(),

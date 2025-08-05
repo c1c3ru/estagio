@@ -62,15 +62,33 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
     setState(() => _loadingSupervisors = true);
     try {
       final supabase = Supabase.instance.client;
+      print('🔍 Buscando supervisores...');
+      
+      // Primeiro, verificar se há dados na tabela
+      final allSupervisors = await supabase
+          .from('supervisors')
+          .select('id');
+      print('📈 Total de registros na tabela supervisors: ${allSupervisors.length}');
+      
       final response = await supabase
           .from('supervisors')
           .select('id, full_name')
           .order('full_name');
+      
+      print('📊 Supervisores encontrados: ${response.length}');
+      print('📋 Dados: $response');
+      
       setState(() {
         _supervisors = List<Map<String, dynamic>>.from(response);
         _loadingSupervisors = false;
       });
+      
+      if (_supervisors.isEmpty) {
+        if (!mounted) return;
+        FeedbackService.showWarning(context, 'Nenhum supervisor encontrado. Cadastre um supervisor primeiro.');
+      }
     } catch (e) {
+      print('❌ Erro ao buscar supervisores: $e');
       setState(() => _loadingSupervisors = false);
       if (!mounted) return;
       FeedbackService.showError(context, 'Erro ao buscar supervisores: $e');
@@ -114,7 +132,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
         return;
       }
 
-      Modular.get<AuthBloc>().add(
+      BlocProvider.of<AuthBloc>(context).add(
         RegisterRequested(
           fullName: _nameController.text.trim(),
           email: _emailController.text.trim(),
@@ -377,34 +395,65 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                         // Seleção de supervisor
                         _loadingSupervisors
                             ? const Center(child: CircularProgressIndicator())
-                            : DropdownButtonFormField<String>(
-                                value: _selectedSupervisorId,
-                                decoration: _buildInputDecoration(
-                                    'Supervisor do Estágio',
-                                    Icons.supervisor_account_outlined),
-                                style: const TextStyle(
-                                    color: AppColors.textPrimaryDark,
-                                    fontSize: 16),
-                                dropdownColor: AppColors.white,
-                                iconEnabledColor: AppColors.primary,
-                                items: _supervisors
-                                    .map((supervisor) => DropdownMenuItem(
-                                          value: supervisor['id'] as String,
-                                          child: Text(
-                                            supervisor['full_name'] as String,
-                                            style: const TextStyle(
-                                                color:
-                                                    AppColors.textPrimaryDark),
-                                          ),
-                                        ))
-                                    .toList(),
-                                onChanged: (id) {
-                                  setState(() => _selectedSupervisorId = id);
-                                },
-                                validator: (value) => value == null
-                                    ? 'Selecione um supervisor'
-                                    : null,
-                              ),
+                            : _supervisors.isEmpty
+                                ? Column(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: BoxDecoration(
+                                          color: Colors.orange.shade50,
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: Colors.orange.shade200),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.warning_amber, color: Colors.orange.shade600),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Text(
+                                                'Nenhum supervisor encontrado. É necessário cadastrar um supervisor primeiro.',
+                                                style: TextStyle(color: Colors.orange.shade800),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      TextButton.icon(
+                                        onPressed: _fetchSupervisors,
+                                        icon: const Icon(Icons.refresh),
+                                        label: const Text('Tentar novamente'),
+                                      ),
+                                    ],
+                                  )
+                                : DropdownButtonFormField<String>(
+                                    value: _selectedSupervisorId,
+                                    decoration: _buildInputDecoration(
+                                        'Supervisor do Estágio',
+                                        Icons.supervisor_account_outlined),
+                                    style: const TextStyle(
+                                        color: AppColors.textPrimaryDark,
+                                        fontSize: 16),
+                                    dropdownColor: AppColors.white,
+                                    iconEnabledColor: AppColors.primary,
+                                    items: _supervisors
+                                        .map((supervisor) => DropdownMenuItem(
+                                              value: supervisor['id'] as String,
+                                              child: Text(
+                                                supervisor['full_name'] as String,
+                                                style: const TextStyle(
+                                                    color:
+                                                        AppColors.textPrimaryDark),
+                                              ),
+                                            ))
+                                        .toList(),
+                                    onChanged: (id) {
+                                      setState(() => _selectedSupervisorId = id);
+                                    },
+                                    validator: (value) => value == null
+                                        ? 'Selecione um supervisor'
+                                        : null,
+                                  ),
                         const SizedBox(height: 20),
                         _buildDateField(
                           context: context,
