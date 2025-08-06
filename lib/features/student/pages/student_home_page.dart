@@ -93,156 +93,161 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     const CircularProgressIndicator()
                   else if (state is StudentDashboardLoadSuccess)
                     state.student.fullName.isEmpty
-                        ? Center(
-                            child: const Column(
+                        ? const Center(
+                            child: Column(
                               children: [
                                 LottieEmptyStateWidget(
-                                  message: 'Complete seu cadastro para ver suas informações aqui.',
+                                  message:
+                                      'Complete seu cadastro para ver suas informações aqui.',
                                   size: 180,
                                 ),
                               ],
                             ),
                           )
                         : Column(
-                      children: [
-                        // Indicador de dados mock (se aplicável)
-                        if (state.student.fullName == 'Cicero Silva' &&
-                            state.student.registrationNumber == '202300123456')
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(8),
-                            margin: const EdgeInsets.only(bottom: 16),
-                            decoration: BoxDecoration(
-                              color: Colors.orange.withOpacity(0.1),
-                              border: Border.all(color: Colors.orange),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Row(
-                              children: [
-                                Icon(Icons.info_outline,
-                                    color: Colors.orange, size: 16),
-                                SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'Usando dados de demonstração. Execute o script SQL no Supabase para dados reais.',
-                                    style: TextStyle(
-                                      color: Colors.orange,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                            children: [
+                              // Indicador de dados mock (se aplicável)
+                              if (state.student.fullName == 'Cicero Silva' &&
+                                  state.student.registrationNumber ==
+                                      '202300123456')
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(8),
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.withOpacity(0.1),
+                                    border: Border.all(color: Colors.orange),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Row(
+                                    children: [
+                                      Icon(Icons.info_outline,
+                                          color: Colors.orange, size: 16),
+                                      SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'Usando dados de demonstração. Execute o script SQL no Supabase para dados reais.',
+                                          style: TextStyle(
+                                            color: Colors.orange,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
 
-                        Text(
-                          'Bem-vindo, ${state.student.fullName}!',
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 16),
+                              Text(
+                                'Bem-vindo, ${state.student.fullName}!',
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 16),
 
-                        // Card com informações básicas
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Informações do Estudante',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                    'Matrícula: ${state.student.registrationNumber}'),
-                                Text('Curso: ${state.student.course}'),
-                                Text(
-                                    'Orientador: ${state.student.advisorName}'),
-                                Text(
-                                    'Turno das Aulas: ${state.student.classShift}'),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Card com estatísticas de tempo
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Estatísticas de Tempo',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                    'Esta Semana: ${state.timeStats.hoursThisWeek} horas'),
-                                Text(
-                                    'Este Mês: ${state.timeStats.hoursThisMonth} horas'),
-                                if (state.timeStats.activeTimeLog != null)
-                                  const Text(
-                                    'Status: Trabalhando agora',
-                                    style: TextStyle(
-                                        color: AppColors.success,
-                                        fontWeight: FontWeight.bold),
-                                  )
-                                else
-                                  const Text(
-                                    'Status: Não está trabalhando',
-                                    style: TextStyle(
-                                        color: AppColors.textSecondary),
+                              // Card com informações básicas
+                              Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Informações do Estudante',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                          'Matrícula: ${state.student.registrationNumber}'),
+                                      Text('Curso: ${state.student.course}'),
+                                      Text(
+                                          'Orientador: ${state.student.advisorName}'),
+                                      Text(
+                                          'Turno das Aulas: ${state.student.classShift}'),
+                                    ],
                                   ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Card para criar novo contrato
-                        Card(
-                          color: AppColors.primary.withOpacity(0.08),
-                          child: ListTile(
-                            leading: const Icon(Icons.add_box,
-                                color: AppColors.primary, size: 36),
-                            title: const Text('Novo Contrato',
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: const Text(
-                                'Clique para cadastrar um novo contrato'),
-                            onTap: () async {
-                              if (!mounted) return;
-                              final bloc =
-                                  BlocProvider.of<StudentBloc>(context);
-                              await showDialog(
-                                context: context,
-                                builder: (context) => BlocProvider.value(
-                                  value: Modular.get<ContractBloc>(),
-                                  child: _NovoContratoDialog(
-                                      studentId: state.student.id),
                                 ),
-                              );
-                              if (!mounted) return;
-                              // Após fechar o modal, recarrega os dados
-                              bloc.add(
-                                LoadStudentDashboardDataEvent(
-                                    userId: state.student.id),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 16),
+                              ),
+                              const SizedBox(height: 16),
 
-                        // Menu de funcionalidades
-                      ],
-                    )
+                              // Card com estatísticas de tempo
+                              Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Estatísticas de Tempo',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                          'Esta Semana: ${state.timeStats.hoursThisWeek} horas'),
+                                      Text(
+                                          'Este Mês: ${state.timeStats.hoursThisMonth} horas'),
+                                      if (state.timeStats.activeTimeLog != null)
+                                        const Text(
+                                          'Status: Trabalhando agora',
+                                          style: TextStyle(
+                                              color: AppColors.success,
+                                              fontWeight: FontWeight.bold),
+                                        )
+                                      else
+                                        const Text(
+                                          'Status: Não está trabalhando',
+                                          style: TextStyle(
+                                              color: AppColors.textSecondary),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+
+                              // Card para criar novo contrato
+                              Card(
+                                color: AppColors.primary.withOpacity(0.08),
+                                child: ListTile(
+                                  leading: const Icon(Icons.add_box,
+                                      color: AppColors.primary, size: 36),
+                                  title: const Text('Novo Contrato',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                  subtitle: const Text(
+                                      'Clique para cadastrar um novo contrato'),
+                                  onTap: () async {
+                                    if (!mounted) return;
+                                    final bloc =
+                                        BlocProvider.of<StudentBloc>(context);
+                                    await showDialog(
+                                      context: context,
+                                      builder: (context) => BlocProvider.value(
+                                        value: Modular.get<ContractBloc>(),
+                                        child: _NovoContratoDialog(
+                                            studentId: state.student.id),
+                                      ),
+                                    );
+                                    if (!mounted) return;
+                                    // Após fechar o modal, recarrega os dados
+                                    bloc.add(
+                                      LoadStudentDashboardDataEvent(
+                                          userId: state.student.id),
+                                    );
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+
+                              // Menu de funcionalidades
+                            ],
+                          )
                   else if (state is StudentOperationFailure)
                     Column(
                       children: [
@@ -570,7 +575,9 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
                               firstDate: DateTime(2000),
                               lastDate: DateTime(2100),
                             );
-                            if (picked != null) setState(() => _startDate = picked);
+                            if (picked != null) {
+                              setState(() => _startDate = picked);
+                            }
                           },
                           child: Text(_startDate == null
                               ? 'Data Início'
@@ -590,7 +597,9 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
                               firstDate: DateTime(2000),
                               lastDate: DateTime(2100),
                             );
-                            if (picked != null) setState(() => _endDate = picked);
+                            if (picked != null) {
+                              setState(() => _endDate = picked);
+                            }
                           },
                           child: Text(_endDate == null
                               ? 'Data Fim'

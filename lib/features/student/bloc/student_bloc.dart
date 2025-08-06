@@ -48,17 +48,20 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
         (failure) => emit(StudentOperationFailure(message: failure.message)),
         (dashboardData) {
           final studentData = dashboardData['student'];
-          
+
           if (studentData == null) {
             // Usuário não tem dados de estudante - precisa completar cadastro
-            emit(StudentOperationFailure(
-              message: 'Perfil incompleto. Complete seu cadastro para continuar.',
+            emit(const StudentOperationFailure(
+              message:
+                  'Perfil incompleto. Complete seu cadastro para continuar.',
             ));
             return;
           }
 
           // Criar StudentEntity a partir dos dados do dashboard usando StudentModel
-          final student = StudentModel.fromJson(studentData as Map<String, dynamic>).toEntity();
+          final student =
+              StudentModel.fromJson(studentData as Map<String, dynamic>)
+                  .toEntity();
 
           const timeStats = StudentTimeStats();
           const contracts = <ContractEntity>[];
@@ -121,8 +124,8 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
     emit(const StudentLoading());
     try {
       final eitherTimeLogs = await _getTimeLogsByStudentUsecase(event.userId);
-final timeLogs = eitherTimeLogs.getOrElse(() => []);
-emit(StudentTimeLogsLoadSuccess(timeLogs: timeLogs));
+      final timeLogs = eitherTimeLogs.getOrElse(() => []);
+      emit(StudentTimeLogsLoadSuccess(timeLogs: timeLogs));
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
     }
