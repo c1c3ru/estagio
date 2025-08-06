@@ -515,48 +515,55 @@ class _ContractEditFormState extends State<_ContractEditForm> {
   DateTime? _startDate;
   DateTime? _endDate;
   bool _isSaving = false;
+  String? _weeklyHours;
 
   List<dynamic> _supervisores = [];
   String? _supervisorId;
   bool _loadingSupervisores = true;
 
   final List<String> _contractTypes = [
-    'Obrigatório',
-    'Não obrigatório',
+    'mandatory_internship',
+    'voluntary_internship',
   ];
 
-  final List<String> _statusOptions = [
-    'pending_approval',
-    'active',
-    'completed',
-  ];
-
-  String _getStatusDisplayName(String status) {
-    switch (status) {
-      case 'pending_approval':
-        return 'Pendente de Aprovação';
-      case 'active':
-        return 'Ativo';
-      case 'completed':
-        return 'Concluído';
+  String _getContractTypeDisplay(String type) {
+    switch (type) {
+      case 'mandatory_internship':
+        return 'Obrigatório';
+      case 'voluntary_internship':
+        return 'Não obrigatório';
       default:
-        return status;
+        return type;
     }
   }
+
+  final List<String> _statusOptions = [
+    'ativo',
+    'pendente',
+    'finalizado',
+  ];
+
+
 
   @override
   void initState() {
     super.initState();
     _loadSupervisores();
     if (widget.contract != null) {
-      _contractType = widget.contract.contractType;
-      _status = widget.contract.status;
+      _contractType = _contractTypes.contains(widget.contract.contractType) 
+          ? widget.contract.contractType 
+          : _contractTypes.first;
+      _status = _statusOptions.contains(widget.contract.status) 
+          ? widget.contract.status 
+          : _statusOptions.first;
       _descriptionController.text = widget.contract.description ?? '';
       _startDate = widget.contract.startDate;
       _endDate = widget.contract.endDate;
       _supervisorId = widget.contract.supervisorId;
+      _weeklyHours = '30';
     } else {
       _supervisorId = widget.supervisorId;
+      _weeklyHours = '30';
     }
   }
 
@@ -669,7 +676,7 @@ class _ContractEditFormState extends State<_ContractEditForm> {
                 items: _contractTypes
                     .map((type) => DropdownMenuItem(
                           value: type,
-                          child: Text(type),
+                          child: Text(_getContractTypeDisplay(type)),
                         ))
                     .toList(),
                 onChanged: (value) => setState(() => _contractType = value),
@@ -743,10 +750,63 @@ class _ContractEditFormState extends State<_ContractEditForm> {
                         );
                         if (picked != null) setState(() => _endDate = picked);
                       },
-                      validator: (v) => _endDate == null ? 'Obrigatório' : null,
+                      validator: (v) {
+                        if (_endDate == null) return 'Obrigatório';
+                        if (_startDate != null && _endDate!.isBefore(_startDate!)) {
+                          return 'Data fim deve ser posterior à data início';
+                        }
+                        return null;
+                      },
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _weeklyHours,
+                decoration: const InputDecoration(
+                  labelText: 'Carga Horária Semanal',
+                  prefixIcon: Icon(Icons.schedule),
+                  border: OutlineInputBorder(),
+                ),
+                items: const [
+                  DropdownMenuItem(
+                    value: '20',
+                    child: Text('20 horas/semana (Educação Especial/Fundamental)'),
+                  ),
+                  DropdownMenuItem(
+                    value: '30',
+                    child: Text('30 horas/semana (Ensino Superior/Médio)'),
+                  ),
+                ],
+                onChanged: (value) => setState(() => _weeklyHours = value),
+                validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Limites Legais (Lei 11.788/2008):',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      '• Ensino Superior/Médio: até 30h semanais\n'
+                      '• Educação Especial/Fundamental: até 20h semanais\n'
+                      '• Diário: mínimo 4h, máximo 6h\n'
+                      '• Redução permitida em períodos de prova',
+                      style: TextStyle(fontSize: 11),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
               TextFormField(

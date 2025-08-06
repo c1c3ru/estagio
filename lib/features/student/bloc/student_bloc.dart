@@ -6,6 +6,7 @@ import '../../../domain/usecases/time_log/get_time_logs_by_student_usecase.dart'
 import '../../../domain/usecases/time_log/clock_in_usecase.dart';
 import '../../../domain/usecases/time_log/clock_out_usecase.dart';
 import '../../../domain/usecases/time_log/get_active_time_log_usecase.dart';
+import '../../../domain/repositories/i_student_repository.dart';
 
 import '../../../data/models/student_model.dart';
 
@@ -20,6 +21,7 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
   final ClockInUsecase _clockInUsecase;
   final ClockOutUsecase _clockOutUsecase;
   final GetActiveTimeLogUsecase _getActiveTimeLogUsecase;
+  final IStudentRepository _studentRepository;
 
   StudentBloc({
     required GetStudentDashboardUsecase getStudentDashboardUsecase,
@@ -27,11 +29,13 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
     required ClockInUsecase clockInUsecase,
     required ClockOutUsecase clockOutUsecase,
     required GetActiveTimeLogUsecase getActiveTimeLogUsecase,
+    required IStudentRepository studentRepository,
   })  : _getStudentDashboardUsecase = getStudentDashboardUsecase,
         _getTimeLogsByStudentUsecase = getTimeLogsByStudentUsecase,
         _clockInUsecase = clockInUsecase,
         _clockOutUsecase = clockOutUsecase,
         _getActiveTimeLogUsecase = getActiveTimeLogUsecase,
+        _studentRepository = studentRepository,
         super(const StudentInitial()) {
     // Registrar handlers para os eventos
     on<LoadStudentDashboardDataEvent>(_onLoadStudentDashboardData);
@@ -202,22 +206,16 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
   ) async {
     emit(const StudentLoading());
     try {
-      // Chame o usecase real para criar o log
-      // final result = await _createTimeLogUsecase(...);
-      // result.fold(
-      //   (failure) => emit(StudentOperationFailure(message: failure.message)),
-      //   (log) => emit(StudentTimeLogOperationSuccess(timeLog: log, message: 'Registo criado com sucesso!')),
-      // );
-      emit(
-        StudentTimeLogOperationSuccess(
-            timeLog: TimeLogEntity(
-              id: 'fake',
-              studentId: 'fake',
-              logDate: DateTime.now(),
-              checkInTime: '08:00',
-              createdAt: DateTime.now(),
-            ),
-            message: 'Registo criado com sucesso!'),
+      final result = await _studentRepository.createTimeLog(
+        studentId: event.userId,
+        logDate: event.logDate,
+        checkInTime: event.checkInTime,
+        checkOutTime: event.checkOutTime,
+        description: event.description,
+      );
+      result.fold(
+        (failure) => emit(StudentOperationFailure(message: failure.message)),
+        (log) => emit(StudentTimeLogOperationSuccess(timeLog: log, message: 'Registro criado com sucesso!')),
       );
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));

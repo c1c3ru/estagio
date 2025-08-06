@@ -139,12 +139,21 @@ return const Left(NotImplementedFailure(message: 'Método checkOut não está di
       TimeOfDay? checkOutTime,
       String? description}) async {
     try {
-      // Implementação temporária
-      AppLogger.repository('Método createTimeLog não implementado foi chamado.');
-return const Left(NotImplementedFailure(message: 'Método createTimeLog não está disponível na versão atual'));
+      final timeLogData = {
+        'student_id': studentId,
+        'log_date': logDate.toIso8601String().split('T')[0],
+        'check_in_time': '${checkInTime.hour.toString().padLeft(2, '0')}:${checkInTime.minute.toString().padLeft(2, '0')}',
+        'check_out_time': checkOutTime != null 
+            ? '${checkOutTime.hour.toString().padLeft(2, '0')}:${checkOutTime.minute.toString().padLeft(2, '0')}'
+            : null,
+        'description': description,
+        'created_at': DateTime.now().toIso8601String(),
+      };
+      
+      final createdData = await _timeLogDatasource.createTimeLog(timeLogData);
+      return Right(TimeLogModel.fromJson(createdData).toEntity());
     } catch (e) {
-      AppLogger.error('Erro inesperado em createTimeLog', error: e);
-      return Left(ServerFailure(message: e.toString()));
+      return Left(ServerFailure(message: 'Erro ao criar registro de tempo: $e'));
     }
   }
 

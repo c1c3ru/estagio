@@ -174,9 +174,25 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
                   // Campo Check-out
                   AppTextField(
                     controller: checkOutController,
-                    labelText: 'Hora de Saída (Opcional)',
+                    labelText: 'Hora de Saída',
                     prefixIcon: Icons.access_time_filled_outlined,
                     readOnly: true,
+                    validator: (value) {
+                      if (value != null &&
+                          value.isNotEmpty &&
+                          selectedCheckInTime != null &&
+                          selectedCheckOutTime != null) {
+                        final checkInMinutes = selectedCheckInTime!.hour * 60 +
+                            selectedCheckInTime!.minute;
+                        final checkOutMinutes =
+                            selectedCheckOutTime!.hour * 60 +
+                                selectedCheckOutTime!.minute;
+                        if (checkOutMinutes <= checkInMinutes) {
+                          return 'Hora de saída deve ser posterior à entrada';
+                        }
+                      }
+                      return null;
+                    },
                     onTap: () async {
                       final TimeOfDay? picked = await showTimePicker(
                         context: dialogContext,
@@ -255,36 +271,7 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
     );
   }
 
-  void _confirmDeleteTimeLog(String timeLogId) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('Confirmar Remoção'),
-          content: const Text(
-              'Tem a certeza que deseja remover este registo de tempo? Esta ação não pode ser desfeita.'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text(AppStrings.cancel),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-            ),
-            AppButton(
-              text: 'Remover',
-              type: AppButtonType.text, // Ou um botão com cor de erro
-              foregroundColor: Theme.of(context).colorScheme.error,
-              onPressed: () {
-                _studentBloc
-                    .add(DeleteTimeLogRequestedEvent(timeLogId: timeLogId));
-                Navigator.of(dialogContext).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -422,7 +409,8 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
 
   Widget _buildTimeLogTable(List<TimeLogEntity> timeLogs) {
     final groupedLogs = _groupLogsByDate(timeLogs);
-    final sortedDates = groupedLogs.keys.toList()..sort((a, b) => b.compareTo(a));
+    final sortedDates = groupedLogs.keys.toList()
+      ..sort((a, b) => b.compareTo(a));
 
     return Card(
       child: Padding(
@@ -439,39 +427,57 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
               scrollDirection: Axis.horizontal,
               child: DataTable(
                 columnSpacing: 20,
-                headingRowColor: MaterialStateProperty.all(AppColors.primary.withOpacity(0.1)),
+                headingRowColor: MaterialStateProperty.all(
+                    AppColors.primary.withOpacity(0.1)),
                 columns: const [
-                  DataColumn(label: Text('Data', style: TextStyle(fontWeight: FontWeight.bold))),
-                  DataColumn(label: Text('Entrada 1', style: TextStyle(fontWeight: FontWeight.bold))),
-                  DataColumn(label: Text('Saída 1', style: TextStyle(fontWeight: FontWeight.bold))),
-                  DataColumn(label: Text('Entrada 2', style: TextStyle(fontWeight: FontWeight.bold))),
-                  DataColumn(label: Text('Saída 2', style: TextStyle(fontWeight: FontWeight.bold))),
-                  DataColumn(label: Text('Total', style: TextStyle(fontWeight: FontWeight.bold))),
-                  DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(
+                      label: Text('Data',
+                          style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(
+                      label: Text('Entrada',
+                          style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(
+                      label: Text('Saída',
+                          style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(
+                      label: Text('Total',
+                          style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(
+                      label: Text('Status',
+                          style: TextStyle(fontWeight: FontWeight.bold))),
                 ],
                 rows: sortedDates.map((date) {
                   final dayLogs = groupedLogs[date]!;
                   final totalHours = _calculateDayHours(dayLogs);
-                  final isApproved = dayLogs.every((log) => log.approved == true);
-                  
+                  final isApproved =
+                      dayLogs.every((log) => log.approved == true);
+
                   return DataRow(
                     cells: [
                       DataCell(Text(DateFormat('dd/MM/yyyy').format(date))),
-                      DataCell(Text(dayLogs.isNotEmpty ? _formatTime(dayLogs[0].checkInTime) : '-')),
-                      DataCell(Text(dayLogs.isNotEmpty && dayLogs[0].checkOutTime != null ? _formatTime(dayLogs[0].checkOutTime!) : '-')),
-                      DataCell(Text(dayLogs.length > 1 ? _formatTime(dayLogs[1].checkInTime) : '-')),
-                      DataCell(Text(dayLogs.length > 1 && dayLogs[1].checkOutTime != null ? _formatTime(dayLogs[1].checkOutTime!) : '-')),
-                      DataCell(Text('${totalHours.toStringAsFixed(1)}h', style: const TextStyle(fontWeight: FontWeight.bold))),
+                      DataCell(Text(dayLogs.isNotEmpty
+                          ? _formatTime(dayLogs[0].checkInTime)
+                          : '-')),
+                      DataCell(Text(
+                          dayLogs.isNotEmpty && dayLogs[0].checkOutTime != null
+                              ? _formatTime(dayLogs[0].checkOutTime!)
+                              : '-')),
+                      DataCell(Text('${totalHours.toStringAsFixed(1)}h',
+                          style: const TextStyle(fontWeight: FontWeight.bold))),
                       DataCell(
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: isApproved ? AppColors.success : AppColors.warning,
+                            color: isApproved
+                                ? AppColors.success
+                                : AppColors.warning,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             isApproved ? 'Aprovado' : 'Pendente',
-                            style: const TextStyle(color: Colors.white, fontSize: 12),
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 12),
                           ),
                         ),
                       ),
@@ -488,15 +494,19 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
 
   Widget _buildMonthlySummary(List<TimeLogEntity> timeLogs) {
     final currentMonth = DateTime.now();
-    final monthlyLogs = timeLogs.where((log) => 
-      log.logDate.year == currentMonth.year && 
-      log.logDate.month == currentMonth.month
-    ).toList();
-    
-    final totalHours = monthlyLogs.fold<double>(0, (sum, log) => sum + (log.hoursLogged ?? 0));
-    final approvedHours = monthlyLogs.where((log) => log.approved == true).fold<double>(0, (sum, log) => sum + (log.hoursLogged ?? 0));
+    final monthlyLogs = timeLogs
+        .where((log) =>
+            log.logDate.year == currentMonth.year &&
+            log.logDate.month == currentMonth.month)
+        .toList();
+
+    final totalHours =
+        monthlyLogs.fold<double>(0, (sum, log) => sum + (log.hoursLogged ?? 0));
+    final approvedHours = monthlyLogs
+        .where((log) => log.approved == true)
+        .fold<double>(0, (sum, log) => sum + (log.hoursLogged ?? 0));
     final pendingHours = totalHours - approvedHours;
-    
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -511,16 +521,20 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildSummaryItem('Total', '${totalHours.toStringAsFixed(1)}h', AppColors.primary),
-                _buildSummaryItem('Aprovadas', '${approvedHours.toStringAsFixed(1)}h', AppColors.success),
-                _buildSummaryItem('Pendentes', '${pendingHours.toStringAsFixed(1)}h', AppColors.warning),
+                _buildSummaryItem('Total', '${totalHours.toStringAsFixed(1)}h',
+                    AppColors.primary),
+                _buildSummaryItem('Aprovadas',
+                    '${approvedHours.toStringAsFixed(1)}h', AppColors.success),
+                _buildSummaryItem('Pendentes',
+                    '${pendingHours.toStringAsFixed(1)}h', AppColors.warning),
               ],
             ),
             const SizedBox(height: 16),
             LinearProgressIndicator(
               value: totalHours > 0 ? approvedHours / totalHours : 0,
               backgroundColor: AppColors.warning.withOpacity(0.3),
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.success),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(AppColors.success),
             ),
             const SizedBox(height: 8),
             Text(
@@ -555,160 +569,37 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
     );
   }
 
-  Map<DateTime, List<TimeLogEntity>> _groupLogsByDate(List<TimeLogEntity> timeLogs) {
+  Map<DateTime, List<TimeLogEntity>> _groupLogsByDate(
+      List<TimeLogEntity> timeLogs) {
     final Map<DateTime, List<TimeLogEntity>> grouped = {};
     for (final log in timeLogs) {
-      final dateKey = DateTime(log.logDate.year, log.logDate.month, log.logDate.day);
+      final dateKey =
+          DateTime(log.logDate.year, log.logDate.month, log.logDate.day);
       grouped.putIfAbsent(dateKey, () => []).add(log);
     }
     return grouped;
   }
 
   double _calculateDayHours(List<TimeLogEntity> dayLogs) {
-    return dayLogs.fold<double>(0, (sum, log) => sum + (log.hoursLogged ?? 0));
+    double totalHours = 0;
+    for (final log in dayLogs) {
+      if (log.checkOutTime != null) {
+        final checkInParts = log.checkInTime.split(':');
+        final checkOutParts = log.checkOutTime!.split(':');
+
+        final checkInMinutes =
+            int.parse(checkInParts[0]) * 60 + int.parse(checkInParts[1]);
+        final checkOutMinutes =
+            int.parse(checkOutParts[0]) * 60 + int.parse(checkOutParts[1]);
+
+        final diffMinutes = checkOutMinutes - checkInMinutes;
+        totalHours += diffMinutes / 60.0;
+      }
+    }
+    return totalHours;
   }
 
   String _formatTime(String time) {
     return time.length >= 5 ? time.substring(0, 5) : time;
-  }
-
-  Widget _buildTimeLogCard(BuildContext context, TimeLogEntity log) {
-    final theme = Theme.of(context);
-    final String hoursStr = log.hoursLogged != null
-        ? '${log.hoursLogged!.toStringAsFixed(1)}h'
-        : '-';
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: InkWell(
-        onTap: () =>
-            _showAddEditTimeLogDialog(timeLog: log), // Permite editar ao tocar
-        borderRadius: BorderRadius.circular(10),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: log.approved == true
-                      ? AppColors.success.withAlpha(30)
-                      : theme.colorScheme.secondaryContainer,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      DateFormat('dd', 'pt_BR').format(log.logDate),
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: log.approved == true
-                            ? AppColors.success
-                            : theme.colorScheme.onSecondaryContainer,
-                      ),
-                    ),
-                    Text(
-                      DateFormat('MMM', 'pt_BR')
-                          .format(log.logDate)
-                          .toUpperCase(),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: log.approved == true
-                            ? AppColors.success
-                            : theme.colorScheme.onSecondaryContainer,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Entrada: ${log.checkInDateTime != null ? DateFormat('HH:mm', 'pt_BR').format(log.checkInDateTime!) : '-'}',
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                    if (log.checkOutDateTime != null)
-                      Text(
-                        'Saída: ${DateFormat('HH:mm', 'pt_BR').format(log.checkOutDateTime!)}',
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                    if (log.description != null &&
-                        log.description!.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        log.description!,
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(color: theme.hintColor),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          log.approved == true
-                              ? Icons.check_circle
-                              : Icons.hourglass_empty,
-                          color: log.approved == true
-                              ? AppColors.success
-                              : AppColors.warning,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          log.approved == true ? 'Aprovado' : 'Pendente',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: log.approved == true
-                                ? AppColors.success
-                                : AppColors.warning,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          'Total: $hoursStr',
-                          style: theme.textTheme.bodyMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuButton<String>(
-                icon: Icon(Icons.more_vert, color: theme.hintColor),
-                onSelected: (value) {
-                  if (value == 'edit') {
-                    _showAddEditTimeLogDialog(timeLog: log);
-                  } else if (value == 'delete') {
-                    _confirmDeleteTimeLog(log.id);
-                  }
-                },
-                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                  const PopupMenuItem<String>(
-                    value: 'edit',
-                    child: ListTile(
-                        leading: Icon(Icons.edit_outlined),
-                        title: Text('Editar')),
-                  ),
-                  const PopupMenuItem<String>(
-                    value: 'delete',
-                    child: ListTile(
-                        leading:
-                            Icon(Icons.delete_outline, color: AppColors.error),
-                        title: Text('Remover')),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

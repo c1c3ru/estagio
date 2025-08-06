@@ -147,7 +147,7 @@ class ContractDatasource {
         dataToInsert['status'] = 'active';
       }
       if (dataToInsert['contract_type'] == null) {
-        dataToInsert['contract_type'] = 'Obrigatório';
+        dataToInsert['contract_type'] = 'mandatory_internship';
       }
       
       final response = await _supabaseClient

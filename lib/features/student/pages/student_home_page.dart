@@ -28,7 +28,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
   @override
   void initState() {
     super.initState();
-    
+
     // Usar WidgetsBinding para garantir que o widget está montado
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -40,6 +40,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
         }
       }
     });
+  }
+
+  String _formatDatePtBr(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
   @override
@@ -63,18 +67,18 @@ class _StudentHomePageState extends State<StudentHomePage> {
               },
             ),
           ],
-
         ),
         body: BlocBuilder<StudentBloc, StudentState>(
           builder: (context, state) {
-            return SingleChildScrollView(
+            return Center(
+                child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const AppLottieAnimation(
                     assetPath: LottieAssetPaths.student,
-                    height: 120,
+                    height: 150,
                   ),
                   const SizedBox(height: 24),
                   const Text(
@@ -83,11 +87,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Estado atual: ${state.runtimeType}',
-                    style: const TextStyle(fontSize: 16),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
                   if (state is StudentLoading)
@@ -107,44 +107,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
                           )
                         : Column(
                             children: [
-                              // Indicador de dados mock (se aplicável)
-                              if (state.student.fullName == 'Cicero Silva' &&
-                                  state.student.registrationNumber ==
-                                      '202300123456')
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(8),
-                                  margin: const EdgeInsets.only(bottom: 16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.orange.withOpacity(0.1),
-                                    border: Border.all(color: Colors.orange),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Row(
-                                    children: [
-                                      Icon(Icons.info_outline,
-                                          color: Colors.orange, size: 16),
-                                      SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          'Usando dados de demonstração. Execute o script SQL no Supabase para dados reais.',
-                                          style: TextStyle(
-                                            color: Colors.orange,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
                               Text(
                                 'Bem-vindo, ${state.student.fullName}!',
                                 style: const TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold),
+                                    fontSize: 20, fontWeight: FontWeight.bold),
+                                textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 24),
 
                               // Card com informações básicas
                               Card(
@@ -212,44 +181,77 @@ class _StudentHomePageState extends State<StudentHomePage> {
                               ),
                               const SizedBox(height: 16),
 
-                              // Card para criar novo contrato
-                              Card(
-                                color: AppColors.primary.withOpacity(0.08),
-                                child: ListTile(
-                                  leading: const Icon(Icons.add_box,
-                                      color: AppColors.primary, size: 36),
-                                  title: const Text('Novo Contrato',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold)),
-                                  subtitle: const Text(
-                                      'Clique para cadastrar um novo contrato'),
-                                  onTap: () async {
-                                    if (!mounted) return;
-                                    final bloc =
-                                        BlocProvider.of<StudentBloc>(context);
-                                    await showDialog(
-                                      context: context,
-                                      builder: (context) => BlocProvider.value(
-                                        value: Modular.get<ContractBloc>(),
-                                        child: _NovoContratoDialog(
-                                            studentId: state.student.id),
-                                      ),
-                                    );
-                                    if (!mounted) return;
-                                    // Após fechar o modal, recarrega os dados
-                                    bloc.add(
-                                      LoadStudentDashboardDataEvent(
-                                          userId: state.student.id),
-                                    );
-                                  },
+                              // Card com informações do contrato ativo
+                              if (state.contracts.isNotEmpty)
+                                Card(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Contrato Ativo',
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                            'Tipo: ${state.contracts.first.contractType}'),
+                                        Text(
+                                            'Início: ${_formatDatePtBr(state.contracts.first.startDate)}'),
+                                        Text(
+                                            'Fim: ${_formatDatePtBr(state.contracts.first.endDate)}'),
+                                        if (state.contracts.first.description !=
+                                            null)
+                                          Text(
+                                              'Descrição: ${state.contracts.first.description}'),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              else
+                                // Card para criar novo contrato
+                                Card(
+                                  color: AppColors.primary.withOpacity(0.08),
+                                  child: ListTile(
+                                    leading: const Icon(Icons.add_box,
+                                        color: AppColors.primary, size: 36),
+                                    title: const Text('Novo Contrato',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    subtitle: const Text(
+                                        'Clique para cadastrar um novo contrato'),
+                                    onTap: () async {
+                                      if (!mounted) return;
+                                      final bloc =
+                                          BlocProvider.of<StudentBloc>(context);
+                                      await showDialog(
+                                        context: context,
+                                        builder: (context) =>
+                                            BlocProvider.value(
+                                          value: Modular.get<ContractBloc>(),
+                                          child: _NovoContratoDialog(
+                                              studentId: state.student.id),
+                                        ),
+                                      );
+                                      if (!mounted) return;
+                                      // Após fechar o modal, recarrega os dados
+                                      bloc.add(
+                                        LoadStudentDashboardDataEvent(
+                                            userId: state.student.id),
+                                      );
+                                    },
+                                  ),
                                 ),
-                              ),
                               const SizedBox(height: 16),
 
                               // Widget de registro de horas
                               TimeTrackerWidget(
                                 currentUserId: state.student.id,
-                                activeTimeLogInitial: state.timeStats.activeTimeLog,
+                                activeTimeLogInitial:
+                                    state.timeStats.activeTimeLog,
                               ),
                               const SizedBox(height: 16),
 
@@ -334,7 +336,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     ),
                 ],
               ),
-            );
+            ));
           },
         ),
         bottomNavigationBar: BottomNavigationBar(
@@ -463,10 +465,11 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
     setState(() => _checkingContract = true);
     try {
       final datasource = Modular.get<ContractDatasource>();
-      final activeContract = await datasource.getActiveContractByStudent(widget.studentId);
+      final result =
+          await datasource.getActiveContractByStudent(widget.studentId);
       if (mounted) {
         setState(() {
-          _hasActiveContract = activeContract != null;
+          _hasActiveContract = result != null;
           _checkingContract = false;
         });
       }
@@ -518,7 +521,7 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
         id: '',
         studentId: widget.studentId,
         supervisorId: _supervisorSelecionado!.id,
-        contractType: 'Obrigatório',
+        contractType: 'mandatory_internship',
         status: 'active',
         startDate: _startDate!,
         endDate: _endDate!,
