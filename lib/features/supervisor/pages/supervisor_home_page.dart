@@ -546,30 +546,38 @@ class _StudentFilterSheetState extends State<_StudentFilterSheet> {
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
-                      readOnly: true,
-                      decoration: const InputDecoration(
-                          labelText: 'Início de (contrato)'),
-                      controller: TextEditingController(
-                          text: _startDateFrom != null
-                              ? _formatDate(_startDateFrom!)
-                              : ''),
-                      onTap: () => _pickDate(context, _startDateFrom,
-                          (d) => setState(() => _startDateFrom = d)),
+                    child: Builder(
+                      builder: (BuildContext context) {
+                        return TextFormField(
+                          readOnly: true,
+                          decoration: const InputDecoration(
+                              labelText: 'Início de (contrato)'),
+                          controller: TextEditingController(
+                              text: _startDateFrom != null
+                                  ? _formatDate(_startDateFrom!)
+                                  : ''),
+                          onTap: () => _pickDate(context, _startDateFrom,
+                              (d) => setState(() => _startDateFrom = d)),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: TextFormField(
-                      readOnly: true,
-                      decoration:
-                          const InputDecoration(labelText: 'Início até'),
-                      controller: TextEditingController(
-                          text: _startDateTo != null
-                              ? _formatDate(_startDateTo!)
-                              : ''),
-                      onTap: () => _pickDate(context, _startDateTo,
-                          (d) => setState(() => _startDateTo = d)),
+                    child: Builder(
+                      builder: (BuildContext context) {
+                        return TextFormField(
+                          readOnly: true,
+                          decoration:
+                              const InputDecoration(labelText: 'Início até'),
+                          controller: TextEditingController(
+                              text: _startDateTo != null
+                                  ? _formatDate(_startDateTo!)
+                                  : ''),
+                          onTap: () => _pickDate(context, _startDateTo,
+                              (d) => setState(() => _startDateTo = d)),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -578,30 +586,38 @@ class _StudentFilterSheetState extends State<_StudentFilterSheet> {
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
-                      readOnly: true,
-                      decoration:
-                          const InputDecoration(labelText: 'Término de'),
-                      controller: TextEditingController(
-                          text: _endDateFrom != null
-                              ? _formatDate(_endDateFrom!)
-                              : ''),
-                      onTap: () => _pickDate(context, _endDateFrom,
-                          (d) => setState(() => _endDateFrom = d)),
+                    child: Builder(
+                      builder: (BuildContext context) {
+                        return TextFormField(
+                          readOnly: true,
+                          decoration:
+                              const InputDecoration(labelText: 'Término de'),
+                          controller: TextEditingController(
+                              text: _endDateFrom != null
+                                  ? _formatDate(_endDateFrom!)
+                                  : ''),
+                          onTap: () => _pickDate(context, _endDateFrom,
+                              (d) => setState(() => _endDateFrom = d)),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: TextFormField(
-                      readOnly: true,
-                      decoration:
-                          const InputDecoration(labelText: 'Término até'),
-                      controller: TextEditingController(
-                          text: _endDateTo != null
-                              ? _formatDate(_endDateTo!)
-                              : ''),
-                      onTap: () => _pickDate(context, _endDateTo,
-                          (d) => setState(() => _endDateTo = d)),
+                    child: Builder(
+                      builder: (BuildContext context) {
+                        return TextFormField(
+                          readOnly: true,
+                          decoration:
+                              const InputDecoration(labelText: 'Término até'),
+                          controller: TextEditingController(
+                              text: _endDateTo != null
+                                  ? _formatDate(_endDateTo!)
+                                  : ''),
+                          onTap: () => _pickDate(context, _endDateTo,
+                              (d) => setState(() => _endDateTo = d)),
+                        );
+                      },
                     ),
                   ),
                 ],

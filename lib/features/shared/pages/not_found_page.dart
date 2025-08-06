@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
+import '../animations/lottie_animations.dart';
 
 class NotFoundPage extends StatelessWidget {
   const NotFoundPage({super.key});
@@ -7,19 +7,16 @@ class NotFoundPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Lottie.asset('assets/animations/404_not_found_animation.json',
-                height: 200),
-            const SizedBox(height: 24),
-            const Text(
-              'Página não encontrada',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            Lottie404Widget(
+              message: 'Página não encontrada',
+              size: 300,
             ),
-            const SizedBox(height: 12),
-            const Text(
+            SizedBox(height: 12),
+            Text(
               'A página que você tentou acessar não existe ou foi removida.',
               textAlign: TextAlign.center,
             ),

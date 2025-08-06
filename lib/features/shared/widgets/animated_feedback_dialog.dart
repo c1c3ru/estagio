@@ -56,24 +56,14 @@ class AnimatedFeedbackDialog extends StatelessWidget {
   }
 
   Widget _buildAnimation() {
-    String assetPath;
     switch (type) {
       case FeedbackType.success:
-        assetPath = LottieAssetPaths.success;
-        break;
+        return const LottieSuccessWidget(size: 120);
       case FeedbackType.error:
-        assetPath = LottieAssetPaths.error;
-        break;
+        return const LottieErrorWidget(size: 120);
       case FeedbackType.confetti:
-        assetPath = LottieAssetPaths.confetti;
-        break;
+        return const LottieConfettiWidget(size: 140);
     }
-
-    return AppLottieAnimation(
-      assetPath: assetPath,
-      height: 120,
-      repeat: type == FeedbackType.confetti,
-    );
   }
 
   Widget _buildActions(BuildContext context) {

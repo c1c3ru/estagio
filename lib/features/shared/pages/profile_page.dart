@@ -752,30 +752,34 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildDateField() {
-    return TextFormField(
-      decoration: const InputDecoration(
-        labelText: 'Data de Nascimento',
-        prefixIcon: Icon(Icons.cake),
-        border: OutlineInputBorder(),
-      ),
-      readOnly: true,
-      onTap: () async {
-        final date = await showDatePicker(
-          context: context,
-          initialDate: _selectedBirthDate ??
-              DateTime.now().subtract(const Duration(days: 365 * 18)),
-          firstDate: DateTime(1900),
-          lastDate: DateTime.now(),
+    return Builder(
+      builder: (BuildContext context) {
+        return TextFormField(
+          decoration: const InputDecoration(
+            labelText: 'Data de Nascimento',
+            prefixIcon: Icon(Icons.cake),
+            border: OutlineInputBorder(),
+          ),
+          readOnly: true,
+          onTap: () async {
+            final date = await showDatePicker(
+              context: context,
+              initialDate: _selectedBirthDate ??
+                  DateTime.now().subtract(const Duration(days: 365 * 18)),
+              firstDate: DateTime(1900),
+              lastDate: DateTime.now(),
+            );
+            if (date != null) {
+              setState(() => _selectedBirthDate = date);
+            }
+          },
+          controller: TextEditingController(
+            text: _selectedBirthDate != null
+                ? DateFormat('dd/MM/yyyy').format(_selectedBirthDate!)
+                : '',
+          ),
         );
-        if (date != null) {
-          setState(() => _selectedBirthDate = date);
-        }
       },
-      controller: TextEditingController(
-        text: _selectedBirthDate != null
-            ? DateFormat('dd/MM/yyyy').format(_selectedBirthDate!)
-            : '',
-      ),
     );
   }
 

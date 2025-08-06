@@ -33,7 +33,7 @@ class EmailConfirmationPage extends StatelessWidget {
             children: [
               const AppLottieAnimation(
                 assetPath: LottieAssetPaths.emailConfirmation,
-                height: 120,
+                height: 160,
               ),
               const SizedBox(height: 32),
               const Text(

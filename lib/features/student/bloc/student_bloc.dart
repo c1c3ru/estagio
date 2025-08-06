@@ -47,12 +47,21 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
       result.fold(
         (failure) => emit(StudentOperationFailure(message: failure.message)),
         (dashboardData) {
+          final studentData = dashboardData['student'];
+          
+          if (studentData == null) {
+            // Usuário não tem dados de estudante - precisa completar cadastro
+            emit(StudentOperationFailure(
+              message: 'Perfil incompleto. Complete seu cadastro para continuar.',
+            ));
+            return;
+          }
+
           // Criar StudentEntity a partir dos dados do dashboard usando StudentModel
-          final studentData = dashboardData['student'] as Map<String, dynamic>;
-          final student = StudentModel.fromJson(studentData).toEntity();
+          final student = StudentModel.fromJson(studentData as Map<String, dynamic>).toEntity();
 
           const timeStats = StudentTimeStats();
-          final contracts = <ContractEntity>[];
+          const contracts = <ContractEntity>[];
 
           emit(StudentDashboardLoadSuccess(
             student: student,

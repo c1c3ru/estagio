@@ -118,9 +118,8 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Center(
-                child: AppLottieAnimation(
-                  assetPath: LottieAssetPaths.form,
-                  height: 140,
+                child: LottieFormWidget(
+                  size: 160,
                 ),
               ),
               const SizedBox(height: 16),
@@ -153,28 +152,36 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
-                      controller: _startDateController,
-                      decoration: const InputDecoration(
-                          labelText: 'Início do contrato'),
-                      readOnly: true,
-                      onTap: () => _selectDate(context, _startDateController,
-                          _startDate, (d) => setState(() => _startDate = d)),
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'Informe a data' : null,
+                    child: Builder(
+                      builder: (BuildContext context) {
+                        return TextFormField(
+                          controller: _startDateController,
+                          decoration: const InputDecoration(
+                              labelText: 'Início do contrato'),
+                          readOnly: true,
+                          onTap: () => _selectDate(context, _startDateController,
+                              _startDate, (d) => setState(() => _startDate = d)),
+                          validator: (v) =>
+                              v == null || v.isEmpty ? 'Informe a data' : null,
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: TextFormField(
-                      controller: _endDateController,
-                      decoration:
-                          const InputDecoration(labelText: 'Fim do contrato'),
-                      readOnly: true,
-                      onTap: () => _selectDate(context, _endDateController,
-                          _endDate, (d) => setState(() => _endDate = d)),
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'Informe a data' : null,
+                    child: Builder(
+                      builder: (BuildContext context) {
+                        return TextFormField(
+                          controller: _endDateController,
+                          decoration:
+                              const InputDecoration(labelText: 'Fim do contrato'),
+                          readOnly: true,
+                          onTap: () => _selectDate(context, _endDateController,
+                              _endDate, (d) => setState(() => _endDate = d)),
+                          validator: (v) =>
+                              v == null || v.isEmpty ? 'Informe a data' : null,
+                        );
+                      },
                     ),
                   ),
                 ],

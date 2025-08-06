@@ -92,7 +92,18 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   if (state is StudentLoading)
                     const CircularProgressIndicator()
                   else if (state is StudentDashboardLoadSuccess)
-                    Column(
+                    state.student.fullName.isEmpty
+                        ? Center(
+                            child: const Column(
+                              children: [
+                                LottieEmptyStateWidget(
+                                  message: 'Complete seu cadastro para ver suas informações aqui.',
+                                  size: 180,
+                                ),
+                              ],
+                            ),
+                          )
+                        : Column(
                       children: [
                         // Indicador de dados mock (se aplicável)
                         if (state.student.fullName == 'Cicero Silva' &&
@@ -549,37 +560,43 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
               Row(
                 children: [
                   Expanded(
-                    child: TextButton(
-                      onPressed: () async {
-                        final picked = await showDatePicker(
-                          context: Modular
-                              .routerDelegate.navigatorKey.currentContext!,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100),
+                    child: Builder(
+                      builder: (BuildContext context) {
+                        return TextButton(
+                          onPressed: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100),
+                            );
+                            if (picked != null) setState(() => _startDate = picked);
+                          },
+                          child: Text(_startDate == null
+                              ? 'Data Início'
+                              : 'Início: ${_formatDatePtBr(_startDate!)}'),
                         );
-                        if (picked != null) setState(() => _startDate = picked);
                       },
-                      child: Text(_startDate == null
-                          ? 'Data Início'
-                          : 'Início: ${_formatDatePtBr(_startDate!)}'),
                     ),
                   ),
                   Expanded(
-                    child: TextButton(
-                      onPressed: () async {
-                        final picked = await showDatePicker(
-                          context: Modular
-                              .routerDelegate.navigatorKey.currentContext!,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100),
+                    child: Builder(
+                      builder: (BuildContext context) {
+                        return TextButton(
+                          onPressed: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100),
+                            );
+                            if (picked != null) setState(() => _endDate = picked);
+                          },
+                          child: Text(_endDate == null
+                              ? 'Data Fim'
+                              : 'Fim: ${_formatDatePtBr(_endDate!)}'),
                         );
-                        if (picked != null) setState(() => _endDate = picked);
                       },
-                      child: Text(_endDate == null
-                          ? 'Data Fim'
-                          : 'Fim: ${_formatDatePtBr(_endDate!)}'),
                     ),
                   ),
                 ],

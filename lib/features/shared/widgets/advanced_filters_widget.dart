@@ -579,29 +579,33 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
     required DateTime? date,
     required Function(DateTime?) onChanged,
   }) {
-    return TextFormField(
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        suffixIcon: const Icon(Icons.calendar_today),
-      ),
-      readOnly: true,
-      controller: TextEditingController(
-        text: date != null
-            ? '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}'
-            : '',
-      ),
-      onTap: () async {
-        final picked = await showDatePicker(
-          context: context,
-          initialDate: date ?? DateTime.now(),
-          firstDate: DateTime.now().subtract(const Duration(days: 365 * 2)),
-          lastDate: DateTime.now().add(const Duration(days: 365)),
+    return Builder(
+      builder: (BuildContext context) {
+        return TextFormField(
+          decoration: InputDecoration(
+            labelText: label,
+            border: const OutlineInputBorder(),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            suffixIcon: const Icon(Icons.calendar_today),
+          ),
+          readOnly: true,
+          controller: TextEditingController(
+            text: date != null
+                ? '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}'
+                : '',
+          ),
+          onTap: () async {
+            final picked = await showDatePicker(
+              context: context,
+              initialDate: date ?? DateTime.now(),
+              firstDate: DateTime.now().subtract(const Duration(days: 365 * 2)),
+              lastDate: DateTime.now().add(const Duration(days: 365)),
+            );
+            if (picked != null) {
+              onChanged(picked);
+            }
+          },
         );
-        if (picked != null) {
-          onChanged(picked);
-        }
       },
     );
   }

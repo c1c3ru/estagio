@@ -13,11 +13,11 @@ class LottieAssetPaths {
   static const String confetti = 'assets/animations/confetti_animation.json';
   static const String emailConfirmation = 'assets/animations/email_confirmations_animation.json';
   static const String passwordReset = 'assets/animations/password_reset_animation.json';
-  static const String student = 'assets/animations/student_page_animation .json';
+  static const String student = 'assets/animations/student_page_animation.json';
   static const String supervisor = 'assets/animations/supervisor_page_animation.json';
   static const String internship = 'assets/animations/intership_animations.json';
   static const String form = 'assets/animations/Formulario_animation.json';
-  static const String time = 'assets/animations/time_nimation.json';
+  static const String time = 'assets/animations/time_animation.json';
   static const String loadingDots = 'assets/animations/loading_dots_animation.json';
 }
 
@@ -87,7 +87,7 @@ class LottieLoadingWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         AppLottieAnimation(
-          assetPath: LottieAssetPaths.loading,
+          assetPath: LottieAssetPaths.loadingDots,
           width: size,
           height: size,
         ),
@@ -208,6 +208,118 @@ class LottieEmptyStateWidget extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Widget de 404 com animação Lottie (tamanho maior)
+class Lottie404Widget extends StatelessWidget {
+  final String? message;
+  final double size;
+
+  const Lottie404Widget({
+    super.key,
+    this.message,
+    this.size = 250,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AppLottieAnimation(
+          assetPath: LottieAssetPaths.notFound,
+          width: size,
+          height: size,
+        ),
+        if (message != null) ...[
+          const SizedBox(height: 16),
+          Text(
+            message!,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: Colors.grey[700],
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Widget de formulário com animação Lottie (tamanho maior)
+class LottieFormWidget extends StatelessWidget {
+  final double size;
+
+  const LottieFormWidget({
+    super.key,
+    this.size = 200,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AppLottieAnimation(
+      assetPath: LottieAssetPaths.form,
+      width: size,
+      height: size,
+    );
+  }
+}
+
+/// Widget de confetti para cadastros importantes
+class LottieConfettiWidget extends StatelessWidget {
+  final String? message;
+  final double size;
+
+  const LottieConfettiWidget({
+    super.key,
+    this.message,
+    this.size = 180,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AppLottieAnimation(
+          assetPath: LottieAssetPaths.confetti,
+          width: size,
+          height: size,
+          repeat: false,
+        ),
+        if (message != null) ...[
+          const SizedBox(height: 16),
+          Text(
+            message!,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Colors.green[700],
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Widget de tempo/horário
+class LottieTimeWidget extends StatelessWidget {
+  final double size;
+
+  const LottieTimeWidget({
+    super.key,
+    this.size = 120,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AppLottieAnimation(
+      assetPath: LottieAssetPaths.time,
+      width: size,
+      height: size,
     );
   }
 }

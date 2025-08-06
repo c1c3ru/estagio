@@ -319,36 +319,34 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
               _currentStudent == null) {
             return Center(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(24.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.error_outline,
+                    const Icon(
+                      Icons.info_outline,
                       size: 64,
-                      color: Theme.of(context).colorScheme.error,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Perfil Incompleto',
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Erro ao carregar dados',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      state.message,
-                      textAlign: TextAlign.center,
+                      'Para continuar usando o aplicativo, precisamos de algumas informações adicionais. Clique em "Completar Perfil" para adicionar seus dados.',
                       style: Theme.of(context).textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 32),
                     AppButton(
-                      text: 'Tentar Novamente',
-                      onPressed: () {
-                        if (_currentUserId != null) {
-                          _studentBloc.add(
-                              student_event.LoadStudentDashboardDataEvent(
-                                  userId: _currentUserId!));
-                        }
-                      },
+                      text: 'Completar Perfil',
+                      onPressed: _toggleEditMode,
+                      icon: Icons.edit,
                     ),
                   ],
                 ),
@@ -617,32 +615,36 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
         ),
         const SizedBox(height: 16),
         // Data de Nascimento
-        AppTextField(
-          controller: _birthDateController,
-          labelText: 'Data de Nascimento',
-          prefixIcon: Icons.cake_outlined,
-          readOnly: true,
-          validator: (v) => _selectedBirthDate == null
-              ? 'Campo obrigatório'
-              : Validators.dateNotFuture(_selectedBirthDate,
-                  fieldName: 'Data de Nascimento'),
-          onTap: () async {
-            final DateTime? picked = await showDatePicker(
-              context: context,
-              initialDate: _selectedBirthDate ??
-                  DateTime.now().subtract(
-                      const Duration(days: 365 * 18)), // Ex: 18 anos atrás
-              firstDate: DateTime(1950),
-              lastDate: DateTime.now(),
-              locale: const Locale('pt', 'BR'),
+        Builder(
+          builder: (BuildContext context) {
+            return AppTextField(
+              controller: _birthDateController,
+              labelText: 'Data de Nascimento',
+              prefixIcon: Icons.cake_outlined,
+              readOnly: true,
+              validator: (v) => _selectedBirthDate == null
+                  ? 'Campo obrigatório'
+                  : Validators.dateNotFuture(_selectedBirthDate,
+                      fieldName: 'Data de Nascimento'),
+              onTap: () async {
+                final DateTime? picked = await showDatePicker(
+                  context: context,
+                  initialDate: _selectedBirthDate ??
+                      DateTime.now().subtract(
+                          const Duration(days: 365 * 18)), // Ex: 18 anos atrás
+                  firstDate: DateTime(1950),
+                  lastDate: DateTime.now(),
+                  locale: const Locale('pt', 'BR'),
+                );
+                if (picked != null && picked != _selectedBirthDate) {
+                  setState(() {
+                    _selectedBirthDate = picked;
+                    _birthDateController.text =
+                        DateFormat('dd/MM/yyyy').format(picked);
+                  });
+                }
+              },
             );
-            if (picked != null && picked != _selectedBirthDate) {
-              setState(() {
-                _selectedBirthDate = picked;
-                _birthDateController.text =
-                    DateFormat('dd/MM/yyyy').format(picked);
-              });
-            }
           },
         ),
         const SizedBox(height: 16),

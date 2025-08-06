@@ -90,7 +90,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   children: <Widget>[
                     const AppLottieAnimation(
                       assetPath: LottieAssetPaths.passwordReset,
-                      height: 160,
+                      height: 180,
                     ),
                     const SizedBox(height: 32),
                     Text(
