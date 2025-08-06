@@ -75,6 +75,7 @@ class _TimeTrackerWidgetState extends State<TimeTrackerWidget> {
       _studentBloc.add(StudentCheckOutEvent(
         userId: _userId!,
         activeTimeLogId: _activeTimeLog!.id,
+        notes: 'Check-out realizado via app',
       ));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

@@ -3,6 +3,9 @@ import '../../../domain/usecases/student/get_student_dashboard_usecase.dart';
 import '../../../domain/entities/contract_entity.dart';
 import '../../../domain/entities/time_log_entity.dart';
 import '../../../domain/usecases/time_log/get_time_logs_by_student_usecase.dart';
+import '../../../domain/usecases/time_log/clock_in_usecase.dart';
+import '../../../domain/usecases/time_log/clock_out_usecase.dart';
+import '../../../domain/usecases/time_log/get_active_time_log_usecase.dart';
 
 import '../../../data/models/student_model.dart';
 
@@ -14,12 +17,21 @@ import 'student_state.dart';
 class StudentBloc extends Bloc<StudentEvent, StudentState> {
   final GetStudentDashboardUsecase _getStudentDashboardUsecase;
   final GetTimeLogsByStudentUsecase _getTimeLogsByStudentUsecase;
+  final ClockInUsecase _clockInUsecase;
+  final ClockOutUsecase _clockOutUsecase;
+  final GetActiveTimeLogUsecase _getActiveTimeLogUsecase;
 
   StudentBloc({
     required GetStudentDashboardUsecase getStudentDashboardUsecase,
     required GetTimeLogsByStudentUsecase getTimeLogsByStudentUsecase,
+    required ClockInUsecase clockInUsecase,
+    required ClockOutUsecase clockOutUsecase,
+    required GetActiveTimeLogUsecase getActiveTimeLogUsecase,
   })  : _getStudentDashboardUsecase = getStudentDashboardUsecase,
         _getTimeLogsByStudentUsecase = getTimeLogsByStudentUsecase,
+        _clockInUsecase = clockInUsecase,
+        _clockOutUsecase = clockOutUsecase,
+        _getActiveTimeLogUsecase = getActiveTimeLogUsecase,
         super(const StudentInitial()) {
     // Registrar handlers para os eventos
     on<LoadStudentDashboardDataEvent>(_onLoadStudentDashboardData);
@@ -97,8 +109,14 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
   ) async {
     emit(const StudentLoading());
     try {
-      // Implementar lógica de check-in
-      emit(const StudentLoading());
+      final result = await _clockInUsecase(event.userId, notes: event.notes);
+      result.fold(
+        (failure) => emit(StudentOperationFailure(message: failure.message)),
+        (timeLog) => emit(StudentTimeLogOperationSuccess(
+          timeLog: timeLog,
+          message: 'Check-in realizado com sucesso!',
+        )),
+      );
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
     }
@@ -110,8 +128,17 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
   ) async {
     emit(const StudentLoading());
     try {
-      // Implementar lógica de check-out
-      emit(const StudentLoading());
+      final result = await _clockOutUsecase(
+        studentId: event.userId,
+        notes: event.notes,
+      );
+      result.fold(
+        (failure) => emit(StudentOperationFailure(message: failure.message)),
+        (_) => emit(const StudentTimeLogOperationSuccess(
+          timeLog: null,
+          message: 'Check-out realizado com sucesso!',
+        )),
+      );
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
     }
@@ -209,10 +236,12 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
     FetchActiveTimeLogEvent event,
     Emitter<StudentState> emit,
   ) async {
-    emit(const StudentLoading());
     try {
-      // Implementar lógica para buscar log ativo
-      emit(const StudentLoading());
+      final result = await _getActiveTimeLogUsecase(event.userId);
+      result.fold(
+        (failure) => emit(StudentOperationFailure(message: failure.message)),
+        (activeTimeLog) => emit(ActiveTimeLogFetched(activeTimeLog: activeTimeLog)),
+      );
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
     }

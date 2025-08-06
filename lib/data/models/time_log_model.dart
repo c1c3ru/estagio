@@ -54,7 +54,7 @@ class TimeLogModel {
     return {
       'id': id,
       'student_id': studentId,
-      'log_date': logDate.toIso8601String(),
+      'log_date': logDate.toIso8601String().split('T')[0], // Apenas a data
       'check_in_time': checkInTime,
       'check_out_time': checkOutTime,
       'hours_logged': hoursLogged,

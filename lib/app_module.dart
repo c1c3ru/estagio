@@ -275,6 +275,9 @@ class AppModule extends Module {
     i.addLazySingleton<StudentBloc>(() => StudentBloc(
           getStudentDashboardUsecase: i(),
           getTimeLogsByStudentUsecase: i(),
+          clockInUsecase: i(),
+          clockOutUsecase: i(),
+          getActiveTimeLogUsecase: i(),
         ));
 
     i.add<SupervisorBloc>(() => SupervisorBloc(
@@ -328,7 +331,7 @@ class AppModule extends Module {
   void routes(RouteManager r) {
     // Auth Routes
     r.child('/', child: (context) => const LoginPage());
-    r.child('/login', child: (context) => const LoginPage());
+    r.child('/login', child: (context) => const LoginPage(), transition: TransitionType.noTransition);
     r.child('/auth/register-type',
         child: (context) => const RegisterTypePage());
     r.child('/auth/register-student',

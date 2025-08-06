@@ -224,7 +224,10 @@ class _ContractPageState extends State<ContractPage> {
           child: Padding(
             padding: EdgeInsets.all(16),
             child: Center(
-              child: CircularProgressIndicator(),
+              child: AppLottieAnimation(
+                assetPath: 'assets/animations/Formulario_animation.json',
+                height: 120,
+              ),
             ),
           ),
         );
@@ -305,28 +308,19 @@ class _ContractPageState extends State<ContractPage> {
           builder: (context, state) {
             if (state is ContractSelecting) {
               return const Center(
-                child: CircularProgressIndicator(),
+                child: AppLottieAnimation(
+                  assetPath: 'assets/animations/Formulario_animation.json',
+                  height: 120,
+                ),
               );
             }
 
             if (state is ContractLoadByStudentSuccess) {
               if (state.contracts.isEmpty) {
-                return Center(
-                  child: Column(
-                    children: [
-                      const Icon(
-                        Icons.description_outlined,
-                        size: 64,
-                        color: AppColors.textSecondary,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Nenhum contrato encontrado',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
+                return const Center(
+                  child: LottieEmptyStateWidget(
+                    message: 'Nenhum contrato encontrado',
+                    size: 150,
                   ),
                 );
               }

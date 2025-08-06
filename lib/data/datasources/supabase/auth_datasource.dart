@@ -120,6 +120,8 @@ class AuthDatasource implements IAuthDatasource {
       // Verificar se o usuário tem dados na tabela correspondente
       if (kDebugMode) {
         print('🔍 Verificando dados do usuário na tabela...');
+        print('👤 User ID: ${response.user!.id}');
+        print('📋 User metadata: ${response.user!.userMetadata}');
       }
       await _ensureUserDataExists(response.user!);
       if (kDebugMode) {
@@ -265,19 +267,56 @@ class AuthDatasource implements IAuthDatasource {
       await _ensureUserInUsersTable(user, role);
 
       if (role == 'student') {
-        // Apenas verificar se existe, não criar automaticamente
-        final studentResponse = await _supabaseClient
+        if (kDebugMode) {
+          print('🔍 Verificando estudante para role: $role, user.id: ${user.id}');
+        }
+        
+        final existingStudent = await _supabaseClient
             .from('students')
             .select('id')
             .eq('id', user.id)
             .maybeSingle();
 
-        if (studentResponse == null) {
+        if (existingStudent == null) {
           if (kDebugMode) {
-            print(
-                '⚠️ Nenhum dado de estudante encontrado para ${user.id} - usuário precisa completar cadastro');
+            print('🔧 Criando registro de estudante para ${user.id}');
+            print('📋 Metadata do usuário: ${user.userMetadata}');
           }
-          // Não criar automaticamente - deixar o usuário completar o cadastro
+          
+          try {
+            final insertData = {
+              'id': user.id,
+              'full_name': user.userMetadata?['full_name'] ?? 'Estudante',
+              'registration_number': user.userMetadata?['registration'] ?? 'REG${DateTime.now().millisecondsSinceEpoch}',
+              'course': user.userMetadata?['course'] ?? 'Curso não informado',
+              'advisor_name': user.userMetadata?['advisor_name'] ?? 'Orientador não informado',
+              'is_mandatory_internship': true,
+              'class_shift': user.userMetadata?['class_shift'] ?? 'morning',
+              'internship_shift1': user.userMetadata?['internship_shift'] ?? 'morning',
+              'birth_date': user.userMetadata?['birth_date'] ?? '2000-01-01',
+              'contract_start_date': DateTime.now().toIso8601String().split('T')[0],
+              'contract_end_date': DateTime.now().add(const Duration(days: 365)).toIso8601String().split('T')[0],
+              'total_hours_required': 400.0,
+              'total_hours_completed': 0.0,
+              'weekly_hours_target': 20.0,
+              'status': 'active',
+            };
+            
+            if (kDebugMode) {
+              print('📋 Dados para inserção: $insertData');
+            }
+            
+            final result = await _supabaseClient.from('students').insert(insertData).select();
+            
+            if (kDebugMode) {
+              print('✅ Registro de estudante criado: $result');
+            }
+          } catch (insertError) {
+            if (kDebugMode) {
+              print('❌ Erro detalhado ao criar estudante: $insertError');
+              print('❌ Tipo do erro: ${insertError.runtimeType}');
+            }
+          }
         } else {
           if (kDebugMode) {
             print('✅ Dados de estudante encontrados para ${user.id}');

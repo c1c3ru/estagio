@@ -95,9 +95,28 @@ class TimeLogRepository implements ITimeLogRepository {
   @override
   Future<Either<AppFailure, TimeLogEntity>> createTimeLog(TimeLogEntity timeLog) async {
     try {
-      final timeLogModel = timeLog as TimeLogModel;
-      final createdData =
-          await _timeLogDatasource.createTimeLog(timeLogModel.toJson());
+      final timeLogModel = TimeLogModel(
+        id: timeLog.id,
+        studentId: timeLog.studentId,
+        logDate: timeLog.logDate,
+        checkInTime: timeLog.checkInTime,
+        checkOutTime: timeLog.checkOutTime,
+        hoursLogged: timeLog.hoursLogged,
+        description: timeLog.description,
+        approved: timeLog.approved,
+        supervisorId: timeLog.supervisorId,
+        approvedAt: timeLog.approvedAt,
+        createdAt: timeLog.createdAt,
+        updatedAt: timeLog.updatedAt,
+      );
+      
+      final timeLogData = timeLogModel.toJson();
+      // Remove o ID se estiver vazio para permitir que o Supabase gere automaticamente
+      if (timeLogData['id'] == null || timeLogData['id'] == '') {
+        timeLogData.remove('id');
+      }
+      
+      final createdData = await _timeLogDatasource.createTimeLog(timeLogData);
       final createdTimeLog = TimeLogModel.fromJson(createdData).toEntity();
       return Right(createdTimeLog);
     } catch (e) {
@@ -109,8 +128,22 @@ class TimeLogRepository implements ITimeLogRepository {
   @override
   Future<Either<AppFailure, TimeLogEntity>> updateTimeLog(TimeLogEntity timeLog) async {
     try {
-      final timeLogModel = timeLog as TimeLogModel;
-      final updatedData = await _timeLogDatasource.updateTimeLog(
+      final timeLogModel = TimeLogModel(
+        id: timeLog.id,
+        studentId: timeLog.studentId,
+        logDate: timeLog.logDate,
+        checkInTime: timeLog.checkInTime,
+        checkOutTime: timeLog.checkOutTime,
+        hoursLogged: timeLog.hoursLogged,
+        description: timeLog.description,
+        approved: timeLog.approved,
+        supervisorId: timeLog.supervisorId,
+        approvedAt: timeLog.approvedAt,
+        createdAt: timeLog.createdAt,
+        updatedAt: timeLog.updatedAt,
+      );
+      
+      final updatedData = await _timeLogDatasource.updateTimeLogData(
         timeLog.id,
         timeLogModel.toJson(),
       );

@@ -1,0 +1,7 @@
+-- Desabilitar RLS temporariamente para permitir criação automática de registros
+
+ALTER TABLE students DISABLE ROW LEVEL SECURITY;
+ALTER TABLE supervisors DISABLE ROW LEVEL SECURITY;
+ALTER TABLE time_logs DISABLE ROW LEVEL SECURITY;
+ALTER TABLE contracts DISABLE ROW LEVEL SECURITY;
+ALTER TABLE users DISABLE ROW LEVEL SECURITY;

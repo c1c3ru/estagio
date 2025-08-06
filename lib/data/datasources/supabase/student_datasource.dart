@@ -35,9 +35,13 @@ class StudentDatasource {
 
   Future<Map<String, dynamic>?> getStudentByUserId(String userId) async {
     try {
+      if (userId.isEmpty) {
+        return null;
+      }
+      
       final response = await _supabaseClient
           .from('students')
-          .select('*, users(*)')
+          .select('*')
           .eq('id', userId)
           .maybeSingle();
 

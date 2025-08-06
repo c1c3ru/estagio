@@ -94,8 +94,14 @@ class ContractRepository implements IContractRepository {
       ContractEntity contract) async {
     try {
       final contractModel = ContractModel.fromEntity(contract);
-      final createdData =
-          await _contractDatasource.createContract(contractModel.toJson());
+      final contractData = contractModel.toJson();
+      
+      // Remove o ID se estiver vazio para permitir que o Supabase gere automaticamente
+      if (contractData['id'] == null || contractData['id'] == '') {
+        contractData.remove('id');
+      }
+      
+      final createdData = await _contractDatasource.createContract(contractData);
       return Right(ContractModel.fromJson(createdData).toEntity());
     } catch (e) {
       return Left(ServerFailure(message: 'Erro ao criar contrato: $e'));

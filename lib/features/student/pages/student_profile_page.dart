@@ -20,6 +20,7 @@ import '../../../../domain/entities/contract_entity.dart';
 import '../../../../domain/entities/supervisor_entity.dart';
 import '../../../../domain/usecases/contract/get_active_contract_by_student_usecase.dart';
 import '../../../../domain/usecases/supervisor/get_supervisor_by_id_usecase.dart';
+import '../../../../domain/usecases/supervisor/get_all_supervisors_usecase.dart';
 import '../../../../domain/usecases/student/create_student_usecase.dart';
 
 import '../bloc/student_bloc.dart' as student_bloc;
@@ -48,6 +49,9 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   ClassShift? _selectedClassShift;
   InternshipShift? _selectedInternshipShift;
   bool? _selectedIsMandatoryInternship;
+  SupervisorEntity? _selectedSupervisor;
+  List<SupervisorEntity> _supervisors = [];
+  bool _loadingSupervisors = false;
 
   bool _isEditMode = false;
   StudentEntity? _currentStudent;
@@ -108,6 +112,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     setState(() {
       _isEditMode = !_isEditMode;
       if (_isEditMode) {
+        _loadSupervisors();
         if (_currentStudent != null) {
           _populateFields(_currentStudent!);
         } else {
@@ -125,10 +130,33 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
             _selectedClassShift = null;
             _selectedInternshipShift = null;
             _selectedIsMandatoryInternship = false;
+            _selectedSupervisor = null;
           }
         }
       }
     });
+  }
+
+  Future<void> _loadSupervisors() async {
+    setState(() => _loadingSupervisors = true);
+    final usecase = Modular.get<GetAllSupervisorsUsecase>();
+    final result = await usecase();
+    result.fold(
+      (failure) {
+        setState(() => _supervisors = []);
+      },
+      (supervisors) {
+        setState(() => _supervisors = supervisors);
+        // Se o estudante já tem supervisor, selecionar
+        if (_currentStudent?.supervisorId != null) {
+          _selectedSupervisor = supervisors.firstWhere(
+            (s) => s.id == _currentStudent!.supervisorId,
+            orElse: () => supervisors.first,
+          );
+        }
+      },
+    );
+    setState(() => _loadingSupervisors = false);
   }
 
   void _saveChanges() {
@@ -660,7 +688,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
           items: ClassShift.values.map((ClassShift shift) {
             return DropdownMenuItem<ClassShift>(
               value: shift,
-              child: Text(shift.name),
+              child: Text(shift.displayName),
             );
           }).toList(),
           onChanged: (ClassShift? newValue) {
@@ -686,27 +714,61 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
           activeColor: theme.colorScheme.primary,
         ),
         const SizedBox(height: 16),
-        _buildSectionTitle('Informações do Estágio'),
+        // Supervisor
+        if (_loadingSupervisors)
+          const Center(child: CircularProgressIndicator())
+        else
+          DropdownButtonFormField<SupervisorEntity>(
+            value: _selectedSupervisor,
+            decoration: InputDecoration(
+              labelText: 'Supervisor (Opcional)',
+              prefixIcon: Icon(Icons.supervisor_account,
+                  color: theme.inputDecorationTheme.prefixIconColor),
+              border: theme.inputDecorationTheme.border,
+            ),
+            items: [
+              const DropdownMenuItem<SupervisorEntity>(
+                value: null,
+                child: Text('Nenhum supervisor selecionado'),
+              ),
+              ..._supervisors.map((SupervisorEntity supervisor) {
+                return DropdownMenuItem<SupervisorEntity>(
+                  value: supervisor,
+                  child: Text(
+                    supervisor.position != null && supervisor.position!.isNotEmpty
+                        ? '${supervisor.fullName} - ${supervisor.position}'
+                        : supervisor.fullName,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                );
+              }),
+            ],
+            onChanged: (SupervisorEntity? newValue) {
+              setState(() {
+                _selectedSupervisor = newValue;
+              });
+            },
+          ),
         const SizedBox(height: 16),
         DropdownButtonFormField<InternshipShift>(
           value: _selectedInternshipShift,
-          onChanged: _isEditMode
-              ? (newValue) {
-                  setState(() {
-                    _selectedInternshipShift = newValue;
-                  });
-                }
-              : null,
-          items: InternshipShift.values
-              .map((shift) => DropdownMenuItem(
-                    value: shift,
-                    child: Text(shift.name),
-                  ))
-              .toList(),
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Turno do Estágio',
-            border: OutlineInputBorder(),
+            prefixIcon: Icon(Icons.work_outline,
+                color: theme.inputDecorationTheme.prefixIconColor),
+            border: theme.inputDecorationTheme.border,
           ),
+          items: InternshipShift.values.map((InternshipShift shift) {
+            return DropdownMenuItem<InternshipShift>(
+              value: shift,
+              child: Text(shift.displayName),
+            );
+          }).toList(),
+          onChanged: (InternshipShift? newValue) {
+            setState(() {
+              _selectedInternshipShift = newValue;
+            });
+          },
         ),
       ],
     );
@@ -748,14 +810,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-    );
-  }
+
 
   // Cache para evitar rebuilds infinitos
   ContractEntity? _cachedContract;
