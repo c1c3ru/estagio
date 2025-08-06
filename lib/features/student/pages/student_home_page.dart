@@ -63,10 +63,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
               },
             ),
           ],
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => Modular.to.pop(),
-          ),
+
         ),
         body: BlocBuilder<StudentBloc, StudentState>(
           builder: (context, state) {
@@ -521,7 +518,7 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
         id: '',
         studentId: widget.studentId,
         supervisorId: _supervisorSelecionado!.id,
-        contractType: 'mandatory_internship',
+        contractType: 'Obrigatório',
         status: 'active',
         startDate: _startDate!,
         endDate: _endDate!,

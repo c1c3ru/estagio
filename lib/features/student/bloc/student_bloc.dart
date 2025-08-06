@@ -75,8 +75,46 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
               StudentModel.fromJson(studentData as Map<String, dynamic>)
                   .toEntity();
 
-          const timeStats = StudentTimeStats();
-          const contracts = <ContractEntity>[];
+          // Extrair dados de timeStats e contracts do dashboard
+          final timeStatsData = dashboardData['timeStats'] as Map<String, dynamic>? ?? {};
+          final contractsData = dashboardData['contracts'] as List? ?? [];
+          final activeTimeLogData = timeStatsData['activeTimeLog'] as Map<String, dynamic>?;
+          
+          final timeStats = StudentTimeStats(
+            hoursThisWeek: (timeStatsData['hoursThisWeek'] as num?)?.toDouble() ?? 0.0,
+            hoursThisMonth: (timeStatsData['hoursThisMonth'] as num?)?.toDouble() ?? 0.0,
+            activeTimeLog: activeTimeLogData != null 
+                ? TimeLogEntity(
+                    id: activeTimeLogData['id'] as String,
+                    studentId: activeTimeLogData['student_id'] as String,
+                    logDate: DateTime.parse(activeTimeLogData['log_date'] as String),
+                    checkInTime: activeTimeLogData['check_in_time'] as String,
+                    checkOutTime: activeTimeLogData['check_out_time'] as String?,
+                    createdAt: DateTime.parse(activeTimeLogData['created_at'] as String),
+                    description: activeTimeLogData['description'] as String?,
+                    hoursLogged: (activeTimeLogData['hours_logged'] as num?)?.toDouble(),
+                    approved: activeTimeLogData['approved'] as bool?,
+                  )
+                : null,
+          );
+          
+          final contracts = contractsData.map((contractData) {
+            final data = contractData as Map<String, dynamic>;
+            return ContractEntity(
+              id: data['id'] as String,
+              studentId: data['student_id'] as String,
+              supervisorId: data['supervisor_id'] as String?,
+              contractType: data['contract_type'] as String,
+              status: data['status'] as String,
+              startDate: DateTime.parse(data['start_date'] as String),
+              endDate: DateTime.parse(data['end_date'] as String),
+              description: data['description'] as String?,
+              createdAt: DateTime.parse(data['created_at'] as String),
+              updatedAt: data['updated_at'] != null 
+                  ? DateTime.parse(data['updated_at'] as String) 
+                  : null,
+            );
+          }).toList().cast<ContractEntity>();
 
           emit(StudentDashboardLoadSuccess(
             student: student,

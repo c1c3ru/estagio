@@ -357,14 +357,15 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
             }
             return RefreshIndicator(
               onRefresh: _refreshTimeLogs,
-              child: ListView.separated(
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
-                itemCount: state.timeLogs.length,
-                itemBuilder: (context, index) {
-                  final log = state.timeLogs[index];
-                  return _buildTimeLogCard(context, log);
-                },
-                separatorBuilder: (context, index) => const SizedBox(height: 8),
+                child: Column(
+                  children: [
+                    _buildTimeLogTable(state.timeLogs),
+                    const SizedBox(height: 16),
+                    _buildMonthlySummary(state.timeLogs),
+                  ],
+                ),
               ),
             );
           }
@@ -417,6 +418,158 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildTimeLogTable(List<TimeLogEntity> timeLogs) {
+    final groupedLogs = _groupLogsByDate(timeLogs);
+    final sortedDates = groupedLogs.keys.toList()..sort((a, b) => b.compareTo(a));
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Registro de Horas',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columnSpacing: 20,
+                headingRowColor: MaterialStateProperty.all(AppColors.primary.withOpacity(0.1)),
+                columns: const [
+                  DataColumn(label: Text('Data', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(label: Text('Entrada 1', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(label: Text('Saída 1', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(label: Text('Entrada 2', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(label: Text('Saída 2', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(label: Text('Total', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
+                ],
+                rows: sortedDates.map((date) {
+                  final dayLogs = groupedLogs[date]!;
+                  final totalHours = _calculateDayHours(dayLogs);
+                  final isApproved = dayLogs.every((log) => log.approved == true);
+                  
+                  return DataRow(
+                    cells: [
+                      DataCell(Text(DateFormat('dd/MM/yyyy').format(date))),
+                      DataCell(Text(dayLogs.isNotEmpty ? _formatTime(dayLogs[0].checkInTime) : '-')),
+                      DataCell(Text(dayLogs.isNotEmpty && dayLogs[0].checkOutTime != null ? _formatTime(dayLogs[0].checkOutTime!) : '-')),
+                      DataCell(Text(dayLogs.length > 1 ? _formatTime(dayLogs[1].checkInTime) : '-')),
+                      DataCell(Text(dayLogs.length > 1 && dayLogs[1].checkOutTime != null ? _formatTime(dayLogs[1].checkOutTime!) : '-')),
+                      DataCell(Text('${totalHours.toStringAsFixed(1)}h', style: const TextStyle(fontWeight: FontWeight.bold))),
+                      DataCell(
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isApproved ? AppColors.success : AppColors.warning,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            isApproved ? 'Aprovado' : 'Pendente',
+                            style: const TextStyle(color: Colors.white, fontSize: 12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMonthlySummary(List<TimeLogEntity> timeLogs) {
+    final currentMonth = DateTime.now();
+    final monthlyLogs = timeLogs.where((log) => 
+      log.logDate.year == currentMonth.year && 
+      log.logDate.month == currentMonth.month
+    ).toList();
+    
+    final totalHours = monthlyLogs.fold<double>(0, (sum, log) => sum + (log.hoursLogged ?? 0));
+    final approvedHours = monthlyLogs.where((log) => log.approved == true).fold<double>(0, (sum, log) => sum + (log.hoursLogged ?? 0));
+    final pendingHours = totalHours - approvedHours;
+    
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Resumo - ${DateFormat('MMMM yyyy', 'pt_BR').format(currentMonth)}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildSummaryItem('Total', '${totalHours.toStringAsFixed(1)}h', AppColors.primary),
+                _buildSummaryItem('Aprovadas', '${approvedHours.toStringAsFixed(1)}h', AppColors.success),
+                _buildSummaryItem('Pendentes', '${pendingHours.toStringAsFixed(1)}h', AppColors.warning),
+              ],
+            ),
+            const SizedBox(height: 16),
+            LinearProgressIndicator(
+              value: totalHours > 0 ? approvedHours / totalHours : 0,
+              backgroundColor: AppColors.warning.withOpacity(0.3),
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.success),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Progresso de aprovação: ${totalHours > 0 ? ((approvedHours / totalHours) * 100).toStringAsFixed(1) : 0}%',
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryItem(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Colors.grey,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Map<DateTime, List<TimeLogEntity>> _groupLogsByDate(List<TimeLogEntity> timeLogs) {
+    final Map<DateTime, List<TimeLogEntity>> grouped = {};
+    for (final log in timeLogs) {
+      final dateKey = DateTime(log.logDate.year, log.logDate.month, log.logDate.day);
+      grouped.putIfAbsent(dateKey, () => []).add(log);
+    }
+    return grouped;
+  }
+
+  double _calculateDayHours(List<TimeLogEntity> dayLogs) {
+    return dayLogs.fold<double>(0, (sum, log) => sum + (log.hoursLogged ?? 0));
+  }
+
+  String _formatTime(String time) {
+    return time.length >= 5 ? time.substring(0, 5) : time;
   }
 
   Widget _buildTimeLogCard(BuildContext context, TimeLogEntity log) {

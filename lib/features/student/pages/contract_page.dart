@@ -526,10 +526,23 @@ class _ContractEditFormState extends State<_ContractEditForm> {
   ];
 
   final List<String> _statusOptions = [
-    'pendente',
-    'ativo',
-    'finalizado',
+    'pending_approval',
+    'active',
+    'completed',
   ];
+
+  String _getStatusDisplayName(String status) {
+    switch (status) {
+      case 'pending_approval':
+        return 'Pendente de Aprovação';
+      case 'active':
+        return 'Ativo';
+      case 'completed':
+        return 'Concluído';
+      default:
+        return status;
+    }
+  }
 
   @override
   void initState() {
