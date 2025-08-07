@@ -161,10 +161,9 @@ class _ContractPageState extends State<ContractPage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          ContractStatus
-                                  .fromString(activeContract.status)
-                                  .displayName
-                                  .toUpperCase(),
+                          ContractStatus.fromString(activeContract.status)
+                              .displayName
+                              .toUpperCase(),
                           style: AppTextStyles.caption.copyWith(
                             color: AppColors.white,
                             fontWeight: FontWeight.w600,
@@ -395,10 +394,8 @@ class _ContractCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statusColor = _getStatusColor(contract.status);
-    final statusText = ContractStatus
-        .fromString(contract.status)
-        .displayName
-        .toUpperCase();
+    final statusText =
+        ContractStatus.fromString(contract.status).displayName.toUpperCase();
 
     return Card(
       child: Padding(
@@ -539,18 +536,16 @@ class _ContractEditFormState extends State<_ContractEditForm> {
     'completed',
   ];
 
-
-
   @override
   void initState() {
     super.initState();
     _loadSupervisores();
     if (widget.contract != null) {
-      _contractType = _contractTypes.contains(widget.contract.contractType) 
-          ? widget.contract.contractType 
+      _contractType = _contractTypes.contains(widget.contract.contractType)
+          ? widget.contract.contractType
           : _contractTypes.first;
-      _status = _statusOptions.contains(widget.contract.status) 
-          ? widget.contract.status 
+      _status = _statusOptions.contains(widget.contract.status)
+          ? widget.contract.status
           : _statusOptions.first;
       _descriptionController.text = widget.contract.description ?? '';
       _startDate = widget.contract.startDate;
@@ -750,7 +745,8 @@ class _ContractEditFormState extends State<_ContractEditForm> {
                       },
                       validator: (v) {
                         if (_endDate == null) return 'Obrigatório';
-                        if (_startDate != null && _endDate!.isBefore(_startDate!)) {
+                        if (_startDate != null &&
+                            _endDate!.isBefore(_startDate!)) {
                           return 'Data fim deve ser posterior à data início';
                         }
                         return null;
@@ -770,7 +766,8 @@ class _ContractEditFormState extends State<_ContractEditForm> {
                 items: const [
                   DropdownMenuItem(
                     value: '20',
-                    child: Text('20 horas/semana (Educação Especial/Fundamental)'),
+                    child:
+                        Text('20 horas/semana (Educação Especial/Fundamental)'),
                   ),
                   DropdownMenuItem(
                     value: '30',
@@ -793,7 +790,8 @@ class _ContractEditFormState extends State<_ContractEditForm> {
                   children: [
                     Text(
                       'Limites Legais (Lei 11.788/2008):',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                     ),
                     SizedBox(height: 4),
                     Text(
