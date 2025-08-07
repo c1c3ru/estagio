@@ -19,6 +19,7 @@ import '../bloc/student_bloc.dart';
 import '../bloc/student_event.dart';
 import '../bloc/student_state.dart';
 import '../../../core/utils/feedback_service.dart';
+import '../widgets/time_tracker_widget.dart';
 
 class StudentTimeLogPage extends StatefulWidget {
   const StudentTimeLogPage({super.key});
@@ -323,35 +324,42 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
           }
 
           if (state is StudentTimeLogsLoadSuccess) {
-            if (state.timeLogs.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.history_toggle_off_outlined,
-                        size: 60, color: theme.hintColor),
-                    const SizedBox(height: 16),
-                    const Text('Nenhum registo de tempo encontrado.',
-                        style: TextStyle(fontSize: 16)),
-                    const SizedBox(height: 16),
-                    AppButton(
-                      text: 'Adicionar Primeiro Registo',
-                      onPressed: () => _showAddEditTimeLogDialog(),
-                      icon: Icons.add_circle_outline,
-                    )
-                  ],
-                ),
-              );
-            }
             return RefreshIndicator(
               onRefresh: _refreshTimeLogs,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
+                    // Registro rápido (clock in/out)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TimeTrackerWidget(
+                        currentUserId: _currentUserId,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    if (state.timeLogs.isEmpty)
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.history_toggle_off_outlined,
+                              size: 60, color: theme.hintColor),
+                          const SizedBox(height: 16),
+                          const Text('Nenhum registo de tempo encontrado.',
+                              style: TextStyle(fontSize: 16)),
+                          const SizedBox(height: 16),
+                          AppButton(
+                            text: 'Adicionar Primeiro Registo',
+                            onPressed: () => _showAddEditTimeLogDialog(),
+                            icon: Icons.add_circle_outline,
+                          )
+                        ],
+                      )
+                    else ...[
                     _buildTimeLogTable(state.timeLogs),
                     const SizedBox(height: 16),
                     _buildMonthlySummary(state.timeLogs),
+                    ],
                   ],
                 ),
               ),

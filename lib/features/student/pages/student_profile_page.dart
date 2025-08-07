@@ -21,7 +21,6 @@ import '../../../../domain/entities/supervisor_entity.dart';
 import '../../../../domain/usecases/contract/get_active_contract_by_student_usecase.dart';
 import '../../../../domain/usecases/supervisor/get_supervisor_by_id_usecase.dart';
 import '../../../../domain/usecases/supervisor/get_all_supervisors_usecase.dart';
-import '../../../../domain/usecases/student/create_student_usecase.dart';
 
 import '../bloc/student_bloc.dart' as student_bloc;
 import '../bloc/student_event.dart' as student_event;
@@ -185,68 +184,27 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
             ),
           ));
         } else {
-          // Criar novo perfil
-          final student = StudentEntity(
-            id: _currentUserId!,
+          // Criar novo perfil via BLoC para manter padrão
+          final params = student_event.UpdateStudentProfileEventParams(
             fullName: _fullNameController.text.trim(),
             registrationNumber: _registrationNumberController.text.trim(),
             course: _courseController.text.trim(),
             advisorName: _advisorNameController.text.trim(),
-            isMandatoryInternship: _selectedIsMandatoryInternship ?? false,
-            classShift: _selectedClassShift?.name ?? ClassShift.morning.name,
-            internshipShift1:
-                _selectedInternshipShift?.name ?? InternshipShift.morning.name,
-            internshipShift2: null,
-            birthDate: _selectedBirthDate ?? DateTime(2000, 1, 1),
-            contractStartDate: DateTime.now(),
-            contractEndDate: DateTime.now().add(const Duration(days: 365)),
-            totalHoursRequired: 0.0,
-            totalHoursCompleted: 0.0,
-            weeklyHoursTarget: 0.0,
-            profilePictureUrl: _profilePictureUrlController.text.trim().isEmpty
-                ? null
-                : _profilePictureUrlController.text.trim(),
             phoneNumber: _phoneNumberController.text.trim().isEmpty
                 ? null
                 : _phoneNumberController.text.trim(),
-            createdAt: DateTime.now(),
-            updatedAt: null,
-            status: 'active',
-            supervisorId: null,
+            profilePictureUrl: _profilePictureUrlController.text.trim().isEmpty
+                ? null
+                : _profilePictureUrlController.text.trim(),
+            birthDate: _selectedBirthDate ?? DateTime(2000, 1, 1),
+            classShift: _selectedClassShift ?? ClassShift.morning,
+            internshipShift: _selectedInternshipShift ?? InternshipShift.morning,
+            isMandatoryInternship: _selectedIsMandatoryInternship ?? false,
           );
-
-          // Usar o use case diretamente
-          final createStudentUsecase = Modular.get<CreateStudentUsecase>();
-          createStudentUsecase(student).then((result) {
-            if (mounted) {
-              result.fold(
-                (failure) {
-                  ScaffoldMessenger.of(context)
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(
-                      SnackBar(
-                        content: Text('Erro ao criar perfil: ${failure.message}'),
-                        backgroundColor: Theme.of(context).colorScheme.error,
-                      ),
-                    );
-                },
-                (createdStudent) {
-                  setState(() {
-                    _currentStudent = createdStudent;
-                    _isEditMode = false;
-                  });
-                  ScaffoldMessenger.of(context)
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(
-                      const SnackBar(
-                        content: Text('Perfil criado com sucesso!'),
-                        backgroundColor: AppColors.success,
-                      ),
-                    );
-                },
-              );
-            }
-          });
+          _studentBloc.add(student_event.UpdateStudentProfileInfoEvent(
+            userId: _currentUserId!,
+            params: params,
+          ));
         }
       }
 
