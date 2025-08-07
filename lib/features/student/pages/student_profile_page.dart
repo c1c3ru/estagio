@@ -21,6 +21,7 @@ import '../../../../domain/entities/supervisor_entity.dart';
 import '../../../../domain/usecases/contract/get_active_contract_by_student_usecase.dart';
 import '../../../../domain/usecases/supervisor/get_supervisor_by_id_usecase.dart';
 import '../../../../domain/usecases/supervisor/get_all_supervisors_usecase.dart';
+import '../../../../domain/repositories/i_student_repository.dart';
 
 import '../bloc/student_bloc.dart' as student_bloc;
 import '../bloc/student_event.dart' as student_event;
@@ -522,9 +523,23 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
         _buildReadOnlyInfo(context, 'Horas Necessárias',
             '${student.totalHoursRequired.toStringAsFixed(1)}h',
             icon: Icons.hourglass_empty_outlined),
-        _buildReadOnlyInfo(context, 'Horas Completas',
-            '${student.totalHoursCompleted.toStringAsFixed(1)}h',
-            icon: Icons.hourglass_full_outlined),
+        FutureBuilder<Map<String, dynamic>>(
+          future: Modular.get<IStudentRepository>()
+              .getStudentDashboard(student.id)
+              .then((either) => either.getOrElse(() => {})),
+          builder: (context, snapshot) {
+            final approved = (snapshot.data?['timeStats']?['approvedHoursTotal']
+                        as num?)
+                    ?.toDouble() ??
+                student.totalHoursCompleted;
+            return _buildReadOnlyInfo(
+              context,
+              'Horas Completas',
+              '${approved.toStringAsFixed(1)}h',
+              icon: Icons.hourglass_full_outlined,
+            );
+          },
+        ),
       ],
     );
   }

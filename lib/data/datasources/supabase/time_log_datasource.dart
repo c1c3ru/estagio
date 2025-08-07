@@ -316,6 +316,11 @@ class TimeLogDatasource {
       int completedLogs = 0;
 
       for (final log in timeLogs) {
+        // Considera apenas logs aprovados
+        final isApproved = (log['approved'] == true) ||
+            (log['status'] != null && log['status'] == 'approved');
+        if (!isApproved) continue;
+
         if (log['check_out_time'] != null) {
           final logDate = DateTime.parse(log['log_date']);
           final checkInTime = log['check_in_time'] as String;

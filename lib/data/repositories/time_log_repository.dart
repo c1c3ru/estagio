@@ -239,10 +239,14 @@ class TimeLogRepository implements ITimeLogRepository {
     String? rejectionReason,
   }) async {
     try {
+      final nowIso = DateTime.now().toIso8601String();
       final updateData = {
+        // Normaliza ambos os campos para manter compatibilidade entre camadas
+        'approved': approved,
         'status': approved ? 'approved' : 'rejected',
-        'updated_at': DateTime.now().toIso8601String(),
-      };
+        'approved_at': approved ? nowIso : null,
+        'updated_at': nowIso,
+      }..removeWhere((key, value) => value == null);
       
       final result = await _timeLogDatasource.updateTimeLog(
         timeLogId, 
