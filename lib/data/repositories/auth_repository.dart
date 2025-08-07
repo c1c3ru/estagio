@@ -18,9 +18,15 @@ class AuthRepository implements IAuthRepository {
   AuthRepository(this._authDatasource, this._preferencesManager);
 
   @override
-  Stream<UserEntity?> authStateChanges() =>
-      _authDatasource.getAuthStateChanges().map((userData) =>
-          userData != null ? UserModel.fromJson(userData).toEntity() : null);
+  Stream<UserEntity?> authStateChanges() => _authDatasource
+      .getAuthStateChanges()
+      .map((userData) => userData != null ? UserModel.fromJson(userData).toEntity() : null)
+      .distinct((previous, next) {
+        // Evitar emissões duplicadas
+        if (previous == null && next == null) return true;
+        if (previous == null || next == null) return false;
+        return previous.id == next.id && previous.email == next.email;
+      });
 
   @override
   Future<Either<AppFailure, UserEntity>> getCurrentUser() async {
@@ -80,6 +86,7 @@ class AuthRepository implements IAuthRepository {
     String? supervisorId,
     String? course,
     String? advisorName,
+    String? department,
     ClassShift? classShift,
     InternshipShift? internshipShift,
     DateTime? birthDate,
@@ -97,6 +104,7 @@ class AuthRepository implements IAuthRepository {
         supervisorId: supervisorId,
         course: course,
         advisorName: advisorName,
+        department: department,
         classShift: classShift?.name,
         internshipShift: internshipShift?.name,
         birthDate: birthDate?.toIso8601String(),

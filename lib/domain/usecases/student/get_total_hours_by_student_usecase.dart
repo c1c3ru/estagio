@@ -19,14 +19,17 @@ class GetTotalHoursByStudentUsecase {
         throw Exception('Data de início deve ser anterior à data de fim');
       }
       
-      return await _timeLogRepository.getTotalHoursByStudent(
+      final result = await _timeLogRepository.getTotalHoursByStudent(
         studentId,
         startDate,
         endDate,
+      );
+      return result.fold(
+        (failure) => throw Exception(failure.message),
+        (data) => data,
       );
     } catch (e) {
       throw Exception('Erro ao calcular horas totais: $e');
     }
   }
 }
-

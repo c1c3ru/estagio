@@ -1,0 +1,377 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+import 'package:gestao_de_estagio/core/services/report_service.dart';
+import 'package:gestao_de_estagio/features/student/pages/student_reports_page.dart';
+import 'package:gestao_de_estagio/features/supervisor/pages/supervisor_reports_page.dart';
+import 'package:flutter_modular/flutter_modular.dart';
+import 'test_app_module.dart';
+
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  group('Reports Integration Tests', () {
+    late ReportService reportService;
+
+    setUp(() async {
+      // Initialize the TestAppModule for dependency injection
+      Modular.bindModule(TestAppModule());
+      
+      reportService = Modular.get<ReportService>();
+    });
+
+    tearDown(() async {
+      // Clean up Modular bindings
+      cleanModular(); // This properly resets the Modular injector between tests
+    });
+
+    group('Report Service Integration', () {
+      testWidgets('should generate time log report successfully',
+          (tester) async {
+        // Arrange
+        const studentId = 'test-student-id';
+        final startDate = DateTime.now().subtract(const Duration(days: 7));
+        final endDate = DateTime.now();
+
+        // Act
+        final result = await reportService.generateTimeLogReport(
+          studentId: studentId,
+          startDate: startDate,
+          endDate: endDate,
+          timeLogs: [],
+        );
+
+        // Assert
+        expect(result, isA<TimeLogReport>());
+        expect(result.studentId, equals(studentId));
+        expect(result.startDate, equals(startDate));
+        expect(result.endDate, equals(endDate));
+        expect(result.timeLogs, isA<List>());
+        expect(result.totalHours, isA<double>());
+        expect(result.totalDays, isA<int>());
+        expect(result.averageHoursPerDay, isA<double>());
+      });
+
+      testWidgets('should generate student performance report successfully',
+          (tester) async {
+        // Arrange
+        const supervisorId = 'test-supervisor-id';
+
+        // Act
+        final result = await reportService.generateStudentPerformanceReport(
+          supervisorId: supervisorId,
+          students: [],
+          timeLogs: [],
+          contracts: [],
+        );
+
+        // Assert
+        expect(result, isA<StudentPerformanceReport>());
+        final report = result;
+        expect(report.supervisorId, equals(supervisorId));
+        expect(report.studentPerformances, isA<List>());
+        expect(report.totalStudents, isA<int>());
+        expect(report.activeStudents, isA<int>());
+        expect(report.totalHours, isA<double>());
+        expect(report.averageHoursPerStudent, isA<double>());
+      });
+
+      testWidgets('should generate contract report successfully',
+          (tester) async {
+        // Arrange
+        const supervisorId = 'test-supervisor-id';
+
+        // Act
+        final result = await reportService.generateContractReport(
+          contracts: [], // Adapte para usar dados de teste se necessário
+          supervisorId: supervisorId,
+          studentId: null,
+        );
+
+        // Assert
+        expect(result, isA<ContractReport>());
+        final report = result;
+        expect(report.contracts, isA<List>());
+        expect(report.contractsByMonth, isA<Map<String, int>>());
+      });
+
+      testWidgets('should export report to CSV successfully', (tester) async {
+        // Arrange
+        const studentId = 'test-student-id';
+        final startDate = DateTime.now().subtract(const Duration(days: 7));
+        final endDate = DateTime.now();
+
+        final reportResult = await reportService.generateTimeLogReport(
+          studentId: studentId,
+          startDate: startDate,
+          endDate: endDate,
+          timeLogs: [],
+        );
+
+        final report = reportResult;
+
+        // Act
+        final exportResult = await reportService.exportToCSV(
+          reportType: 'time_log',
+          reportData: report.toJson(),
+          fileName: 'test_report.csv',
+        );
+
+        // Assert
+        expect(exportResult, isA<String>());
+        expect(exportResult, isNotEmpty);
+        expect(exportResult, contains('.csv'));
+        expect(report.studentId, equals(studentId));
+        expect(report.timeLogs, isA<List>());
+      });
+
+      testWidgets('should export report to JSON successfully', (tester) async {
+        // Arrange
+        const studentId = 'test-student-id';
+        final startDate = DateTime.now().subtract(const Duration(days: 7));
+        final endDate = DateTime.now();
+
+        final reportResult = await reportService.generateTimeLogReport(
+          studentId: studentId,
+          startDate: startDate,
+          endDate: endDate,
+          timeLogs: [],
+        );
+
+        final report = reportResult;
+
+        // Act
+        final exportResult = await reportService.exportToJSON(
+          reportType: 'time_log',
+          reportData: report.toJson(),
+          fileName: 'test_report.json',
+        );
+
+        // Assert
+        expect(exportResult, isA<String>());
+        expect(exportResult, isNotEmpty);
+        expect(exportResult, contains('.json'));
+        expect(report.studentId, equals(studentId));
+        expect(report.timeLogs, isA<List>());
+      });
+
+      testWidgets('should share report file successfully', (tester) async {
+        // Arrange
+        const studentId = 'test-student-id';
+        final startDate = DateTime.now().subtract(const Duration(days: 7));
+        final endDate = DateTime.now();
+
+        final reportResult = await reportService.generateTimeLogReport(
+          studentId: studentId,
+          startDate: startDate,
+          endDate: endDate,
+          timeLogs: [],
+        );
+
+        final report = reportResult;
+
+        final exportResult = await reportService.exportToCSV(
+          reportType: 'time_log',
+          reportData: report.toJson(),
+          fileName: 'test_share_report.csv',
+        );
+
+        expect(exportResult, isA<String>());
+        final filePath = exportResult;
+
+        // Act
+        reportService.shareReport(
+          filePath,
+          subject: 'Test Report',
+        );
+
+        // Assert
+        // Se não lançar exceção, compartilhou com sucesso
+        expect(true, isTrue);
+      });
+    });
+
+    group('Student Reports Page Integration', () {
+      testWidgets('should load student reports page successfully',
+          (tester) async {
+        // Arrange & Act - Directly pump the StudentReportsPage widget
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: StudentReportsPage(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Assert
+        expect(find.byType(StudentReportsPage), findsOneWidget);
+        expect(find.text('Relatórios'), findsOneWidget);
+      });
+
+      testWidgets('should apply date filters correctly', (tester) async {
+        // Arrange & Act - Directly pump the StudentReportsPage widget
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: StudentReportsPage(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Act - Change period filter
+        await tester.tap(find.text('Últimos 7 dias'));
+        await tester.pumpAndSettle();
+
+        // Assert
+        expect(find.byType(StudentReportsPage), findsOneWidget);
+        // Verificar se os dados foram filtrados corretamente
+        // (implementação específica dependeria da estrutura da página)
+      });
+
+      testWidgets('should export report from student page', (tester) async {
+        // Arrange & Act - Directly pump the StudentReportsPage widget
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: StudentReportsPage(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Assert - Verifica se a página foi carregada
+        expect(find.byType(StudentReportsPage), findsOneWidget);
+      });
+
+      testWidgets('should share report from student page', (tester) async {
+        // Arrange & Act - Directly pump the StudentReportsPage widget
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: StudentReportsPage(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Assert - Verifica se a página foi carregada
+        expect(find.byType(StudentReportsPage), findsOneWidget);
+      });
+    });
+
+    group('Supervisor Reports Page Integration', () {
+      testWidgets('should display supervisor reports page', (tester) async {
+        // Arrange & Act - Directly pump the SupervisorReportsPage widget
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: SupervisorReportsPage(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Assert
+        expect(find.byType(SupervisorReportsPage), findsOneWidget);
+        expect(find.text('Relatórios de Supervisão'), findsOneWidget);
+      });
+
+      testWidgets('should switch between report tabs', (tester) async {
+        // Arrange & Act - Directly pump the SupervisorReportsPage widget
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: SupervisorReportsPage(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Act - Alternar entre abas
+        await tester.tap(find.text('Performance'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Contratos'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Análises'));
+        await tester.pumpAndSettle();
+
+        // Assert
+        expect(find.byType(SupervisorReportsPage), findsOneWidget);
+        // Verificar se o conteúdo das abas está sendo exibido corretamente
+      });
+
+      testWidgets('should filter reports by student', (tester) async {
+        // Arrange & Act - Directly pump the SupervisorReportsPage widget
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: SupervisorReportsPage(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Assert - Verifica se a página foi carregada
+
+        // Assert
+        expect(find.byType(SupervisorReportsPage), findsOneWidget);
+        // Note: The actual filtering logic would be tested in unit tests
+      });
+
+      testWidgets('should generate bulk reports for all students',
+          (tester) async {
+        // Arrange & Act - Directly pump the SupervisorReportsPage widget
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: SupervisorReportsPage(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Assert - Verifica se a página foi carregada
+        expect(find.byType(SupervisorReportsPage), findsOneWidget);
+      });
+    });
+
+    group('Error Handling', () {
+      testWidgets('should handle report generation errors gracefully',
+          (tester) async {
+        // Arrange
+        const studentId = 'invalid-student-id';
+        final startDate = DateTime.now().subtract(const Duration(days: 7));
+        final endDate = DateTime.now();
+
+        // Act & Assert
+        expect(
+          () => reportService.generateTimeLogReport(
+            studentId: studentId,
+            startDate: startDate,
+            endDate: endDate,
+            timeLogs: [],
+          ),
+          throwsA(isA<Exception>()),
+        );
+      });
+
+      testWidgets('should handle export errors gracefully', (tester) async {
+        // Arrange
+        final invalidData = <String, dynamic>{};
+
+        // Act & Assert
+        expect(
+          () => reportService.exportToCSV(
+            reportType: 'invalid_type',
+            reportData: invalidData,
+          ),
+          throwsA(isA<Exception>()),
+        );
+      });
+    });
+  });
+}

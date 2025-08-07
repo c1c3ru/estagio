@@ -1,5 +1,5 @@
 class AppStrings {
-  // General
+  // Geral
   static const String appName = 'Estagio';
   static const String loading = 'Carregando...';
   static const String error = 'Erro';
@@ -106,6 +106,70 @@ class AppStrings {
   static const String checkIn = 'Entrada';
   static const String checkOut = 'Saída';
 
+  // Reports
+  static const String reports = 'Relatórios';
+  static const String reportsTitle = 'Relatórios de Supervisão';
+  static const String performance = 'Performance';
+  static const String analysis = 'Análises';
+  static const String performanceSummary = 'Resumo de Performance';
+  static const String contractsSummary = 'Resumo de Contratos';
+  static const String generalAnalysis = 'Análise Geral';
+  static const String studentsList = 'Lista de Estudantes';
+  static const String recentContracts = 'Contratos Recentes';
+  static const String statusDistribution = 'Distribuição por Status';
+  static const String pendingApprovals = 'Aprovações Pendentes';
+  static const String expiringIn30Days = 'A Vencer em 30d';
+  static const String totalContracts = 'Total de Contratos';
+  static const String closed = 'Encerrados';
+  
+  // Empty states
+  static const String noStudentsForReports = 'Nenhum estudante encontrado para gerar relatórios de performance.';
+  static const String noContractsForReports = 'Nenhum contrato encontrado para gerar relatórios.';
+  static const String noDataForAnalysis = 'Nenhum dado disponível para gerar análises.';
+  static const String errorLoadingReports = 'Erro ao carregar dados dos relatórios';
+  
+  // Time approval
+  static const String timeApproval = 'Aprovações de Horas';
+  static const String confirmApproval = 'Confirmar Aprovação';
+  static const String approveHours = 'Deseja aprovar as horas de';
+  static const String approve = 'Aprovar';
+  static const String reject = 'Rejeitar';
+  static const String rejectTimeRecord = 'Rejeitar Registo de Tempo';
+  static const String rejectionReason = 'Motivo da Rejeição (Opcional)';
+  static const String confirmRejection = 'Confirmar Rejeição';
+  static const String approved = 'Aprovado';
+  static const String timeRecord = 'Registro de Horas';
+  static const String entry = 'Entrada';
+  static const String exit = 'Saída';
+  static const String hoursLogged = 'Horas Registadas';
+  static const String description = 'Descrição';
+  static const String date = 'Data';
+  static const String hours = 'Horas';
+  
+  // Manage students
+  static const String manageStudentsTitle = 'Gerenciar Estudantes';
+  static const String searchPlaceholder = 'Pesquisar por nome, curso ou matrícula...';
+  static const String noStudentsFound = 'Nenhum estudante encontrado';
+  static const String noResultsFor = 'Nenhum resultado para';
+  static const String registration = 'Matrícula';
+  static const String advisor = 'Orientador';
+  static const String shift = 'Turno';
+  static const String hoursCompleted = 'Horas Completadas';
+  static const String contractPeriod = 'Contrato';
+  static const String active = 'Ativo';
+  static const String inactive = 'Inativo';
+  static const String pending = 'Pendente';
+  static const String morning = 'Manhã';
+  static const String afternoon = 'Tarde';
+  static const String evening = 'Noite';
+  static const String fullTime = 'Integral';
+  static const String ead = 'EAD';
+  
+  // Contract types
+  static const String mandatory = 'Obrigatório';
+  static const String nonMandatory = 'Não obrigatório';
+  static const String contractType = 'Tipo';
+  
   // Supabase
   static const String supabaseUrl = 'YOUR_SUPABASE_URL';
   static const String supabaseAnnonKey = 'YOUR_SUPABASE_ANON_KEY';

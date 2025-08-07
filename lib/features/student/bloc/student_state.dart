@@ -100,11 +100,11 @@ class StudentTimeLogsLoadSuccess extends StudentState {
 
 /// Estado de sucesso para operações de check-in/check-out/criação/atualização de log.
 class StudentTimeLogOperationSuccess extends StudentState {
-  final TimeLogEntity timeLog; // O log que foi criado/atualizado
+  final TimeLogEntity? timeLog; // O log que foi criado/atualizado
   final String message;
 
   const StudentTimeLogOperationSuccess(
-      {required this.timeLog, required this.message});
+      {this.timeLog, required this.message});
 
   @override
   List<Object?> get props => [timeLog, message];

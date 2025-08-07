@@ -22,6 +22,7 @@ class StudentModel {
   final DateTime? updatedAt;
   final String? status;
   final String? supervisorId;
+  final String? userEmail; // Email do usuário associado ao estudante
 
   StudentModel({
     required this.id,
@@ -45,9 +46,23 @@ class StudentModel {
     this.updatedAt,
     this.status,
     this.supervisorId,
+    this.userEmail,
   });
 
   factory StudentModel.fromJson(Map<String, dynamic> json) {
+    // Extrair email do usuário dos dados aninhados, se disponível
+    String? userEmail;
+    if (json['users'] != null) {
+      if (json['users'] is Map<String, dynamic>) {
+        userEmail = json['users']['email'] as String?;
+      } else if (json['users'] is List) {
+        final usersList = json['users'] as List;
+        if (usersList.isNotEmpty && usersList[0] is Map<String, dynamic>) {
+          userEmail = usersList[0]['email'] as String?;
+        }
+      }
+    }
+    
     return StudentModel(
       id: json['id'] as String,
       fullName: json['full_name'] as String,
@@ -75,6 +90,7 @@ class StudentModel {
           : null,
       status: json['status'] as String?,
       supervisorId: json['supervisor_id'] as String?,
+      userEmail: userEmail,
     );
   }
 
@@ -127,6 +143,7 @@ class StudentModel {
       updatedAt: updatedAt,
       status: status,
       supervisorId: supervisorId,
+      userEmail: userEmail,
     );
   }
 }

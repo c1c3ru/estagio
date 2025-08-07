@@ -92,18 +92,20 @@ class StudentCheckInEvent extends StudentEvent {
 /// Evento para realizar check-out.
 class StudentCheckOutEvent extends StudentEvent {
   final String userId;
-  final String
+  final String?
       activeTimeLogId; // ID do log de tempo que foi iniciado no check-in
   final String? description;
+  final String? notes;
 
   const StudentCheckOutEvent({
     required this.userId,
-    required this.activeTimeLogId,
+    this.activeTimeLogId,
     this.description,
+    this.notes,
   });
 
   @override
-  List<Object?> get props => [userId, activeTimeLogId, description];
+  List<Object?> get props => [userId, activeTimeLogId, description, notes];
 }
 
 /// Evento para carregar os registos de tempo do estudante (com paginação/filtros).

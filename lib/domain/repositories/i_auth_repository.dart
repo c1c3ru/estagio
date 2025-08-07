@@ -24,6 +24,7 @@ abstract class IAuthRepository {
     String? supervisorId,
     String? course,
     String? advisorName,
+    String? department,
     ClassShift? classShift,
     InternshipShift? internshipShift,
     DateTime? birthDate,

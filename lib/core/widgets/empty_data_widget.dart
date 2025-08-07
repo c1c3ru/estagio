@@ -1,35 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:gestao_de_estagio/core/theme/app_text_styles.dart';
-import 'package:gestao_de_estagio/features/shared/animations/lottie_animations.dart';
 
 class EmptyDataWidget extends StatelessWidget {
   final String message;
-  final double animationSize;
+  final IconData? icon;
+  final VoidCallback? onRetry;
 
   const EmptyDataWidget({
     super.key,
     required this.message,
-    this.animationSize = 200,
+    this.icon,
+    this.onRetry,
   });
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            EmptyStateAnimation(size: animationSize),
-            const SizedBox(height: 24),
-            Text(
-              message,
-              style: AppTextStyles.h6.copyWith(color: Colors.grey[600]),
-              textAlign: TextAlign.center,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon ?? Icons.inbox_outlined,
+            size: 64,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          if (onRetry != null) ...[
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: onRetry,
+              child: const Text('Tentar novamente'),
             ),
           ],
-        ),
+        ],
       ),
     );
   }

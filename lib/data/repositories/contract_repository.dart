@@ -76,14 +76,16 @@ class ContractRepository implements IContractRepository {
     }
   }
 
-  Future<List<ContractEntity>> getActiveContracts() async {
+  @override
+  Future<Either<AppFailure, List<ContractEntity>>> getActiveContracts() async {
     try {
       final contractsData = await _contractDatasource.getActiveContracts();
-      return contractsData
+      final contracts = contractsData
           .map((data) => ContractModel.fromJson(data).toEntity())
           .toList();
+      return Right(contracts);
     } catch (e) {
-      throw Exception('Erro no repositório ao buscar contratos ativos: $e');
+      return Left(ServerFailure(message: 'Erro ao buscar contratos ativos: $e'));
     }
   }
 
@@ -92,8 +94,14 @@ class ContractRepository implements IContractRepository {
       ContractEntity contract) async {
     try {
       final contractModel = ContractModel.fromEntity(contract);
-      final createdData =
-          await _contractDatasource.createContract(contractModel.toJson());
+      final contractData = contractModel.toJson();
+      
+      // Remove o ID se estiver vazio para permitir que o Supabase gere automaticamente
+      if (contractData['id'] == null || contractData['id'] == '') {
+        contractData.remove('id');
+      }
+      
+      final createdData = await _contractDatasource.createContract(contractData);
       return Right(ContractModel.fromJson(createdData).toEntity());
     } catch (e) {
       return Left(ServerFailure(message: 'Erro ao criar contrato: $e'));
@@ -141,16 +149,17 @@ class ContractRepository implements IContractRepository {
     }
   }
 
-  Future<List<ContractEntity>> getExpiringContracts(int daysAhead) async {
+  @override
+  Future<Either<AppFailure, List<ContractEntity>>> getExpiringContracts(int daysAhead) async {
     try {
       final contractsData =
           await _contractDatasource.getExpiringContracts(daysAhead);
-      return contractsData
+      final contracts = contractsData
           .map((data) => ContractModel.fromJson(data).toEntity())
           .toList();
+      return Right(contracts);
     } catch (e) {
-      throw Exception(
-          'Erro no repositório ao buscar contratos próximos do vencimento: $e');
+      return Left(ServerFailure(message: 'Erro ao buscar contratos próximos do vencimento: $e'));
     }
   }
 

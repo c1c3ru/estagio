@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:gestao_de_estagio/features/auth/bloc/auth_bloc.dart';
 import 'package:gestao_de_estagio/features/auth/bloc/auth_event.dart';
+import 'package:gestao_de_estagio/core/constants/app_colors.dart';
 
 // É uma boa prática gerir as suas rotas num ficheiro dedicado.
 // Exemplo: lib/core/routes/app_routes.dart
@@ -62,7 +63,7 @@ class SupervisorAppDrawer extends StatelessWidget {
               ),
             ),
             decoration: BoxDecoration(
-              color: Color(0xFF1E3A8A), // Usando um tom de azul específico
+              color: AppColors.primary,
             ),
           ),
           _buildDrawerItem(
@@ -76,6 +77,12 @@ class SupervisorAppDrawer extends StatelessWidget {
             title: 'Perfil',
             isSelected: currentIndex == 1,
             onTap: () => Modular.to.navigate('/supervisor/profile'),
+          ),
+          _buildDrawerItem(
+            icon: Icons.analytics_outlined,
+            title: 'Relatórios',
+            isSelected: currentIndex == 2,
+            onTap: () => Modular.to.navigate('/supervisor/reports'),
           ),
           const Divider(thickness: 1, indent: 16, endIndent: 16),
           _buildDrawerItem(
@@ -99,7 +106,7 @@ class SupervisorAppDrawer extends StatelessWidget {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    final color = isSelected ? Colors.blue.shade800 : null;
+    final color = isSelected ? AppColors.primary : null;
     return ListTile(
       leading: Icon(icon, color: color),
       title: Text(
@@ -111,7 +118,7 @@ class SupervisorAppDrawer extends StatelessWidget {
       ),
       onTap: onTap,
       selected: isSelected,
-      selectedTileColor: Colors.blue.withOpacity(0.1),
+      selectedTileColor: AppColors.primary.withOpacity(0.1),
     );
   }
 }
@@ -133,6 +140,9 @@ class SupervisorBottomNavBar extends StatelessWidget {
             Modular.to.navigate('/supervisor/');
             break;
           case 1:
+            Modular.to.navigate('/supervisor/reports');
+            break;
+          case 2:
             Modular.to.navigate('/supervisor/profile');
             break;
         }
@@ -142,6 +152,11 @@ class SupervisorBottomNavBar extends StatelessWidget {
           icon: Icon(Icons.dashboard_outlined),
           activeIcon: Icon(Icons.dashboard),
           label: 'Dashboard',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.analytics_outlined),
+          activeIcon: Icon(Icons.analytics),
+          label: 'Relatórios',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person),

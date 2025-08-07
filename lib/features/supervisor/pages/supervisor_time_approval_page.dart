@@ -92,27 +92,79 @@ class _SupervisorTimeApprovalPageState
   // Função para buscar o nome do estudante se não estiver no cache
   // Na prática, a lista de logs do BLoC/Usecase poderia já vir com os nomes dos estudantes (via join).
   // Esta é uma solução alternativa se a TimeLogEntity só tiver studentId.
-  Future<String> _getStudentName(
-      String studentId, supervisor_state.SupervisorState currentState) async {
+  /// Versão síncrona para evitar rebuilds infinitos no FutureBuilder
+  String _getStudentNameSync(
+      String studentId, supervisor_state.SupervisorState currentState) {
+    // Primeiro verifica o cache
     if (_studentNames.containsKey(studentId)) {
       return _studentNames[studentId]!;
     }
-    // Se o estado atual do dashboard tiver a lista de estudantes, podemos usá-la
+
+    // Se o estado atual do dashboard tiver a lista de estudantes, usa ela
     if (currentState is supervisor_state.SupervisorDashboardLoadSuccess) {
       try {
         final student =
             currentState.students.firstWhere((s) => s.id == studentId);
-        _studentNames[studentId] = student.fullName;
-        return student.fullName;
+        final nameParts = student.fullName.split(' ');
+        final displayName = nameParts.length >= 2
+            ? '${nameParts[0]} ${nameParts[1]}'
+            : student.fullName;
+        _studentNames[studentId] = displayName;
+        return displayName;
       } catch (e) {
-        // Estudante não encontrado na lista do dashboard, poderia buscar individualmente
+        // Estudante não encontrado na lista do dashboard
       }
     }
-    // Fallback: buscar o nome do estudante (isso pode ser ineficiente se feito para cada item da lista)
-    // O ideal é que o evento LoadAllTimeLogsForApprovalEvent já traga os nomes.
-    // Por agora, retornamos o ID.
-    // logger.w("Nome do estudante para ID $studentId não encontrado no cache nem no estado do dashboard.");
-    return 'ID: ${studentId.substring(0, 6)}...';
+
+    // Fallback: retorna "Estudante" para evitar exibir IDs
+    return 'Estudante';
+  }
+
+  void _showApprovalConfirmation(
+      BuildContext pageContext, TimeLogEntity log, String studentName) {
+    showDialog(
+      context: pageContext,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Confirmar Aprovação'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Deseja aprovar as horas de $studentName?'),
+              const SizedBox(height: 8),
+              Text('Data: ${DateFormat('dd/MM/yyyy').format(log.logDate)}'),
+              Text('Horas: ${log.hoursLogged?.toStringAsFixed(1) ?? '-'}h'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (_supervisorId != null) {
+                  BlocProvider.of<bloc.SupervisorBloc>(pageContext,
+                          listen: false)
+                      .add(event.ApproveOrRejectTimeLogEvent(
+                    timeLogId: log.id,
+                    approved: true,
+                    supervisorId: _supervisorId!,
+                  ));
+                }
+                Navigator.of(dialogContext).pop();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.success,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Aprovar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showRejectionReasonDialog(BuildContext pageContext, String timeLogId) {
@@ -138,9 +190,7 @@ class _SupervisorTimeApprovalPageState
               child: const Text(AppStrings.cancel),
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
-            AppButton(
-              text: 'Confirmar Rejeição',
-              backgroundColor: Theme.of(pageContext).colorScheme.error,
+            ElevatedButton(
               onPressed: () {
                 if (_supervisorId != null) {
                   BlocProvider.of<bloc.SupervisorBloc>(pageContext,
@@ -154,6 +204,11 @@ class _SupervisorTimeApprovalPageState
                 }
                 Navigator.of(dialogContext).pop();
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(pageContext).colorScheme.error,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Confirmar Rejeição'),
             ),
           ],
         );
@@ -247,18 +302,11 @@ class _SupervisorTimeApprovalPageState
                 itemCount: currentState.timeLogs.length,
                 itemBuilder: (context, index) {
                   final log = currentState.timeLogs[index];
-                  // Para obter o nome do estudante, você pode fazer um FutureBuilder aqui
-                  // ou garantir que a entidade TimeLogEntity já venha com o nome do estudante.
-                  // Por simplicidade, vou usar a função _getStudentName que pode ser otimizada.
-                  return FutureBuilder<String>(
-                      future: _getStudentName(
-                          log.studentId, currentState), // Passa o estado atual
-                      builder: (context, snapshot) {
-                        final studentName =
-                            snapshot.data ?? 'A carregar nome...';
-                        return _buildTimeLogApprovalCard(
-                            context, log, studentName);
-                      });
+                  // CORREÇÃO: Usar cache síncrono em vez de FutureBuilder para evitar loop infinito
+                  final studentName =
+                      _getStudentNameSync(log.studentId, currentState);
+                  return _buildTimeLogApprovalCard(
+                      context, log, studentName, index + 1);
                 },
               ),
             );
@@ -310,8 +358,8 @@ class _SupervisorTimeApprovalPageState
     );
   }
 
-  Widget _buildTimeLogApprovalCard(
-      BuildContext context, TimeLogEntity log, String studentName) {
+  Widget _buildTimeLogApprovalCard(BuildContext context, TimeLogEntity log,
+      String studentName, int sequentialNumber) {
     final theme = Theme.of(context);
     final String checkInStr = _formatTimeOfDay(_parseTime(log.checkInTime));
     final String checkOutStr = _formatTimeOfDay(_parseTime(log.checkOutTime));
@@ -320,107 +368,222 @@ class _SupervisorTimeApprovalPageState
         : '-';
 
     return Card(
-      elevation: 2,
-      margin: const EdgeInsets.only(bottom: 12.0),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    studentName,
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Text(
-                  DateFormat('dd/MM/yyyy').format(log.logDate),
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: theme.hintColor),
-                ),
+        elevation: 3,
+        margin: const EdgeInsets.only(bottom: 16.0),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white,
+                Colors.grey.shade50,
               ],
             ),
-            const Divider(height: 16),
-            _buildDetailRow(
-                context, Icons.login_outlined, 'Entrada:', checkInStr),
-            if (checkOutStr != 'N/A')
-              _buildDetailRow(
-                  context, Icons.logout_outlined, 'Saída:', checkOutStr),
-            _buildDetailRow(context, Icons.hourglass_full_outlined,
-                'Horas Registadas:', hoursStr),
-            if (log.description != null && log.description!.isNotEmpty)
-              _buildDetailRow(context, Icons.notes_outlined, 'Descrição:',
-                  log.description!),
-
-            const SizedBox(height: 12),
-            // Botões de Ação
-            if (log.approved == false &&
-                _supervisorId != null &&
-                _supervisorId!.isNotEmpty)
-              BlocBuilder<bloc.SupervisorBloc,
-                  supervisor_state.SupervisorState>(
-                builder: (context, state) {
-                  bool isLoadingAction =
-                      state is supervisor_state.SupervisorLoading;
-
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: AppColors.primary.withOpacity(0.1),
+                            radius: 20,
+                            child: Text(
+                              sequentialNumber.toString(),
+                              style: const TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  studentName,
+                                  style: theme.textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  'Registro de Horas',
+                                  style: theme.textTheme.bodySmall
+                                      ?.copyWith(color: theme.hintColor),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            DateFormat('dd/MM/yyyy').format(log.logDate),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          hoursStr,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
                     children: [
-                      AppButton(
-                        text: 'Rejeitar',
-                        onPressed: isLoadingAction
-                            ? null
-                            : () => _showRejectionReasonDialog(context, log.id),
-                        type: AppButtonType.text,
-                        foregroundColor: theme.colorScheme.error,
-                        isLoading: isLoadingAction,
-                      ),
-                      const SizedBox(width: 8),
-                      AppButton(
-                        text: 'Aprovar',
-                        onPressed: isLoadingAction
-                            ? null
-                            : () {
-                                final supervisorId = _supervisorId;
-                                if (supervisorId != null &&
-                                    supervisorId.isNotEmpty) {
-                                  BlocProvider.of<bloc.SupervisorBloc>(context,
-                                          listen: false)
-                                      .add(event.ApproveOrRejectTimeLogEvent(
-                                    timeLogId: log.id,
-                                    approved: true,
-                                    supervisorId: supervisorId,
-                                  ));
-                                }
-                              },
-                        isLoading: isLoadingAction,
-                      ),
+                      _buildDetailRow(context, Icons.login_outlined, 'Entrada:',
+                          checkInStr),
+                      if (checkOutStr != 'N/A')
+                        _buildDetailRow(context, Icons.logout_outlined,
+                            'Saída:', checkOutStr),
+                      _buildDetailRow(context, Icons.hourglass_full_outlined,
+                          'Horas Registadas:', hoursStr),
+                      if (log.description != null &&
+                          log.description!.isNotEmpty)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(8),
+                          margin: const EdgeInsets.only(top: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: Colors.blue.shade200),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.notes_outlined,
+                                      size: 16, color: Colors.blue.shade700),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Descrição:',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue.shade700,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                log.description!,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                     ],
-                  );
-                },
-              )
-            else if (log.approved == true)
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Icon(Icons.check_circle, color: AppColors.success, size: 18),
-                  SizedBox(width: 4),
-                  Text('Aprovado',
-                      style: TextStyle(
-                          color: AppColors.success,
-                          fontWeight: FontWeight.bold)),
-                ],
-              )
-          ],
-        ),
-      ),
-    );
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Botões de Ação
+                if (log.approved == false &&
+                    _supervisorId != null &&
+                    _supervisorId!.isNotEmpty)
+                  BlocBuilder<bloc.SupervisorBloc,
+                      supervisor_state.SupervisorState>(
+                    builder: (context, state) {
+                      bool isLoadingAction =
+                          state is supervisor_state.SupervisorLoading;
+
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: isLoadingAction
+                                ? null
+                                : () =>
+                                    _showRejectionReasonDialog(context, log.id),
+                            icon: const Icon(Icons.close, size: 18),
+                            label: const Text('Rejeitar'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: theme.colorScheme.error,
+                              side: BorderSide(color: theme.colorScheme.error),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton.icon(
+                            onPressed: isLoadingAction
+                                ? null
+                                : () => _showApprovalConfirmation(
+                                    context, log, studentName),
+                            icon: const Icon(Icons.check, size: 18),
+                            label: const Text('Aprovar'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.success,
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  )
+                else if (log.approved == true)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.check_circle,
+                            color: AppColors.success, size: 18),
+                        SizedBox(width: 6),
+                        Text('Aprovado',
+                            style: TextStyle(
+                                color: AppColors.success,
+                                fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  )
+              ],
+            ),
+          ),
+        ));
   }
 
   Widget _buildDetailRow(

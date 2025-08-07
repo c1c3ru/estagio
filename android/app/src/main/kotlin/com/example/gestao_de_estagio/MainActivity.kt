@@ -1,4 +1,4 @@
-package com.example.estagio
+package com.example.gestao_de_estagio
 
 import io.flutter.embedding.android.FlutterActivity
 

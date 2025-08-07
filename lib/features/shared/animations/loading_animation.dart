@@ -1,61 +1,131 @@
-// lib/features/shared/animations/loading_animation.dart
 import 'package:flutter/material.dart';
 import 'lottie_animations.dart';
 
+/// Widget de loading animado
 class LoadingAnimation extends StatelessWidget {
-  final double size;
   final String? message;
-  const LoadingAnimation({super.key, this.size = 120, this.message});
+  final double size;
+  final Color? color;
+
+  const LoadingAnimation({
+    super.key,
+    this.message,
+    this.size = 100,
+    this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AppLottieAnimation(
-            assetPath: LottieAssetPaths.loadingDots,
-            width: size,
-            height: size,
-          ),
-          if (message != null) ...[
-            const SizedBox(height: 16),
-            Text(
-              message!,
-              style: Theme.of(context).textTheme.bodyLarge,
-              textAlign: TextAlign.center,
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
-        ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppLottieAnimation(
+              assetPath: LottieAssetPaths.loading,
+              width: size,
+              height: size,
+            ),
+            if (message != null) ...[
+              const SizedBox(height: 16),
+              Text(
+                message!,
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
 }
 
-class LoadingOverlay extends StatelessWidget {
-  final Widget child;
-  final bool isLoading;
+/// Widget de loading simples com CircularProgressIndicator
+class SimpleLoadingAnimation extends StatelessWidget {
   final String? message;
+  final double size;
+  final Color? color;
 
-  const LoadingOverlay({
+  const SimpleLoadingAnimation({
     super.key,
-    required this.child,
-    required this.isLoading,
     this.message,
+    this.size = 40,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        child,
-        if (isLoading)
-          Container(
-            color: Colors.black54,
-            child: LoadingAnimation(
-              message: message,
-            ),
+        SizedBox(
+          width: size,
+          height: size,
+          child: CircularProgressIndicator(
+            color: color ?? Theme.of(context).colorScheme.primary,
+            strokeWidth: 3,
           ),
+        ),
+        if (message != null) ...[
+          const SizedBox(height: 16),
+          Text(
+            message!,
+            style: Theme.of(context).textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Widget de loading inline
+class InlineLoadingAnimation extends StatelessWidget {
+  final String? message;
+  final double size;
+  final Color? color;
+
+  const InlineLoadingAnimation({
+    super.key,
+    this.message,
+    this.size = 20,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          width: size,
+          height: size,
+          child: CircularProgressIndicator(
+            color: color ?? Theme.of(context).colorScheme.primary,
+            strokeWidth: 2,
+          ),
+        ),
+        if (message != null) ...[
+          const SizedBox(width: 12),
+          Text(
+            message!,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
       ],
     );
   }

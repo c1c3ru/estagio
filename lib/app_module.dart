@@ -38,7 +38,7 @@ import 'domain/usecases/auth/logout_usecase.dart';
 import 'domain/usecases/auth/get_current_user_usecase.dart';
 import 'domain/usecases/auth/update_profile_usecase.dart';
 import 'domain/usecases/auth/get_auth_state_changes_usecase.dart';
-import 'domain/usecases/auth/reset_password_usecase.dart';
+import 'package:gestao_de_estagio/domain/usecases/auth/reset_password_usecase.dart';
 
 // Use Cases - Student
 import 'domain/usecases/student/get_all_students_usecase.dart';
@@ -108,7 +108,7 @@ import 'features/auth/pages/supervisor_register_page.dart';
 import 'features/student/pages/student_register_page.dart';
 import 'features/auth/pages/unauthorized_page.dart';
 import 'features/auth/pages/email_confirmation_page.dart';
-import 'features/auth/pages/forgot_password_page.dart';
+import 'package:gestao_de_estagio/features/auth/pages/forgot_password_page.dart';
 import 'features/shared/pages/not_found_page.dart';
 
 // Modules
@@ -117,6 +117,15 @@ import 'features/supervisor/supervisor_module.dart';
 
 // Guards
 import 'core/guards/auth_guard.dart';
+
+import 'core/services/notification_service.dart';
+import 'core/services/reminder_service.dart';
+import 'core/services/connectivity_service.dart';
+import 'core/services/cache_service.dart';
+import 'core/services/sync_service.dart';
+import 'core/services/report_service.dart';
+import 'core/services/performance_service.dart';
+import 'core/theme/theme_service.dart';
 
 class AppModule extends Module {
   @override
@@ -215,7 +224,7 @@ class AppModule extends Module {
     i.addLazySingleton<GetAllTimeLogsForSupervisorUsecase>(
         () => GetAllTimeLogsForSupervisorUsecase(i()));
     i.addLazySingleton<ApproveOrRejectTimeLogUsecase>(
-        () => ApproveOrRejectTimeLogUsecase(i()));
+        () => ApproveOrRejectTimeLogUsecase(i(), i(), i()));
 
     // Use Cases - TimeLog
     i.addLazySingleton<ClockInUsecase>(() => ClockInUsecase(i()));
@@ -242,6 +251,16 @@ class AppModule extends Module {
     i.addLazySingleton<GetAllContractsUsecase>(
         () => GetAllContractsUsecase(i()));
 
+    // Services
+    i.addSingleton<NotificationService>(() => NotificationService());
+    i.addSingleton<ReminderService>(() => ReminderService());
+    i.addSingleton<ConnectivityService>(() => ConnectivityService());
+    i.addSingleton<CacheService>(() => CacheService());
+    i.addSingleton<SyncService>(() => SyncService());
+    i.addSingleton<ReportService>(() => ReportService());
+    i.addSingleton<PerformanceService>(() => PerformanceService());
+    i.addSingleton<ThemeService>(() => ThemeService());
+
     // BLoCs
     i.addLazySingleton<AuthBloc>(() => AuthBloc(
           loginUseCase: i(),
@@ -256,6 +275,10 @@ class AppModule extends Module {
     i.addLazySingleton<StudentBloc>(() => StudentBloc(
           getStudentDashboardUsecase: i(),
           getTimeLogsByStudentUsecase: i(),
+          clockInUsecase: i(),
+          clockOutUsecase: i(),
+          getActiveTimeLogUsecase: i(),
+          studentRepository: i(),
         ));
 
     i.add<SupervisorBloc>(() => SupervisorBloc(
@@ -309,7 +332,7 @@ class AppModule extends Module {
   void routes(RouteManager r) {
     // Auth Routes
     r.child('/', child: (context) => const LoginPage());
-    r.child('/login', child: (context) => const LoginPage());
+    r.child('/login', child: (context) => const LoginPage(), transition: TransitionType.noTransition);
     r.child('/auth/register-type',
         child: (context) => const RegisterTypePage());
     r.child('/auth/register-student',

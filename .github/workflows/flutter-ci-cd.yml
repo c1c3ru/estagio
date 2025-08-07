@@ -1,0 +1,93 @@
+name: Flutter CI/CD
+
+on:
+  push:
+    branches: [main, desenvolvimento]
+  pull_request:
+    branches: [main, desenvolvimento]
+
+jobs:
+  # ---------------- ANDROID ----------------
+  android-build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+
+      - name: Flutter Info
+        run: |
+          flutter --version
+          dart --version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run analyzer
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test --no-pub
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Setup Ruby for Fastlane
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+
+      - name: Deploy to Google Play (Fastlane)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        env:
+          SUPPLY_JSON_KEY: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          gem install fastlane -NV
+          cd android
+          echo "$SUPPLY_JSON_KEY" > fastlane.json
+          fastlane supply \
+            --json_key fastlane.json \
+            --package_name com.seupacote.seuapp \
+            --apk ../build/app/outputs/flutter-apk/app-release.apk \
+            --track internal
+
+  # ---------------- iOS ----------------
+  ios-testflight:
+    runs-on: macos-latest
+    needs: android-build-deploy
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build iOS .ipa
+        run: flutter build ipa --release
+
+      - name: Upload to TestFlight
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: build/ios/ipa/*.ipa
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}

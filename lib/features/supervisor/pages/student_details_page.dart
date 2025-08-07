@@ -254,12 +254,8 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
             const Divider(height: 24),
             _buildInfoRow(context, Icons.badge_outlined, 'Matrícula',
                 student.registrationNumber),
-            _buildInfoRow(
-                context,
-                Icons.email_outlined,
-                'Email',
-                student
-                    .id), // Assumindo que o ID do estudante é o email ou o user.email está no StudentEntity
+            _buildInfoRow(context, Icons.email_outlined, 'Email',
+                student.userEmail ?? 'Não informado'),
             _buildInfoRow(context, Icons.phone_outlined, 'Telefone',
                 student.phoneNumber ?? 'Não informado'),
             _buildInfoRow(context, Icons.cake_outlined, 'Nascimento',

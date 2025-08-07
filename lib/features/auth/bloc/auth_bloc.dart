@@ -51,40 +51,26 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthResetPasswordRequested>(_onResetPasswordRequested);
 
     // Iniciar a escuta de mudanças de estado de autenticação
-    _authStateSubscription = _getAuthStateChangesUseCase.call().listen(
+    _authStateSubscription = _getAuthStateChangesUseCase.call()
+        .distinct((previous, next) {
+          // Evitar processar o mesmo usuário repetidamente
+          if (previous == null && next == null) return true;
+          if (previous == null || next == null) return false;
+          return previous.id == next.id;
+        })
+        .listen(
       (user) {
         if (kDebugMode) {
-          print('🟡 AuthBloc: AuthStateChanged recebido: ${user?.email}');
+          print('🟡 AuthBloc: AuthStateChanged recebido: ${user?.email ?? "null"}');
         }
-
-        if (user != null) {
-          // Verificar se o perfil está completo
-          if (_isProfileComplete(user)) {
-            if (kDebugMode) {
-              print(
-                  '🟡 AuthBloc: AuthStateChanged - Perfil completo, emitindo AuthSuccess');
-            }
-            add(AuthStateChanged(user));
-          } else {
-            if (kDebugMode) {
-              print(
-                  '🟡 AuthBloc: AuthStateChanged - Perfil incompleto, emitindo AuthProfileIncomplete');
-            }
-            add(AuthStateChanged(user));
-          }
-        } else {
-          if (kDebugMode) {
-            print(
-                '🟡 AuthBloc: AuthStateChanged - Usuário nulo, emitindo AuthUnauthenticated');
-          }
-          add(const AuthStateChanged(null));
-        }
+        add(AuthStateChanged(user));
       },
       onError: (error) {
         if (kDebugMode) {
           print('🔴 AuthBloc: Erro na escuta de auth state: $error');
         }
-        // Log do erro apenas, sem emitir estado
+        // Emitir estado não autenticado em caso de erro
+        add(const AuthStateChanged(null));
       },
     );
   }
@@ -159,6 +145,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       birthDate: event.birthDate,
       contractStartDate: event.contractStartDate,
       contractEndDate: event.contractEndDate,
+      department: event.department,
     );
     result.fold(
       (failure) => emit(AuthFailure(failure.message)),
@@ -291,15 +278,43 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthStateChanged event,
     Emitter<AuthState> emit,
   ) {
+    // Evitar emissões desnecessárias que causam piscar na UI
+    final currentState = state;
+    
     if (event.user != null) {
-      if (_isProfileComplete(event.user!)) {
-        emit(AuthSuccess(event.user!));
-      } else {
-        emit(AuthProfileIncomplete(event.user!));
+      final newState = _isProfileComplete(event.user!) 
+          ? AuthSuccess(event.user!) 
+          : AuthProfileIncomplete(event.user!);
+      
+      // Só emitir se o estado realmente mudou
+      if (!_isSameAuthState(currentState, newState)) {
+        if (kDebugMode) {
+          print('🟡 AuthBloc: Emitindo ${newState.runtimeType}');
+        }
+        emit(newState);
       }
     } else {
-      emit(const AuthUnauthenticated());
+      if (currentState is! AuthUnauthenticated) {
+        if (kDebugMode) {
+          print('🟡 AuthBloc: Emitindo AuthUnauthenticated');
+        }
+        emit(const AuthUnauthenticated());
+      }
     }
+  }
+  
+  bool _isSameAuthState(AuthState current, AuthState newState) {
+    if (current.runtimeType != newState.runtimeType) return false;
+    
+    if (current is AuthSuccess && newState is AuthSuccess) {
+      return current.user.id == newState.user.id;
+    }
+    
+    if (current is AuthProfileIncomplete && newState is AuthProfileIncomplete) {
+      return current.user.id == newState.user.id;
+    }
+    
+    return current.runtimeType == newState.runtimeType;
   }
 
   Future<void> _onResetPasswordRequested(

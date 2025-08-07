@@ -3,6 +3,10 @@ import '../../../domain/usecases/student/get_student_dashboard_usecase.dart';
 import '../../../domain/entities/contract_entity.dart';
 import '../../../domain/entities/time_log_entity.dart';
 import '../../../domain/usecases/time_log/get_time_logs_by_student_usecase.dart';
+import '../../../domain/usecases/time_log/clock_in_usecase.dart';
+import '../../../domain/usecases/time_log/clock_out_usecase.dart';
+import '../../../domain/usecases/time_log/get_active_time_log_usecase.dart';
+import '../../../domain/repositories/i_student_repository.dart';
 
 import '../../../data/models/student_model.dart';
 
@@ -14,12 +18,24 @@ import 'student_state.dart';
 class StudentBloc extends Bloc<StudentEvent, StudentState> {
   final GetStudentDashboardUsecase _getStudentDashboardUsecase;
   final GetTimeLogsByStudentUsecase _getTimeLogsByStudentUsecase;
+  final ClockInUsecase _clockInUsecase;
+  final ClockOutUsecase _clockOutUsecase;
+  final GetActiveTimeLogUsecase _getActiveTimeLogUsecase;
+  final IStudentRepository _studentRepository;
 
   StudentBloc({
     required GetStudentDashboardUsecase getStudentDashboardUsecase,
     required GetTimeLogsByStudentUsecase getTimeLogsByStudentUsecase,
+    required ClockInUsecase clockInUsecase,
+    required ClockOutUsecase clockOutUsecase,
+    required GetActiveTimeLogUsecase getActiveTimeLogUsecase,
+    required IStudentRepository studentRepository,
   })  : _getStudentDashboardUsecase = getStudentDashboardUsecase,
         _getTimeLogsByStudentUsecase = getTimeLogsByStudentUsecase,
+        _clockInUsecase = clockInUsecase,
+        _clockOutUsecase = clockOutUsecase,
+        _getActiveTimeLogUsecase = getActiveTimeLogUsecase,
+        _studentRepository = studentRepository,
         super(const StudentInitial()) {
     // Registrar handlers para os eventos
     on<LoadStudentDashboardDataEvent>(_onLoadStudentDashboardData);
@@ -47,12 +63,62 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
       result.fold(
         (failure) => emit(StudentOperationFailure(message: failure.message)),
         (dashboardData) {
-          // Criar StudentEntity a partir dos dados do dashboard usando StudentModel
-          final studentData = dashboardData['student'] as Map<String, dynamic>;
-          final student = StudentModel.fromJson(studentData).toEntity();
+          final studentData = dashboardData['student'];
 
-          const timeStats = StudentTimeStats();
-          final contracts = <ContractEntity>[];
+          if (studentData == null) {
+            // Usuário não tem dados de estudante - precisa completar cadastro
+            emit(const StudentOperationFailure(
+              message:
+                  'Perfil incompleto. Complete seu cadastro para continuar.',
+            ));
+            return;
+          }
+
+          // Criar StudentEntity a partir dos dados do dashboard usando StudentModel
+          final student =
+              StudentModel.fromJson(studentData as Map<String, dynamic>)
+                  .toEntity();
+
+          // Extrair dados de timeStats e contracts do dashboard
+          final timeStatsData = dashboardData['timeStats'] as Map<String, dynamic>? ?? {};
+          final contractsData = dashboardData['contracts'] as List? ?? [];
+          final activeTimeLogData = timeStatsData['activeTimeLog'] as Map<String, dynamic>?;
+          
+          final timeStats = StudentTimeStats(
+            hoursThisWeek: (timeStatsData['hoursThisWeek'] as num?)?.toDouble() ?? 0.0,
+            hoursThisMonth: (timeStatsData['hoursThisMonth'] as num?)?.toDouble() ?? 0.0,
+            activeTimeLog: activeTimeLogData != null 
+                ? TimeLogEntity(
+                    id: activeTimeLogData['id'] as String,
+                    studentId: activeTimeLogData['student_id'] as String,
+                    logDate: DateTime.parse(activeTimeLogData['log_date'] as String),
+                    checkInTime: activeTimeLogData['check_in_time'] as String,
+                    checkOutTime: activeTimeLogData['check_out_time'] as String?,
+                    createdAt: DateTime.parse(activeTimeLogData['created_at'] as String),
+                    description: activeTimeLogData['description'] as String?,
+                    hoursLogged: (activeTimeLogData['hours_logged'] as num?)?.toDouble(),
+                    approved: activeTimeLogData['approved'] as bool?,
+                  )
+                : null,
+          );
+          
+          final contracts = contractsData.map((contractData) {
+            final data = contractData as Map<String, dynamic>;
+            return ContractEntity(
+              id: data['id'] as String,
+              studentId: data['student_id'] as String,
+              supervisorId: data['supervisor_id'] as String?,
+              contractType: data['contract_type'] as String,
+              status: data['status'] as String,
+              startDate: DateTime.parse(data['start_date'] as String),
+              endDate: DateTime.parse(data['end_date'] as String),
+              description: data['description'] as String?,
+              createdAt: DateTime.parse(data['created_at'] as String),
+              updatedAt: data['updated_at'] != null 
+                  ? DateTime.parse(data['updated_at'] as String) 
+                  : null,
+            );
+          }).toList().cast<ContractEntity>();
 
           emit(StudentDashboardLoadSuccess(
             student: student,
@@ -85,8 +151,14 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
   ) async {
     emit(const StudentLoading());
     try {
-      // Implementar lógica de check-in
-      emit(const StudentLoading());
+      final result = await _clockInUsecase(event.userId, notes: event.notes);
+      result.fold(
+        (failure) => emit(StudentOperationFailure(message: failure.message)),
+        (timeLog) => emit(StudentTimeLogOperationSuccess(
+          timeLog: timeLog,
+          message: 'Check-in realizado com sucesso!',
+        )),
+      );
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
     }
@@ -98,8 +170,17 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
   ) async {
     emit(const StudentLoading());
     try {
-      // Implementar lógica de check-out
-      emit(const StudentLoading());
+      final result = await _clockOutUsecase(
+        studentId: event.userId,
+        notes: event.notes,
+      );
+      result.fold(
+        (failure) => emit(StudentOperationFailure(message: failure.message)),
+        (_) => emit(const StudentTimeLogOperationSuccess(
+          timeLog: null,
+          message: 'Check-out realizado com sucesso!',
+        )),
+      );
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
     }
@@ -111,7 +192,8 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
   ) async {
     emit(const StudentLoading());
     try {
-      final timeLogs = await _getTimeLogsByStudentUsecase(event.userId);
+      final eitherTimeLogs = await _getTimeLogsByStudentUsecase(event.userId);
+      final timeLogs = eitherTimeLogs.getOrElse(() => []);
       emit(StudentTimeLogsLoadSuccess(timeLogs: timeLogs));
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
@@ -124,22 +206,16 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
   ) async {
     emit(const StudentLoading());
     try {
-      // Chame o usecase real para criar o log
-      // final result = await _createTimeLogUsecase(...);
-      // result.fold(
-      //   (failure) => emit(StudentOperationFailure(message: failure.message)),
-      //   (log) => emit(StudentTimeLogOperationSuccess(timeLog: log, message: 'Registo criado com sucesso!')),
-      // );
-      emit(
-        StudentTimeLogOperationSuccess(
-            timeLog: TimeLogEntity(
-              id: 'fake',
-              studentId: 'fake',
-              logDate: DateTime.now(),
-              checkInTime: '08:00',
-              createdAt: DateTime.now(),
-            ),
-            message: 'Registo criado com sucesso!'),
+      final result = await _studentRepository.createTimeLog(
+        studentId: event.userId,
+        logDate: event.logDate,
+        checkInTime: event.checkInTime,
+        checkOutTime: event.checkOutTime,
+        description: event.description,
+      );
+      result.fold(
+        (failure) => emit(StudentOperationFailure(message: failure.message)),
+        (log) => emit(StudentTimeLogOperationSuccess(timeLog: log, message: 'Registro criado com sucesso!')),
       );
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
@@ -196,10 +272,12 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
     FetchActiveTimeLogEvent event,
     Emitter<StudentState> emit,
   ) async {
-    emit(const StudentLoading());
     try {
-      // Implementar lógica para buscar log ativo
-      emit(const StudentLoading());
+      final result = await _getActiveTimeLogUsecase(event.userId);
+      result.fold(
+        (failure) => emit(StudentOperationFailure(message: failure.message)),
+        (activeTimeLog) => emit(ActiveTimeLogFetched(activeTimeLog: activeTimeLog)),
+      );
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
     }

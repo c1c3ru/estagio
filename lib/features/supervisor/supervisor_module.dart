@@ -12,9 +12,12 @@ import 'pages/student_edit_page.dart';
 import 'pages/supervisor_list_page.dart';
 import 'pages/contract_page.dart';
 import 'pages/supervisor_student_list_page.dart';
+import 'pages/supervisor_reports_page.dart';
+import 'pages/manage_students_page.dart';
 
 // BLoCs
 import 'bloc/supervisor_bloc.dart';
+import '../auth/bloc/auth_bloc.dart';
 
 class SupervisorModule extends Module {
   @override
@@ -26,32 +29,44 @@ class SupervisorModule extends Module {
   void routes(RouteManager r) {
     r.child(
       Modular.initialRoute,
-      child: (_) => BlocProvider.value(
-        value: Modular.get<SupervisorBloc>(),
+      child: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: Modular.get<AuthBloc>()),
+          BlocProvider.value(value: Modular.get<SupervisorBloc>()),
+        ],
         child: const SupervisorHomePage(),
       ),
       transition: TransitionType.fadeIn,
     );
     r.child(
       '/time-approval',
-      child: (_) => BlocProvider.value(
-        value: Modular.get<SupervisorBloc>(),
+      child: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: Modular.get<AuthBloc>()),
+          BlocProvider.value(value: Modular.get<SupervisorBloc>()),
+        ],
         child: const SupervisorTimeApprovalPage(),
       ),
       transition: TransitionType.fadeIn,
     );
     r.child(
       '/profile',
-      child: (_) => BlocProvider.value(
-        value: Modular.get<SupervisorBloc>(),
+      child: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: Modular.get<AuthBloc>()),
+          BlocProvider.value(value: Modular.get<SupervisorBloc>()),
+        ],
         child: const SupervisorProfilePage(),
       ),
       transition: TransitionType.fadeIn,
     );
     r.child(
       '/list',
-      child: (_) => BlocProvider.value(
-        value: Modular.get<SupervisorBloc>(),
+      child: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: Modular.get<AuthBloc>()),
+          BlocProvider.value(value: Modular.get<SupervisorBloc>()),
+        ],
         child: const SupervisorListPage(),
       ),
       transition: TransitionType.fadeIn,
@@ -75,17 +90,43 @@ class SupervisorModule extends Module {
     );
     r.child(
       '/students',
-      child: (_) => BlocProvider.value(
-        value: Modular.get<SupervisorBloc>(),
-        child: SupervisorStudentListPage(),
+      child: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: Modular.get<AuthBloc>()),
+          BlocProvider.value(value: Modular.get<SupervisorBloc>()),
+        ],
+        child: const SupervisorStudentListPage(),
       ),
       transition: TransitionType.fadeIn,
     );
     r.child(
       '/contracts',
-      child: (_) => BlocProvider.value(
-        value: Modular.get<SupervisorBloc>(),
-        child: ContractPage(),
+      child: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: Modular.get<AuthBloc>()),
+          BlocProvider.value(value: Modular.get<SupervisorBloc>()),
+        ],
+        child: const ContractPage(),
+      ),
+      transition: TransitionType.fadeIn,
+    );
+    
+    // Rota para a página de relatórios
+    r.child(
+      '/reports',
+      child: (_) => const SupervisorReportsPage(),
+      transition: TransitionType.fadeIn,
+    );
+    
+    // Rota para gerenciar estudantes
+    r.child(
+      '/manage-students',
+      child: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: Modular.get<AuthBloc>()),
+          BlocProvider.value(value: Modular.get<SupervisorBloc>()),
+        ],
+        child: const ManageStudentsPage(),
       ),
       transition: TransitionType.fadeIn,
     );

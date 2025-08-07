@@ -1,32 +1,35 @@
+import 'package:dartz/dartz.dart';
 import '../../repositories/i_time_log_repository.dart';
+import '../../../core/errors/app_exceptions.dart';
 
 class GetTotalHoursByStudentUsecase {
   final ITimeLogRepository _timeLogRepository;
 
   GetTotalHoursByStudentUsecase(this._timeLogRepository);
 
-  Future<Map<String, dynamic>> call(
+  Future<Either<AppFailure, Map<String, dynamic>>> call(
     String studentId,
     DateTime startDate,
     DateTime endDate,
   ) async {
     try {
       if (studentId.isEmpty) {
-        throw Exception('ID do estudante não pode estar vazio');
+        return const Left(
+            ValidationFailure('ID do estudante não pode estar vazio'));
       }
-      
+
       if (startDate.isAfter(endDate)) {
-        throw Exception('Data de início deve ser anterior à data de fim');
+        return const Left(ValidationFailure(
+            'Data de início deve ser anterior à data de fim'));
       }
-      
+
       return await _timeLogRepository.getTotalHoursByStudent(
         studentId,
         startDate,
         endDate,
       );
     } catch (e) {
-      throw Exception('Erro ao calcular horas totais: $e');
+      return Left(AppFailure.unexpected('Erro ao calcular horas totais: $e'));
     }
   }
 }
-

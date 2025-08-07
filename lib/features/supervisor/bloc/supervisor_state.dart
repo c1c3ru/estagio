@@ -216,3 +216,10 @@ class SupervisorListLoadSuccess extends SupervisorState {
   @override
   List<Object?> get props => [supervisors];
 }
+
+class SupervisorStudentsLoadSuccess extends SupervisorState {
+  final List<StudentEntity> students;
+  const SupervisorStudentsLoadSuccess({required this.students});
+  @override
+  List<Object?> get props => [students];
+}

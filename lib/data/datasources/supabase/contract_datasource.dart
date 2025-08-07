@@ -120,9 +120,39 @@ class ContractDatasource {
   Future<Map<String, dynamic>> createContract(
       Map<String, dynamic> contractData) async {
     try {
+      final dataToInsert = Map<String, dynamic>.from(contractData);
+      
+      // Remove o ID se estiver vazio
+      if (dataToInsert['id'] == null || dataToInsert['id'] == '') {
+        dataToInsert.remove('id');
+      }
+      
+      // Validar campos obrigatórios
+      if (dataToInsert['student_id'] == null || dataToInsert['student_id'] == '') {
+        throw Exception('student_id é obrigatório');
+      }
+      
+      if (dataToInsert['supervisor_id'] == null || dataToInsert['supervisor_id'] == '') {
+        throw Exception('supervisor_id é obrigatório');
+      }
+      
+      // Verificar se já existe contrato ativo para o estudante
+      final activeContract = await getActiveContractByStudent(dataToInsert['student_id']);
+      if (activeContract != null) {
+        throw Exception('Estudante já possui um contrato ativo. Finalize o contrato atual antes de criar um novo.');
+      }
+      
+      // Garantir valores corretos para status e contract_type
+      if (dataToInsert['status'] == 'ativo') {
+        dataToInsert['status'] = 'active';
+      }
+      if (dataToInsert['contract_type'] == null) {
+        dataToInsert['contract_type'] = 'mandatory_internship';
+      }
+      
       final response = await _supabaseClient
           .from('contracts')
-          .insert(contractData)
+          .insert(dataToInsert)
           .select()
           .single();
 

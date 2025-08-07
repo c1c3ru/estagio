@@ -1,0 +1,61 @@
+-- Script para inserir dados de teste na tabela students
+-- Execute este script no Supabase SQL Editor
+
+-- Inserir dados de teste para o usuário atual
+INSERT INTO public.students (
+  id,
+  full_name,
+  registration_number,
+  course,
+  advisor_name,
+  is_mandatory_internship,
+  class_shift,
+  internship_shift_1,
+  internship_shift_2,
+  birth_date,
+  contract_start_date,
+  contract_end_date,
+  total_hours_required,
+  total_hours_completed,
+  weekly_hours_target,
+  profile_picture_url,
+  phone_number,
+  status,
+  supervisor_id
+) VALUES (
+  '79aa7e47-b12b-458d-835d-2a1ad607b9a5', -- ID do usuário atual
+  'João Silva Santos',
+  '2024001234',
+  'Tecnologia em Sistemas para Internet',
+  'Prof. Dr. Maria Oliveira',
+  true,
+  'morning',
+  'morning',
+  null,
+  '2000-03-15',
+  '2024-03-01',
+  '2024-12-31',
+  300.00,
+  120.00,
+  20.00,
+  null,
+  '(85) 99999-9999',
+  'active',
+  null
+) ON CONFLICT (id) DO UPDATE SET
+  full_name = EXCLUDED.full_name,
+  registration_number = EXCLUDED.registration_number,
+  course = EXCLUDED.course,
+  advisor_name = EXCLUDED.advisor_name,
+  is_mandatory_internship = EXCLUDED.is_mandatory_internship,
+  class_shift = EXCLUDED.class_shift,
+  internship_shift_1 = EXCLUDED.internship_shift_1,
+  birth_date = EXCLUDED.birth_date,
+  contract_start_date = EXCLUDED.contract_start_date,
+  contract_end_date = EXCLUDED.contract_end_date,
+  total_hours_required = EXCLUDED.total_hours_required,
+  total_hours_completed = EXCLUDED.total_hours_completed,
+  weekly_hours_target = EXCLUDED.weekly_hours_target,
+  phone_number = EXCLUDED.phone_number,
+  status = EXCLUDED.status,
+  updated_at = now();

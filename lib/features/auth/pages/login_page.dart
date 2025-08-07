@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:lottie/lottie.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/enums/user_role.dart';
@@ -50,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
             } else if (state.user.role == UserRole.supervisor) {
               Modular.to.navigate('/supervisor/profile');
             } else if (state.user.role == UserRole.admin) {
-              Modular.to.navigate('/supervisor/list');
+              Modular.to.navigate('/supervisor/students');
             }
           } else if (state is AuthSuccess) {
             // Navegar para a página apropriada baseado no papel do usuário
@@ -62,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
                 Modular.to.navigate('/supervisor/');
                 break;
               case UserRole.admin:
-                Modular.to.navigate('/supervisor/list');
+                Modular.to.navigate('/supervisor/students');
                 break;
             }
           }
@@ -80,9 +79,8 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   const SizedBox(height: 64),
                   const AppLottieAnimation(
-                    assetPath: 'assets/animations/intership_animations.json',
+                    assetPath: LottieAssetPaths.internship,
                     height: 180,
-                    frameRate: FrameRate(30),
                   ),
                   const SizedBox(height: 32),
                   Text(

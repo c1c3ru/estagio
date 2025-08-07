@@ -31,12 +31,9 @@ class EmailConfirmationPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const EmailConfirmationAnimation(size: 120),
-              const SizedBox(height: 32),
-              const Icon(
-                Icons.email_outlined,
-                size: 80,
-                color: AppColors.primary,
+              const AppLottieAnimation(
+                assetPath: LottieAssetPaths.emailConfirmation,
+                height: 160,
               ),
               const SizedBox(height: 32),
               const Text(

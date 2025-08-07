@@ -9,15 +9,7 @@ class AuthGuard extends RouteGuard {
 
   @override
   Future<bool> canActivate(String path, ModularRoute route) async {
-    // Check if user is authenticated
     final currentState = _authBloc.state;
-
-    if (currentState is AuthSuccess) {
-      return true;
-    }
-
-    // If not authenticated, redirect to login
-    Modular.to.navigate('/login');
-    return false;
+    return currentState is AuthSuccess;
   }
 }

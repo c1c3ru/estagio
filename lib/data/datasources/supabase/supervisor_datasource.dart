@@ -35,9 +35,13 @@ class SupervisorDatasource {
 
   Future<Map<String, dynamic>?> getSupervisorByUserId(String userId) async {
     try {
+      if (userId.isEmpty) {
+        return null;
+      }
+      
       final response = await _supabaseClient
           .from('supervisors')
-          .select('*, users(*)')
+          .select('*')
           .eq('id', userId)
           .maybeSingle();
 
@@ -91,48 +95,22 @@ class SupervisorDatasource {
     FilterStudentsParams? filters,
   }) async {
     try {
-      var query =
-          _supabaseClient.from('students').select('*, users(*), contracts(*)');
+      var query = _supabaseClient
+          .from('students')
+          .select('*,users(email)')
+          .eq('status', 'active');
 
-      if (supervisorId != null) {
+      if (supervisorId != null && supervisorId.isNotEmpty) {
         query = query.eq('supervisor_id', supervisorId);
       }
 
       if (filters != null) {
-        if (filters.searchTerm != null) {
+        if (filters.searchTerm != null && filters.searchTerm!.isNotEmpty) {
           query = query.ilike('full_name', '%${filters.searchTerm}%');
         }
 
         if (filters.status != null) {
           query = query.eq('status', filters.status.toString());
-        }
-
-        if (filters.hasActiveContract != null) {
-          if (filters.hasActiveContract!) {
-            query = query.not('contracts', 'is', null);
-          } else {
-            query = query.not('contracts', 'is', 'NOT_NULL');
-          }
-        }
-
-        if (filters.contractStartDateFrom != null) {
-          query = query.gte('contract_start_date',
-              filters.contractStartDateFrom!.toIso8601String());
-        }
-
-        if (filters.contractStartDateTo != null) {
-          query = query.lte('contract_start_date',
-              filters.contractStartDateTo!.toIso8601String());
-        }
-
-        if (filters.contractEndDateFrom != null) {
-          query = query.gte('contract_end_date',
-              filters.contractEndDateFrom!.toIso8601String());
-        }
-
-        if (filters.contractEndDateTo != null) {
-          query = query.lte('contract_end_date',
-              filters.contractEndDateTo!.toIso8601String());
         }
       }
 
@@ -145,9 +123,13 @@ class SupervisorDatasource {
 
   Future<Map<String, dynamic>?> getStudentById(String studentId) async {
     try {
+      if (studentId.isEmpty) {
+        return null;
+      }
+      
       final response = await _supabaseClient
           .from('students')
-          .select('*, users(*), contracts(*)')
+          .select('*, users(email)')
           .eq('id', studentId)
           .maybeSingle();
 

@@ -122,4 +122,21 @@ class TimeLogEntity extends Equatable {
       return null;
     }
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'student_id': studentId,
+      'log_date': logDate.toIso8601String(),
+      'check_in_time': checkInTime,
+      'check_out_time': checkOutTime,
+      'hours_logged': hoursLogged,
+      'description': description,
+      'approved': approved,
+      'supervisor_id': supervisorId,
+      'approved_at': approvedAt?.toIso8601String(),
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+    };
+  }
 }

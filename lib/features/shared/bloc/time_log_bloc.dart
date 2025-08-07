@@ -232,12 +232,11 @@ class TimeLogBloc extends Bloc<TimeLogEvent, TimeLogState> {
     Emitter<TimeLogState> emit,
   ) async {
     emit(TimeLogSelecting());
-    try {
-      final timeLogs = await _getTimeLogsByStudentUsecase(event.studentId);
-      emit(TimeLogLoadByStudentSuccess(timeLogs: timeLogs));
-    } catch (e) {
-      emit(TimeLogSelectError(message: e.toString()));
-    }
+    final result = await _getTimeLogsByStudentUsecase(event.studentId);
+    result.fold(
+      (failure) => emit(TimeLogSelectError(message: failure.message)),
+      (timeLogs) => emit(TimeLogLoadByStudentSuccess(timeLogs: timeLogs)),
+    );
   }
 
   Future<void> _onTimeLogClockInRequested(
@@ -245,14 +244,14 @@ class TimeLogBloc extends Bloc<TimeLogEvent, TimeLogState> {
     Emitter<TimeLogState> emit,
   ) async {
     emit(TimeLogClockingIn());
-    try {
-      final timeLog =
-          await _clockInUsecase(event.studentId, notes: event.notes);
-      emit(TimeLogClockInSuccess(timeLog: timeLog));
-      add(TimeLogLoadByStudentRequested(studentId: event.studentId));
-    } catch (e) {
-      emit(TimeLogClockInError(message: e.toString()));
-    }
+    final result = await _clockInUsecase(event.studentId, notes: event.notes);
+    result.fold(
+      (failure) => emit(TimeLogClockInError(message: failure.message)),
+      (timeLog) {
+        emit(TimeLogClockInSuccess(timeLog: timeLog));
+        add(TimeLogLoadByStudentRequested(studentId: event.studentId));
+      },
+    );
   }
 
   Future<void> _onTimeLogClockOutRequested(
@@ -267,7 +266,8 @@ class TimeLogBloc extends Bloc<TimeLogEvent, TimeLogState> {
     result.fold(
       (failure) => emit(TimeLogClockOutError(message: failure.message)),
       (_) async {
-        final timeLogs = await _getTimeLogsByStudentUsecase(event.studentId);
+        final timeLogsResult = await _getTimeLogsByStudentUsecase(event.studentId);
+        final timeLogs = timeLogsResult.getOrElse(() => <TimeLogEntity>[]);
         final lastTimeLog = timeLogs.isNotEmpty ? timeLogs.first : null;
         if (lastTimeLog != null) {
           emit(TimeLogClockOutSuccess(timeLog: lastTimeLog));
@@ -282,12 +282,11 @@ class TimeLogBloc extends Bloc<TimeLogEvent, TimeLogState> {
     Emitter<TimeLogState> emit,
   ) async {
     emit(TimeLogSelecting());
-    try {
-      final activeTimeLog = await _getActiveTimeLogUsecase(event.studentId);
-      emit(TimeLogGetActiveSuccess(activeTimeLog: activeTimeLog));
-    } catch (e) {
-      emit(TimeLogSelectError(message: e.toString()));
-    }
+    final result = await _getActiveTimeLogUsecase(event.studentId);
+    result.fold(
+      (failure) => emit(TimeLogSelectError(message: failure.message)),
+      (activeTimeLog) => emit(TimeLogGetActiveSuccess(activeTimeLog: activeTimeLog)),
+    );
   }
 
   Future<void> _onTimeLogGetTotalHoursRequested(
@@ -295,15 +294,14 @@ class TimeLogBloc extends Bloc<TimeLogEvent, TimeLogState> {
     Emitter<TimeLogState> emit,
   ) async {
     emit(TimeLogSelecting());
-    try {
-      final totalHours = await _getTotalHoursByStudentUsecase(
-        event.studentId,
-        event.startDate,
-        event.endDate,
-      );
-      emit(TimeLogGetTotalHoursSuccess(totalHours: totalHours));
-    } catch (e) {
-      emit(TimeLogSelectError(message: e.toString()));
-    }
+    final result = await _getTotalHoursByStudentUsecase(
+      event.studentId,
+      event.startDate,
+      event.endDate,
+    );
+    result.fold(
+      (failure) => emit(TimeLogSelectError(message: failure.message)),
+      (totalHours) => emit(TimeLogGetTotalHoursSuccess(totalHours: totalHours)),
+    );
   }
 }

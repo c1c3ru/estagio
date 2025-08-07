@@ -5,6 +5,7 @@ import '../bloc/supervisor_bloc.dart';
 import '../bloc/supervisor_event.dart';
 import '../bloc/supervisor_state.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_strings.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../domain/entities/student_entity.dart';
 
@@ -19,6 +20,33 @@ class _ContractPageState extends State<ContractPage> {
   String _search = '';
   String? _statusFilter;
   final _searchController = TextEditingController();
+  
+  // Mapeamento de status
+  final Map<String, String> _statusMap = {
+    'active': 'Ativo',
+    'pending_approval': 'Pendente de Aprovação',
+    'expired': 'Expirado',
+    'terminated': 'Encerrado',
+    'completed': 'Concluído',
+  };
+  
+  final Map<String, String> _reverseStatusMap = {
+    'Ativo': 'active',
+    'Pendente de Aprovação': 'pending_approval',
+    'Expirado': 'expired',
+    'Encerrado': 'terminated',
+    'Concluído': 'completed',
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    // Carregar dados do dashboard se não estiverem carregados
+    final bloc = BlocProvider.of<SupervisorBloc>(context, listen: false);
+    if (bloc.state is! SupervisorDashboardLoadSuccess) {
+      bloc.add(LoadSupervisorDashboardDataEvent());
+    }
+  }
 
   @override
   void dispose() {
@@ -140,7 +168,7 @@ class _ContractPageState extends State<ContractPage> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text('Estudante: $studentName'),
-                                      Text('Status: ${contract.status}'),
+                                      Text('Status: ${_statusMap[contract.status] ?? contract.status}'),
                                       Text(
                                           'Início: ${_formatDate(contract.startDate)}'),
                                       Text(
@@ -203,7 +231,7 @@ class _ContractPageState extends State<ContractPage> {
           children: [
             Text('ID: ${contract.id}'),
             Text('Estudante: $studentName'),
-            Text('Status: ${contract.status}'),
+            Text('Status: ${_statusMap[contract.status] ?? contract.status}'),
             Text('Início: ${_formatDate(contract.startDate)}'),
             Text('Fim: ${_formatDate(contract.endDate)}'),
             Text('Tipo: ${contract.contractType}'),
@@ -250,33 +278,26 @@ class _ContractPageState extends State<ContractPage> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: contractType,
+                    value: 'internship',
                     decoration: const InputDecoration(labelText: 'Tipo'),
-                    items: ['Obrigatório', 'Não obrigatório']
-                        .map((type) => DropdownMenuItem(
-                              value: type,
-                              child: Text(type),
-                            ))
-                        .toList(),
-                    onChanged: (v) => setState(() => contractType = v!),
+                    items: const [
+                      DropdownMenuItem(value: 'internship', child: Text('Estágio')),
+                      DropdownMenuItem(value: 'mandatory_internship', child: Text('Estágio Obrigatório')),
+                    ],
+                    onChanged: (v) => setState(() => contractType = v ?? 'internship'),
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: status,
+                    value: _statusMap.containsKey(status) ? _statusMap[status] : 'Ativo',
                     decoration: const InputDecoration(labelText: 'Status'),
-                    items: [
-                      'active',
-                      'pending_approval',
-                      'expired',
-                      'terminated',
-                      'completed'
-                    ]
-                        .map((status) => DropdownMenuItem(
-                              value: status,
-                              child: Text(status),
-                            ))
-                        .toList(),
-                    onChanged: (v) => setState(() => status = v!),
+                    items: const [
+                      DropdownMenuItem(value: 'Ativo', child: Text('Ativo')),
+                      DropdownMenuItem(value: 'Pendente de Aprovação', child: Text('Pendente de Aprovação')),
+                      DropdownMenuItem(value: 'Expirado', child: Text('Expirado')),
+                      DropdownMenuItem(value: 'Encerrado', child: Text('Encerrado')),
+                      DropdownMenuItem(value: 'Concluído', child: Text('Concluído')),
+                    ],
+                    onChanged: (v) => setState(() => status = _reverseStatusMap[v] ?? 'active'),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -333,7 +354,7 @@ class _ContractPageState extends State<ContractPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancelar'),
+            child: const Text(AppStrings.cancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -356,7 +377,7 @@ class _ContractPageState extends State<ContractPage> {
                 );
               }
             },
-            child: const Text('Salvar'),
+            child: const Text(AppStrings.save),
           ),
         ],
       ),
@@ -374,7 +395,7 @@ class _ContractPageState extends State<ContractPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+            child: const Text(AppStrings.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),

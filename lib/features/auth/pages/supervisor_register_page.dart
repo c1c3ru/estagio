@@ -45,13 +45,14 @@ class _SupervisorRegisterPageState extends State<SupervisorRegisterPage> {
 
   void _onRegisterPressed() {
     if (_formKey.currentState?.validate() ?? false) {
-      Modular.get<AuthBloc>().add(
+      BlocProvider.of<AuthBloc>(context).add(
         RegisterRequested(
           fullName: _nameController.text.trim(),
           email: _emailController.text.trim(),
           password: _passwordController.text,
           role: UserRole.supervisor,
           registration: _registrationController.text.trim(),
+          department: _departmentController.text.trim(),
         ),
       );
     }
@@ -99,7 +100,10 @@ class _SupervisorRegisterPageState extends State<SupervisorRegisterPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Animação de supervisor no topo
-                      const SupervisorAnimation(size: 120),
+                      const AppLottieAnimation(
+                        assetPath: LottieAssetPaths.supervisor,
+                        height: 120,
+                      ),
                       const SizedBox(height: 16),
                       const Text(
                         'Cadastrar Supervisor',

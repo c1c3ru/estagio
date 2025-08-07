@@ -363,19 +363,19 @@ class _SupervisorProfilePageState extends State<SupervisorProfilePage> {
   }
 
   Widget _buildLoadingMessage() {
-    return Card(
+    return const Card(
       elevation: 2,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         child: Row(
           children: [
-            const SizedBox(
+            SizedBox(
               width: 20,
               height: 20,
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
-            const SizedBox(width: 16),
-            const Text(
+            SizedBox(width: 16),
+            Text(
               'Carregando dados do perfil...',
               style: AppTextStyles.bodyMedium,
             ),

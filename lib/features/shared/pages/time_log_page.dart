@@ -118,7 +118,7 @@ class _TimeLogPageState extends State<TimeLogPage> {
               children: [
                 const Center(
                   child: AppLottieAnimation(
-                    assetPath: LottieAssetPaths.timeAnimation,
+                    assetPath: LottieAssetPaths.time,
                     height: 120,
                   ),
                 ),

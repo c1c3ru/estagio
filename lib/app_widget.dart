@@ -1,83 +1,68 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'core/theme/app_theme.dart';
+import 'package:flutter_modular/flutter_modular.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
 import 'features/auth/bloc/auth_bloc.dart';
 import 'features/auth/bloc/auth_event.dart';
+import 'features/shared/bloc/time_log_bloc.dart';
+import 'features/shared/bloc/contract_bloc.dart';
 
-class AppWidget extends StatelessWidget {
+class AppWidget extends StatefulWidget {
   const AppWidget({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    try {
-      return BlocProvider(
-        create: (context) {
-          final authBloc = Modular.get<AuthBloc>();
-          // Inicializar o AuthBloc
-          authBloc.add(const AuthInitializeRequested());
-          return authBloc;
-        },
-        child: MaterialApp.router(
-          title: 'Student Supervisor App',
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: ThemeMode.system,
-          routerConfig: Modular.routerConfig,
-          debugShowCheckedModeBanner: false,
-          builder: (context, child) {
-            // Garantir que sempre temos algo para renderizar
-            final widgetToShow = child ??
-                const Scaffold(
-                  backgroundColor: Colors.white,
-                  body: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: 16),
-                        Text('Carregando aplicação...'),
-                        SizedBox(height: 8),
-                        Text(
-                            'Se esta tela persistir, verifique o console para erros'),
-                      ],
-                    ),
-                  ),
-                );
+  State<AppWidget> createState() => _AppWidgetState();
+}
 
-            return widgetToShow;
-          },
+class _AppWidgetState extends State<AppWidget> {
+  late final AuthBloc _authBloc;
+  late final TimeLogBloc _timeLogBloc;
+  late final ContractBloc _contractBloc;
+  
+  @override
+  void initState() {
+    super.initState();
+    _authBloc = Modular.get<AuthBloc>();
+    _timeLogBloc = Modular.get<TimeLogBloc>();
+    _contractBloc = Modular.get<ContractBloc>();
+    
+    // Inicializar apenas uma vez
+    _authBloc.add(const AuthInitializeRequested());
+  }
+  
+  @override
+  void dispose() {
+    // Não fechar os BLoCs aqui pois eles são gerenciados pelo Modular
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>.value(value: _authBloc),
+        BlocProvider<TimeLogBloc>.value(value: _timeLogBloc),
+        BlocProvider<ContractBloc>.value(value: _contractBloc),
+      ],
+      child: MaterialApp.router(
+        title: 'Student Supervisor App',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          useMaterial3: true,
         ),
-      );
-    } catch (e, stackTrace) {
-      if (kDebugMode) {
-        print('🔴 AppWidget: Erro durante build: $e');
-        print('🔴 Stack trace: $stackTrace');
-      }
-      return MaterialApp(
-        home: Scaffold(
-          backgroundColor: Colors.white,
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error, size: 64, color: Colors.red),
-                const SizedBox(height: 16),
-                Text('Erro ao inicializar app: $e'),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    // Tentar recarregar
-                    Modular.to.navigate('/login');
-                  },
-                  child: const Text('Tentar novamente'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
+        routerConfig: Modular.routerConfig,
+        debugShowCheckedModeBanner: false,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('pt', 'BR'),
+          Locale('en', 'US'),
+        ],
+      ),
+    );
   }
 }

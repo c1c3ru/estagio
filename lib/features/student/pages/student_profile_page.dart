@@ -20,6 +20,7 @@ import '../../../../domain/entities/contract_entity.dart';
 import '../../../../domain/entities/supervisor_entity.dart';
 import '../../../../domain/usecases/contract/get_active_contract_by_student_usecase.dart';
 import '../../../../domain/usecases/supervisor/get_supervisor_by_id_usecase.dart';
+import '../../../../domain/usecases/supervisor/get_all_supervisors_usecase.dart';
 import '../../../../domain/usecases/student/create_student_usecase.dart';
 
 import '../bloc/student_bloc.dart' as student_bloc;
@@ -48,6 +49,9 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   ClassShift? _selectedClassShift;
   InternshipShift? _selectedInternshipShift;
   bool? _selectedIsMandatoryInternship;
+  SupervisorEntity? _selectedSupervisor;
+  List<SupervisorEntity> _supervisors = [];
+  bool _loadingSupervisors = false;
 
   bool _isEditMode = false;
   StudentEntity? _currentStudent;
@@ -108,6 +112,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     setState(() {
       _isEditMode = !_isEditMode;
       if (_isEditMode) {
+        _loadSupervisors();
         if (_currentStudent != null) {
           _populateFields(_currentStudent!);
         } else {
@@ -125,10 +130,33 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
             _selectedClassShift = null;
             _selectedInternshipShift = null;
             _selectedIsMandatoryInternship = false;
+            _selectedSupervisor = null;
           }
         }
       }
     });
+  }
+
+  Future<void> _loadSupervisors() async {
+    setState(() => _loadingSupervisors = true);
+    final usecase = Modular.get<GetAllSupervisorsUsecase>();
+    final result = await usecase();
+    result.fold(
+      (failure) {
+        setState(() => _supervisors = []);
+      },
+      (supervisors) {
+        setState(() => _supervisors = supervisors);
+        // Se o estudante já tem supervisor, selecionar
+        if (_currentStudent?.supervisorId != null) {
+          _selectedSupervisor = supervisors.firstWhere(
+            (s) => s.id == _currentStudent!.supervisorId,
+            orElse: () => supervisors.first,
+          );
+        }
+      },
+    );
+    setState(() => _loadingSupervisors = false);
   }
 
   void _saveChanges() {
@@ -189,31 +217,34 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
 
           // Usar o use case diretamente
           final createStudentUsecase = Modular.get<CreateStudentUsecase>();
-          createStudentUsecase(student).then((createdStudent) {
+          createStudentUsecase(student).then((result) {
             if (mounted) {
-              setState(() {
-                _currentStudent = createdStudent;
-                _isEditMode = false;
-              });
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  SnackBar(
-                    content: const Text('Perfil criado com sucesso!'),
-                    backgroundColor: AppColors.success,
-                  ),
-                );
-            }
-          }).catchError((error) {
-            if (mounted) {
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  SnackBar(
-                    content: Text('Erro ao criar perfil: $error'),
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                  ),
-                );
+              result.fold(
+                (failure) {
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(
+                      SnackBar(
+                        content: Text('Erro ao criar perfil: ${failure.message}'),
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                      ),
+                    );
+                },
+                (createdStudent) {
+                  setState(() {
+                    _currentStudent = createdStudent;
+                    _isEditMode = false;
+                  });
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(
+                      const SnackBar(
+                        content: Text('Perfil criado com sucesso!'),
+                        backgroundColor: AppColors.success,
+                      ),
+                    );
+                },
+              );
             }
           });
         }
@@ -316,36 +347,34 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
               _currentStudent == null) {
             return Center(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(24.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.error_outline,
+                    const Icon(
+                      Icons.info_outline,
                       size: 64,
-                      color: Theme.of(context).colorScheme.error,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Perfil Incompleto',
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Erro ao carregar dados',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      state.message,
-                      textAlign: TextAlign.center,
+                      'Para continuar usando o aplicativo, precisamos de algumas informações adicionais. Clique em "Completar Perfil" para adicionar seus dados.',
                       style: Theme.of(context).textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 32),
                     AppButton(
-                      text: 'Tentar Novamente',
-                      onPressed: () {
-                        if (_currentUserId != null) {
-                          _studentBloc.add(
-                              student_event.LoadStudentDashboardDataEvent(
-                                  userId: _currentUserId!));
-                        }
-                      },
+                      text: 'Completar Perfil',
+                      onPressed: _toggleEditMode,
+                      icon: Icons.edit,
                     ),
                   ],
                 ),
@@ -369,7 +398,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.info_outline,
                       size: 64,
                       color: AppColors.primary,
@@ -457,7 +486,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                             horizontal: 24, vertical: 12),
                       ),
                       onPressed: () {
-                        Modular.to.pushNamed('/supervisor/list');
+                        Modular.to.pushNamed('/supervisor/students');
                       },
                     ),
                   ),
@@ -515,57 +544,8 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
 
         const SizedBox(height: 24),
 
-        // Supervisor do contrato ativo
-        FutureBuilder<ContractEntity?>(
-          future: _getActiveContract(student.id),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: LinearProgressIndicator(),
-              );
-            }
-            final contract = snapshot.data;
-            if (contract == null || (contract.supervisorId ?? '').isEmpty) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  'Nenhum supervisor associado. A associação é feita ao criar um contrato. Caso não tenha contrato ativo, crie um novo contrato para associar um supervisor.',
-                  style: TextStyle(color: Colors.orange[800]),
-                  textAlign: TextAlign.center,
-                ),
-              );
-            }
-            return FutureBuilder<SupervisorEntity?>(
-              future: _getSupervisorById(contract.supervisorId ?? ''),
-              builder: (context, supSnapshot) {
-                if (supSnapshot.connectionState == ConnectionState.waiting) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.0),
-                    child: LinearProgressIndicator(),
-                  );
-                }
-                if (!supSnapshot.hasData || supSnapshot.data == null) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text(
-                      'Supervisor não encontrado. Verifique com o suporte.',
-                      style: TextStyle(color: Colors.red[800]),
-                      textAlign: TextAlign.center,
-                    ),
-                  );
-                }
-                final supervisor = supSnapshot.data!;
-                return _buildReadOnlyInfo(
-                  context,
-                  'Supervisor do Contrato Ativo',
-                  '${supervisor.position} - ${supervisor.department}',
-                  icon: Icons.verified_user_outlined,
-                );
-              },
-            );
-          },
-        ),
+        // Supervisor do contrato ativo (com cache para evitar loop infinito)
+        _buildSupervisorInfoWithCache(context, student.id),
 
         // Informações do contrato
         Text(
@@ -663,32 +643,36 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
         ),
         const SizedBox(height: 16),
         // Data de Nascimento
-        AppTextField(
-          controller: _birthDateController,
-          labelText: 'Data de Nascimento',
-          prefixIcon: Icons.cake_outlined,
-          readOnly: true,
-          validator: (v) => _selectedBirthDate == null
-              ? 'Campo obrigatório'
-              : Validators.dateNotFuture(_selectedBirthDate,
-                  fieldName: 'Data de Nascimento'),
-          onTap: () async {
-            final DateTime? picked = await showDatePicker(
-              context: context,
-              initialDate: _selectedBirthDate ??
-                  DateTime.now().subtract(
-                      const Duration(days: 365 * 18)), // Ex: 18 anos atrás
-              firstDate: DateTime(1950),
-              lastDate: DateTime.now(),
-              locale: const Locale('pt', 'BR'),
+        Builder(
+          builder: (BuildContext context) {
+            return AppTextField(
+              controller: _birthDateController,
+              labelText: 'Data de Nascimento',
+              prefixIcon: Icons.cake_outlined,
+              readOnly: true,
+              validator: (v) => _selectedBirthDate == null
+                  ? 'Campo obrigatório'
+                  : Validators.dateNotFuture(_selectedBirthDate,
+                      fieldName: 'Data de Nascimento'),
+              onTap: () async {
+                final DateTime? picked = await showDatePicker(
+                  context: context,
+                  initialDate: _selectedBirthDate ??
+                      DateTime.now().subtract(
+                          const Duration(days: 365 * 18)), // Ex: 18 anos atrás
+                  firstDate: DateTime(1950),
+                  lastDate: DateTime.now(),
+                  locale: const Locale('pt', 'BR'),
+                );
+                if (picked != null && picked != _selectedBirthDate) {
+                  setState(() {
+                    _selectedBirthDate = picked;
+                    _birthDateController.text =
+                        DateFormat('dd/MM/yyyy').format(picked);
+                  });
+                }
+              },
             );
-            if (picked != null && picked != _selectedBirthDate) {
-              setState(() {
-                _selectedBirthDate = picked;
-                _birthDateController.text =
-                    DateFormat('dd/MM/yyyy').format(picked);
-              });
-            }
           },
         ),
         const SizedBox(height: 16),
@@ -704,7 +688,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
           items: ClassShift.values.map((ClassShift shift) {
             return DropdownMenuItem<ClassShift>(
               value: shift,
-              child: Text(shift.name),
+              child: Text(shift.displayName),
             );
           }).toList(),
           onChanged: (ClassShift? newValue) {
@@ -730,27 +714,61 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
           activeColor: theme.colorScheme.primary,
         ),
         const SizedBox(height: 16),
-        _buildSectionTitle('Informações do Estágio'),
+        // Supervisor
+        if (_loadingSupervisors)
+          const Center(child: CircularProgressIndicator())
+        else
+          DropdownButtonFormField<SupervisorEntity>(
+            value: _selectedSupervisor,
+            decoration: InputDecoration(
+              labelText: 'Supervisor (Opcional)',
+              prefixIcon: Icon(Icons.supervisor_account,
+                  color: theme.inputDecorationTheme.prefixIconColor),
+              border: theme.inputDecorationTheme.border,
+            ),
+            items: [
+              const DropdownMenuItem<SupervisorEntity>(
+                value: null,
+                child: Text('Nenhum supervisor selecionado'),
+              ),
+              ..._supervisors.map((SupervisorEntity supervisor) {
+                return DropdownMenuItem<SupervisorEntity>(
+                  value: supervisor,
+                  child: Text(
+                    supervisor.position != null && supervisor.position!.isNotEmpty
+                        ? '${supervisor.fullName} - ${supervisor.position}'
+                        : supervisor.fullName,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                );
+              }),
+            ],
+            onChanged: (SupervisorEntity? newValue) {
+              setState(() {
+                _selectedSupervisor = newValue;
+              });
+            },
+          ),
         const SizedBox(height: 16),
         DropdownButtonFormField<InternshipShift>(
           value: _selectedInternshipShift,
-          onChanged: _isEditMode
-              ? (newValue) {
-                  setState(() {
-                    _selectedInternshipShift = newValue;
-                  });
-                }
-              : null,
-          items: InternshipShift.values
-              .map((shift) => DropdownMenuItem(
-                    value: shift,
-                    child: Text(shift.name),
-                  ))
-              .toList(),
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Turno do Estágio',
-            border: OutlineInputBorder(),
+            prefixIcon: Icon(Icons.work_outline,
+                color: theme.inputDecorationTheme.prefixIconColor),
+            border: theme.inputDecorationTheme.border,
           ),
+          items: InternshipShift.values.map((InternshipShift shift) {
+            return DropdownMenuItem<InternshipShift>(
+              value: shift,
+              child: Text(shift.displayName),
+            );
+          }).toList(),
+          onChanged: (InternshipShift? newValue) {
+            setState(() {
+              _selectedInternshipShift = newValue;
+            });
+          },
         ),
       ],
     );
@@ -792,13 +810,104 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+
+
+  // Cache para evitar rebuilds infinitos
+  ContractEntity? _cachedContract;
+  SupervisorEntity? _cachedSupervisor;
+  String? _lastStudentId;
+  bool _isLoadingContract = false;
+  bool _isLoadingSupervisor = false;
+
+  /// Versão inteligente com cache que preserva funcionalidade mas evita loop infinito
+  Widget _buildSupervisorInfoWithCache(BuildContext context, String studentId) {
+    // Se mudou o estudante, limpa o cache
+    if (_lastStudentId != studentId) {
+      _cachedContract = null;
+      _cachedSupervisor = null;
+      _lastStudentId = studentId;
+      _isLoadingContract = false;
+      _isLoadingSupervisor = false;
+    }
+
+    // Se já tem dados em cache, usa eles
+    if (_cachedContract != null && _cachedSupervisor != null) {
+      return _buildReadOnlyInfo(
+        context,
+        'Supervisor do Contrato Ativo',
+        '${_cachedSupervisor!.position} - ${_cachedSupervisor!.department}',
+        icon: Icons.verified_user_outlined,
+      );
+    }
+
+    // Se não tem contrato em cache e não está carregando, inicia carregamento
+    if (_cachedContract == null && !_isLoadingContract) {
+      _isLoadingContract = true;
+      _loadContractAndSupervisor(studentId);
+    }
+
+    // Enquanto carrega, mostra indicador
+    if (_isLoadingContract || _isLoadingSupervisor) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8.0),
+        child: LinearProgressIndicator(),
+      );
+    }
+
+    // Se não encontrou contrato
+    if (_cachedContract == null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Text(
+          'Nenhum supervisor associado. A associação é feita ao criar um contrato.',
+          style: TextStyle(color: Colors.orange[800]),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    // Se não encontrou supervisor
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Text(
+        'Supervisor não encontrado. Verifique com o suporte.',
+        style: TextStyle(color: Colors.red[800]),
+        textAlign: TextAlign.center,
+      ),
     );
+  }
+
+  /// Carrega contrato e supervisor de forma assíncrona mas controlada
+  Future<void> _loadContractAndSupervisor(String studentId) async {
+    try {
+      // Carrega contrato
+      final contract = await _getActiveContract(studentId);
+      if (mounted) {
+        setState(() {
+          _cachedContract = contract;
+          _isLoadingContract = false;
+        });
+
+        // Se tem contrato, carrega supervisor
+        if (contract != null && (contract.supervisorId ?? '').isNotEmpty) {
+          _isLoadingSupervisor = true;
+          final supervisor = await _getSupervisorById(contract.supervisorId!);
+          if (mounted) {
+            setState(() {
+              _cachedSupervisor = supervisor;
+              _isLoadingSupervisor = false;
+            });
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingContract = false;
+          _isLoadingSupervisor = false;
+        });
+      }
+    }
   }
 
   Future<ContractEntity?> _getActiveContract(String studentId) async {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:lottie/lottie.dart';
+import '../../shared/animations/lottie_animations.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../auth/bloc/auth_bloc.dart';
@@ -14,8 +14,8 @@ import '../widgets/student_list_widget.dart';
 import '../widgets/student_form_dialog.dart';
 import '../../../domain/entities/filter_students_params.dart';
 import '../../../core/enums/student_status.dart';
-import '../../../r.dart';
 import 'package:flutter/foundation.dart';
+
 
 class SupervisorHomePage extends StatefulWidget {
   const SupervisorHomePage({super.key});
@@ -97,10 +97,9 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Lottie.asset(
-                        AssetAnimations.supervisorPageAnimation,
+                      const AppLottieAnimation(
+                        assetPath: LottieAssetPaths.supervisor,
                         height: 120,
-                        repeat: true,
                       ),
                       const SizedBox(height: 16),
                       // Welcome Card
@@ -225,7 +224,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                                   const Text('Visualizar e editar estudantes'),
                               trailing: const Icon(Icons.arrow_forward_ios),
                               onTap: () {
-                                Modular.to.pushNamed('/supervisor/students');
+                                Modular.to.pushNamed('/supervisor/manage-students');
                               },
                             ),
                             const Divider(),
@@ -315,34 +314,28 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                           );
                         },
                         onDelete: (student) async {
-                          if (!mounted) return;
+                          final bloc = BlocProvider.of<SupervisorBloc>(context, listen: false);
                           final confirm = await showDialog<bool>(
                             context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Remover estudante'),
-                              content: Text(
-                                  'Tem certeza que deseja remover o estudante "${student.fullName}"? Esta ação não pode ser desfeita.'),
+                            builder: (dialogContext) => AlertDialog(
+                              title: const Text('Remover Estudante'),
+                              content: Text('Tem certeza que deseja remover o estudante "${student.fullName}"? Esta ação não pode ser desfeita.'),
                               actions: [
                                 TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(false),
+                                  onPressed: () => Navigator.of(dialogContext).pop(false),
                                   child: const Text('Cancelar'),
                                 ),
                                 TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(true),
-                                  child: const Text('Remover',
-                                      style: TextStyle(color: Colors.red)),
+                                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                                  child: const Text('Remover', style: TextStyle(color: Colors.red)),
                                 ),
                               ],
                             ),
                           );
                           if (!mounted) return;
                           if (confirm == true) {
-                            BlocProvider.of<SupervisorBloc>(context,
-                                    listen: false)
-                                .add(DeleteStudentBySupervisorEvent(
-                                    studentId: student.id));
+                            bloc.add(DeleteStudentBySupervisorEvent(
+                                studentId: student.id));
                           }
                         },
                       ),
@@ -553,30 +546,38 @@ class _StudentFilterSheetState extends State<_StudentFilterSheet> {
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
-                      readOnly: true,
-                      decoration: const InputDecoration(
-                          labelText: 'Início de (contrato)'),
-                      controller: TextEditingController(
-                          text: _startDateFrom != null
-                              ? _formatDate(_startDateFrom!)
-                              : ''),
-                      onTap: () => _pickDate(context, _startDateFrom,
-                          (d) => setState(() => _startDateFrom = d)),
+                    child: Builder(
+                      builder: (BuildContext context) {
+                        return TextFormField(
+                          readOnly: true,
+                          decoration: const InputDecoration(
+                              labelText: 'Início de (contrato)'),
+                          controller: TextEditingController(
+                              text: _startDateFrom != null
+                                  ? _formatDate(_startDateFrom!)
+                                  : ''),
+                          onTap: () => _pickDate(context, _startDateFrom,
+                              (d) => setState(() => _startDateFrom = d)),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: TextFormField(
-                      readOnly: true,
-                      decoration:
-                          const InputDecoration(labelText: 'Início até'),
-                      controller: TextEditingController(
-                          text: _startDateTo != null
-                              ? _formatDate(_startDateTo!)
-                              : ''),
-                      onTap: () => _pickDate(context, _startDateTo,
-                          (d) => setState(() => _startDateTo = d)),
+                    child: Builder(
+                      builder: (BuildContext context) {
+                        return TextFormField(
+                          readOnly: true,
+                          decoration:
+                              const InputDecoration(labelText: 'Início até'),
+                          controller: TextEditingController(
+                              text: _startDateTo != null
+                                  ? _formatDate(_startDateTo!)
+                                  : ''),
+                          onTap: () => _pickDate(context, _startDateTo,
+                              (d) => setState(() => _startDateTo = d)),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -585,30 +586,38 @@ class _StudentFilterSheetState extends State<_StudentFilterSheet> {
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
-                      readOnly: true,
-                      decoration:
-                          const InputDecoration(labelText: 'Término de'),
-                      controller: TextEditingController(
-                          text: _endDateFrom != null
-                              ? _formatDate(_endDateFrom!)
-                              : ''),
-                      onTap: () => _pickDate(context, _endDateFrom,
-                          (d) => setState(() => _endDateFrom = d)),
+                    child: Builder(
+                      builder: (BuildContext context) {
+                        return TextFormField(
+                          readOnly: true,
+                          decoration:
+                              const InputDecoration(labelText: 'Término de'),
+                          controller: TextEditingController(
+                              text: _endDateFrom != null
+                                  ? _formatDate(_endDateFrom!)
+                                  : ''),
+                          onTap: () => _pickDate(context, _endDateFrom,
+                              (d) => setState(() => _endDateFrom = d)),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: TextFormField(
-                      readOnly: true,
-                      decoration:
-                          const InputDecoration(labelText: 'Término até'),
-                      controller: TextEditingController(
-                          text: _endDateTo != null
-                              ? _formatDate(_endDateTo!)
-                              : ''),
-                      onTap: () => _pickDate(context, _endDateTo,
-                          (d) => setState(() => _endDateTo = d)),
+                    child: Builder(
+                      builder: (BuildContext context) {
+                        return TextFormField(
+                          readOnly: true,
+                          decoration:
+                              const InputDecoration(labelText: 'Término até'),
+                          controller: TextEditingController(
+                              text: _endDateTo != null
+                                  ? _formatDate(_endDateTo!)
+                                  : ''),
+                          onTap: () => _pickDate(context, _endDateTo,
+                              (d) => setState(() => _endDateTo = d)),
+                        );
+                      },
                     ),
                   ),
                 ],

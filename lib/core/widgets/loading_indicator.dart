@@ -1,5 +1,6 @@
 // lib/core/widgets/loading_indicator.dart
 import 'package:flutter/material.dart';
+import '../../features/shared/animations/loading_animation.dart';
 
 class LoadingIndicator extends StatelessWidget {
   final double size;
@@ -16,15 +17,9 @@ class LoadingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: SizedBox(
-        width: size,
-        height: size,
-        child: CircularProgressIndicator(
-          strokeWidth: strokeWidth,
-          valueColor: AlwaysStoppedAnimation<Color>(
-            color ?? Theme.of(context).colorScheme.primary,
-          ),
-        ),
+      child: SimpleLoadingAnimation(
+        size: size,
+        color: color ?? Theme.of(context).colorScheme.primary,
       ),
     );
   }
@@ -56,7 +51,7 @@ class LoadingOverlay extends StatelessWidget {
           Positioned.fill(
             child: Container(
               color: (color ?? Colors.black).withOpacity(opacity),
-              child: progressIndicator ?? const LoadingIndicator(),
+              child: progressIndicator ?? const SimpleLoadingAnimation(),
             ),
           ),
       ],

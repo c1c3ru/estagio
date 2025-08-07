@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../domain/entities/student_entity.dart';
 import 'package:gestao_de_estagio/core/widgets/empty_data_widget.dart';
 import '../bloc/supervisor_bloc.dart';
 import '../bloc/supervisor_event.dart';
@@ -31,13 +33,20 @@ class _SupervisorStudentListPageState extends State<SupervisorStudentListPage> {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
       ),
-      body: BlocBuilder<SupervisorBloc, SupervisorState>(
-        builder: (context, state) {
-          if (state is SupervisorLoading) {
+      body: BlocSelector<SupervisorBloc, SupervisorState, List<StudentEntity>>(
+        selector: (state) {
+          if (state is SupervisorDashboardLoadSuccess) {
+            return state.students;
+          }
+          return [];
+        },
+        builder: (context, students) {
+          // Get the full state for error handling
+          final fullState = BlocProvider.of<SupervisorBloc>(context).state;
+          if (fullState is SupervisorLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (state is SupervisorDashboardLoadSuccess) {
-            final students = state.students;
+          if (students.isNotEmpty) {
             if (students.isEmpty) {
               return const EmptyDataWidget(
                 message: 'Nenhum estudante está atualmente sob sua supervisão.',
@@ -113,8 +122,8 @@ class _SupervisorStudentListPageState extends State<SupervisorStudentListPage> {
               },
             );
           }
-          if (state is SupervisorOperationFailure) {
-            return Center(child: Text('Erro: ${state.message}'));
+          if (fullState is SupervisorOperationFailure) {
+            return Center(child: Text('Erro: ${fullState.message}'));
           }
           return const Center(child: CircularProgressIndicator());
         },

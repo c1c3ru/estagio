@@ -6,6 +6,7 @@ import 'package:intl/intl.dart'; // Para formatação de datas
 import '../../../../core/constants/app_colors.dart'; // Para cores de status
 import '../../../../domain/entities/student_entity.dart';
 import 'package:gestao_de_estagio/core/enums/student_status.dart';
+import '../../shared/animations/lottie_animations.dart';
 
 class StudentListWidget extends StatelessWidget {
   final List<StudentEntity> students;
@@ -61,26 +62,12 @@ class StudentListWidget extends StatelessWidget {
     if (students.isEmpty) {
       // Embora a SupervisorDashboardPage já trate a lista vazia,
       // este widget pode ser reutilizado, então é bom ter um fallback.
-      return Center(
+      return const Center(
         child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.info_outline,
-                  size: 48, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(height: 16),
-              Text(
-                'Nenhum estudante para exibir.',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.white
-                          : AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+          padding: EdgeInsets.all(32.0),
+          child: LottieEmptyStateWidget(
+            message: 'Nenhum estudante para exibir.',
+            size: 120,
           ),
         ),
       );

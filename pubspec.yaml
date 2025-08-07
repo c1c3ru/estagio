@@ -1,5 +1,5 @@
 name: gestao_de_estagio
-description: "Aplicativo Flutter para gestão de estudantes e supervisores com Clean Architecture e BLoC"
+description: "Sistema de Gestão de Estágio"
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -10,72 +10,95 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # State Management
-  flutter_bloc: ^9.1.1
-  bloc: ^9.0.0
+  flutter_bloc: ^8.1.3
+  bloc: ^8.1.1
   equatable: ^2.0.5
   
   # Dependency Injection
-  flutter_modular: ^6.4.1
+  flutter_modular: ^6.3.4
   
   # Supabase
   supabase_flutter: ^2.9.1
+  firebase_core: ^4.0.0
   
-  # UI Components
-  cupertino_icons: ^1.0.8
+  # HTTP & API
+  http: ^1.1.0
+  dio: ^5.3.2
+  
+  # Functional Programming
+  dartz: ^0.10.1
+  
+  # Forms & Validation
+  formz: ^0.6.1
+  
+  # UI & Theming
+  cupertino_icons: ^1.0.6
+  shared_preferences: ^2.2.2
   lottie: ^3.1.2
   
-  # Utils
-  dartz: ^0.10.1
-  shared_preferences: ^2.5.3
-  intl: ^0.20.2
-  provider: ^6.0.5
-  url_launcher: ^6.2.5
+  # Charts & Visualization
+  fl_chart: ^0.66.2
   
-  # Validation
-  formz: ^0.7.0
+  # File & Storage
+  path_provider: ^2.1.2
+  share_plus: ^7.2.2
+  path: ^1.8.3
   
-  # Network
-  dio: ^5.4.3+1
+  # Notifications
+  firebase_messaging: ^16.0.0
+  flutter_local_notifications: ^19.4.0
+  permission_handler: ^11.2.0
+  timezone: ^0.10.1
   
-  # Local Storage - Removido temporariamente para resolver conflitos
-  # hive: ^2.2.3
-  # hive_flutter: ^1.1.0
+  # Environment & Config
+  flutter_dotenv: ^5.1.0
+  
+  # Production Monitoring & Analytics
+  firebase_performance: ^0.11.0
+  #sentry_flutter: ^7.17.0
+  device_info_plus: ^9.1.1
+  package_info_plus: ^4.2.0
+  firebase_crashlytics: ^5.0.0
+  firebase_analytics: ^12.0.0
   
   # Logging
   logger: ^2.6.0
   postgrest: ^2.4.2
-  flutter_dotenv: ^5.1.0
-  # shared_preferences_linux: ^2.4.1  # Temporariamente removido para resolver conflitos
+  
+  # Utils
+  intl: ^0.20.2
+  provider: ^6.0.5
+  url_launcher: ^6.2.5
+  
+  # Offline Support
+  sqflite: ^2.3.0
+  connectivity_plus: ^5.0.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  
-  flutter_lints: ^6.0.0
-  
-  # Testing
-  bloc_test: ^10.0.0
-  mocktail: ^1.0.3
-  
-  # Code Generation
-  build_runner: ^2.5.4
-  # hive_generator: ^2.0.1  # Temporariamente removido para resolver conflitos
+  flutter_lints: ^3.0.0
   mockito: ^5.4.4
-  flutter_launcher_icons: "^0.14.4"
+  build_runner: ^2.4.7
+  integration_test:
+    sdk: flutter
+  bloc_test: ^9.1.0
+  mocktail: ^1.0.3
+  flutter_launcher_icons: ^0.14.4
 
 flutter_launcher_icons:
-  android: true
+  android: "launcher_icon"
   ios: true
-  image_path: "assets/images/estagio.png"
-  min_sdk_android: 21 # optional
+  image_path: "assets/icon/icon.png"
 
 flutter:
   uses-material-design: true
-  
+
   assets:
-    - assets/animations/
     - assets/images/
+    - assets/animations/
     - .env
-    

@@ -34,4 +34,4 @@ jobs:
           FASTLANE_SESSION: ${{ secrets.FASTLANE_SESSION }}
         run: |
           cd ios
-          fastlane beta 
+          fastlane beta

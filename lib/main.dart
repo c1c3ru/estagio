@@ -1,96 +1,98 @@
-import 'dart:io';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:intl/date_symbol_data_local.dart';
+
 import 'app_module.dart';
 import 'app_widget.dart';
-import 'core/constants/app_constants.dart';
+import 'core/theme/theme_service.dart';
+import 'core/utils/module_guard.dart';
+import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Set preferred orientations
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
-  if (kDebugMode) {
-    print('🟡 main: Iniciando aplicação...');
-    if (!kIsWeb) {
-      print('🟡 main: Platform: ${Platform.operatingSystem}');
-    } else {
-      print('🟡 main: Platform: Web');
-    }
-    print('🟡 main: Web: $kIsWeb');
-  }
-
-  try {
-    // Carregar variáveis de ambiente
-    await dotenv.load(fileName: ".env");
-    if (kDebugMode) {
-      print('✅ Variáveis de ambiente carregadas');
-    }
-  } catch (e) {
-    if (kDebugMode) {
-      print('⚠️ Erro ao carregar .env: $e');
-      print('⚠️ Tentando continuar sem arquivo .env...');
-    }
-  }
-
-  try {
-    // Configuração específica para web
-    if (kIsWeb) {
-      if (kDebugMode) {
-        print('🌐 Configurando para web...');
-      }
-    }
-
-    // Inicializar Supabase com as constantes
-    await Supabase.initialize(
-      url: AppConstants.supabaseUrl,
-      anonKey: AppConstants.supabaseAnonKey,
-    );
-    if (kDebugMode) {
-      print('✅ Supabase inicializado com sucesso');
-    }
-  } catch (e) {
-    if (kDebugMode) {
-      print('⚠️ Erro ao inicializar Supabase: $e');
-    }
-    if (kDebugMode) {
-      print(
-          '⚠️ Verifique se as credenciais do Supabase estão configuradas corretamente');
-    }
-    // Não vamos parar a execução do app por causa do erro do Supabase
-    // O app deve funcionar mesmo sem Supabase configurado
-  }
-
-  try {
-    // Initialize SharedPreferences
-    await SharedPreferences.getInstance();
-    if (kDebugMode) {
-      print('✅ SharedPreferences inicializado com sucesso');
-    }
-  } catch (e) {
-    if (kDebugMode) {
-      print('⚠️ Erro ao inicializar SharedPreferences: $e');
-    }
-  }
-
-  try {
-    // Initialize date formatting
-    await initializeDateFormatting('pt_BR', null);
-    if (kDebugMode) {
-      print('✅ Formatação de data inicializada com sucesso');
-    }
-  } catch (e) {
-    if (kDebugMode) {
-      print('⚠️ Erro ao inicializar formatação de data: $e');
-    }
-  }
-
-  if (kDebugMode) {
-    print('🟡 main: Executando app...');
-  }
-
+  await _initializeServices();
+  
   runApp(ModularApp(module: AppModule(), child: const AppWidget()));
 }
+
+Future<void> _initializeServices() async {
+  final moduleGuard = ModuleGuard();
+  
+  // Load environment variables
+  await _loadEnvironmentVariables();
+  
+  // Initialize external services with protection
+  await Future.wait([
+    moduleGuard.executeServiceOnce('supabase', _initializeSupabase),
+    moduleGuard.executeServiceOnce('firebase', _initializeFirebase),
+    moduleGuard.executeServiceOnce('theme_service', _initializeTheme),
+  ]);
+}
+
+Future<void> _loadEnvironmentVariables() async {
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (e) {
+    if (kDebugMode) {
+      debugPrint('⚠️ .env file not found, using default values');
+    }
+  }
+}
+
+Future<void> _initializeSupabase() async {
+  final url = dotenv.env['SUPABASE_URL'];
+  final anonKey = dotenv.env['SUPABASE_ANON_KEY'];
+  
+  if (url == null || anonKey == null) {
+    if (kDebugMode) {
+      debugPrint('⚠️ Supabase credentials not found in .env');
+    }
+    return;
+  }
+  
+  await Supabase.initialize(url: url, anonKey: anonKey);
+  if (kDebugMode) {
+    debugPrint('✅ Supabase initialized successfully');
+  }
+}
+
+Future<void> _initializeFirebase() async {
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    if (kDebugMode) {
+      debugPrint('✅ Firebase initialized successfully');
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      debugPrint('⚠️ Firebase initialization failed: $e');
+    }
+  }
+}
+
+Future<void> _initializeTheme() async {
+  try {
+    await ThemeService().initialize();
+    if (kDebugMode) {
+      debugPrint('✅ Theme service initialized successfully');
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      debugPrint('⚠️ Theme service initialization failed: $e');
+    }
+  }
+}
+
+

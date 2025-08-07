@@ -50,20 +50,23 @@ class ContractModel {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
+    final json = <String, dynamic>{
       'student_id': studentId,
       'supervisor_id': supervisorId,
       'contract_type': contractType,
       'status': status,
-      'start_date': startDate.toIso8601String(),
-      'end_date': endDate.toIso8601String(),
-      'description': description,
-      'document_url': documentUrl,
-      'created_by': createdBy,
+      'start_date': startDate.toIso8601String().split('T')[0],
+      'end_date': endDate.toIso8601String().split('T')[0],
       'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt?.toIso8601String(),
     };
+    
+    if (id.isNotEmpty) json['id'] = id;
+    if (description != null) json['description'] = description;
+    if (documentUrl != null) json['document_url'] = documentUrl;
+    if (createdBy != null) json['created_by'] = createdBy;
+    if (updatedAt != null) json['updated_at'] = updatedAt!.toIso8601String();
+    
+    return json;
   }
 
   ContractEntity toEntity() {

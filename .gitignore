@@ -45,7 +45,7 @@ app.*.map.json
 /android/app/release
 
 # Env files
-.env*
+#.env*
 **/*.env*
 !.env.example
 
@@ -79,8 +79,9 @@ yarn-error.log*
 credentials.json
 service-account.json
 *secret*
-*password*
+#*password*
 *api_key*
+estagio-*.json
 
 # Arquivos de configuração local
 local.properties
@@ -88,3 +89,6 @@ local.properties
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Local Netlify folder
+.netlify
