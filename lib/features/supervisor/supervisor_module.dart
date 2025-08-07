@@ -13,6 +13,7 @@ import 'pages/supervisor_list_page.dart';
 import 'pages/contract_page.dart';
 import 'pages/supervisor_student_list_page.dart';
 import 'pages/supervisor_reports_page.dart';
+import 'pages/manage_students_page.dart';
 
 // BLoCs
 import 'bloc/supervisor_bloc.dart';
@@ -114,6 +115,19 @@ class SupervisorModule extends Module {
     r.child(
       '/reports',
       child: (_) => const SupervisorReportsPage(),
+      transition: TransitionType.fadeIn,
+    );
+    
+    // Rota para gerenciar estudantes
+    r.child(
+      '/manage-students',
+      child: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: Modular.get<AuthBloc>()),
+          BlocProvider.value(value: Modular.get<SupervisorBloc>()),
+        ],
+        child: const ManageStudentsPage(),
+      ),
       transition: TransitionType.fadeIn,
     );
   }

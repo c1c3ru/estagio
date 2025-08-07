@@ -97,7 +97,7 @@ class SupervisorDatasource {
     try {
       var query = _supabaseClient
           .from('students')
-          .select('id,full_name,email,registration_number,course,advisor_name,phone_number,birth_date,class_shift,internship_shift1,internship_shift2,is_mandatory_internship,contract_start_date,contract_end_date,total_hours_required,total_hours_completed,weekly_hours_target,profile_picture_url,status,supervisor_id,created_at,updated_at')
+          .select('*,users(email)')
           .eq('status', 'active');
 
       if (supervisorId != null && supervisorId.isNotEmpty) {

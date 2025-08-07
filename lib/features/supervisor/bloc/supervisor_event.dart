@@ -175,3 +175,6 @@ class DeleteSupervisorEvent extends SupervisorEvent {
   @override
   List<Object?> get props => [supervisorId];
 }
+
+/// Evento para carregar todos os estudantes.
+class LoadAllStudentsEvent extends SupervisorEvent {}

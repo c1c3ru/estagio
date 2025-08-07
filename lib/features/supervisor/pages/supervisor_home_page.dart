@@ -224,7 +224,7 @@ class _SupervisorHomePageState extends State<SupervisorHomePage> {
                                   const Text('Visualizar e editar estudantes'),
                               trailing: const Icon(Icons.arrow_forward_ios),
                               onTap: () {
-                                Modular.to.pushNamed('/supervisor/students');
+                                Modular.to.pushNamed('/supervisor/manage-students');
                               },
                             ),
                             const Divider(),
