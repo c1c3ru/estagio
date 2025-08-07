@@ -8,6 +8,7 @@ import '../bloc/supervisor_event.dart';
 import '../bloc/supervisor_state.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 
 class SupervisorStudentListPage extends StatefulWidget {
   const SupervisorStudentListPage({super.key});
@@ -72,7 +73,7 @@ class _SupervisorStudentListPageState extends State<SupervisorStudentListPage> {
                           tooltip: 'Editar',
                           onPressed: () async {
                             // Pode abrir um dialog ou navegar para edição
-                            Navigator.of(context).pushNamed(
+                            Modular.to.pushNamed(
                                 '/supervisor/student-edit/${student.id}');
                           },
                         ),
@@ -114,7 +115,7 @@ class _SupervisorStudentListPageState extends State<SupervisorStudentListPage> {
                       ],
                     ),
                     onTap: () {
-                      Navigator.of(context).pushNamed(
+                      Modular.to.pushNamed(
                           '/supervisor/student-details/${student.id}');
                     },
                   ),
@@ -130,7 +131,7 @@ class _SupervisorStudentListPageState extends State<SupervisorStudentListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          Navigator.of(context).pushNamed('/supervisor/student-create');
+          Modular.to.pushNamed('/supervisor/student-create');
         },
         backgroundColor: AppColors.primary,
         tooltip: 'Adicionar Estudante',
