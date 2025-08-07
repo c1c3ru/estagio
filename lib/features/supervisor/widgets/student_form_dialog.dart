@@ -100,6 +100,7 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
       initialDate: initialDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
+      locale: const Locale('pt', 'BR'),
     );
     if (picked != null) {
       controller.text = DateFormat('dd/MM/yyyy').format(picked);

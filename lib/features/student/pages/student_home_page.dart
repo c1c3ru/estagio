@@ -665,6 +665,7 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
                               initialDate: DateTime.now(),
                               firstDate: DateTime(2000),
                               lastDate: DateTime(2100),
+                              locale: const Locale('pt', 'BR'),
                             );
                             if (picked != null) {
                               setState(() => _startDate = picked);
@@ -687,6 +688,7 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
                               initialDate: DateTime.now(),
                               firstDate: DateTime(2000),
                               lastDate: DateTime(2100),
+                              locale: const Locale('pt', 'BR'),
                             );
                             if (picked != null) {
                               setState(() => _endDate = picked);

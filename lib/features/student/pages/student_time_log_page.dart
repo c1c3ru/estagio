@@ -137,6 +137,7 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
                         lastDate: DateTime.now().add(const Duration(
                             days:
                                 1)), // Permite até amanhã para evitar problemas de fuso
+                        locale: const Locale('pt', 'BR'),
                       );
                       if (picked != null && picked != selectedDate) {
                         setState(() {
