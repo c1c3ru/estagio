@@ -116,8 +116,8 @@ class _SupervisorTimeApprovalPageState
       }
     }
 
-    // Fallback: retorna ID truncado para evitar operações assíncronas
-    return 'ID: ${studentId.substring(0, 6)}...';
+    // Fallback: retorna "Estudante" para evitar exibir IDs
+    return 'Estudante';
   }
 
   void _showApprovalConfirmation(
