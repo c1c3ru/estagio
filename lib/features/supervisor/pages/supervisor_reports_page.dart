@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import '../../../domain/repositories/i_student_repository.dart';
 import '../../../core/widgets/loading_indicator.dart';
 import '../../../core/widgets/empty_data_widget.dart';
 import '../../../core/constants/app_colors.dart';
@@ -171,9 +172,19 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                   ),
                   title: Text(student.fullName),
                   subtitle: Text('${student.course} - ${student.registrationNumber}'),
-                  trailing: Text(
-                    '${student.totalHoursCompleted.toInt()}/${student.totalHoursRequired.toInt()}h',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  trailing: FutureBuilder<Map<String, dynamic>>(
+                    future: Modular.get<IStudentRepository>()
+                        .getStudentDashboard(student.id)
+                        .then((either) => either.getOrElse(() => {})),
+                    builder: (context, snapshot) {
+                      final approved = (snapshot.data?['timeStats']?['approvedHoursTotal'] as num?)
+                              ?.toInt() ??
+                          student.totalHoursCompleted.toInt();
+                      return Text(
+                        '$approved/${student.totalHoursRequired.toInt()}h',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      );
+                    },
                   ),
                 )),
               ],

@@ -20,6 +20,8 @@ import '../bloc/supervisor_event.dart' as event;
 import '../bloc/supervisor_state.dart' as supervisor_state;
 import '../widgets/supervisor_app_drawer.dart';
 import '../../../core/utils/feedback_service.dart';
+import '../../student/bloc/student_bloc.dart' as student_bloc;
+import '../../student/bloc/student_event.dart' as student_event;
 
 class SupervisorTimeApprovalPage extends StatefulWidget {
   const SupervisorTimeApprovalPage({super.key});
@@ -152,6 +154,14 @@ class _SupervisorTimeApprovalPageState
                     approved: true,
                     supervisorId: _supervisorId!,
                   ));
+                  // Refresh imediato na UI do estudante
+                  try {
+                    final studentBloc = Modular.get<student_bloc.StudentBloc>();
+                    studentBloc.add(
+                        student_event.LoadStudentTimeLogsEvent(userId: log.studentId));
+                    studentBloc.add(student_event.LoadStudentDashboardDataEvent(
+                        userId: log.studentId));
+                  } catch (_) {}
                 }
                 Navigator.of(dialogContext).pop();
               },
@@ -201,6 +211,9 @@ class _SupervisorTimeApprovalPageState
                     supervisorId: _supervisorId!,
                     rejectionReason: reasonController.text.trim(),
                   ));
+                  // Refresh imediato na UI do estudante não é essencial em rejeição,
+                  // mas atualizamos a tabela caso a rejeição remova dos pendentes
+                  // Sem studentId disponível aqui para disparar refresh direcionado
                 }
                 Navigator.of(dialogContext).pop();
               },
