@@ -23,9 +23,11 @@ class NotificationHelper {
   }) async {
     try {
       const title = 'Horas Aprovadas! ✅';
+      final hoursLogged = timeLog.hoursLogged?.toStringAsFixed(1) ?? '0.0';
       final body =
           'Suas horas do dia ${AppDateUtils.formatDate(timeLog.logDate)} '
-          'foram aprovadas por ${supervisor.fullName}.';
+          'foram aprovadas por ${supervisor.fullName}. '
+          'Horas registradas: ${hoursLogged}h.';
 
       await _notificationService.scheduleLocalNotification(
         id: 'timelog_approval_${timeLog.id}',
@@ -56,11 +58,12 @@ class NotificationHelper {
     String? rejectionReason,
   }) async {
     try {
-      const title = 'Horas Rejeitadas ❌';
+      const title = 'Horas Rejeitadas! ❌';
+      final hoursLogged = timeLog.hoursLogged?.toStringAsFixed(1) ?? '0.0';
       final body =
           'Suas horas do dia ${AppDateUtils.formatDate(timeLog.logDate)} '
-          'foram rejeitadas por ${supervisor.fullName}.'
-          '${rejectionReason != null ? ' Motivo: $rejectionReason' : ''}';
+          'foram rejeitadas por ${supervisor.fullName}. '
+          'Horas registradas: ${hoursLogged}h.${rejectionReason != null ? ' Motivo: $rejectionReason' : ''}';
 
       await _notificationService.scheduleLocalNotification(
         id: 'timelog_rejection_${timeLog.id}',
@@ -72,7 +75,6 @@ class NotificationHelper {
           'timeLogId': timeLog.id,
           'studentId': student.id,
           'supervisorId': supervisor.id,
-          'rejectionReason': rejectionReason,
           'action': 'view_timelog',
         },
       );

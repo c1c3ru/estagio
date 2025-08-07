@@ -25,6 +25,7 @@ class StudentEntity extends Equatable {
   final DateTime? updatedAt;
   final String? status;
   final String? supervisorId;
+  final String? userEmail; // Email do usuário associado ao estudante
 
   const StudentEntity({
     required this.id,
@@ -48,6 +49,7 @@ class StudentEntity extends Equatable {
     this.updatedAt,
     this.status,
     this.supervisorId,
+    this.userEmail,
   });
 
   @override
@@ -73,6 +75,7 @@ class StudentEntity extends Equatable {
         updatedAt,
         status,
         supervisorId,
+        userEmail,
       ];
 
   StudentEntity copyWith({
@@ -97,6 +100,7 @@ class StudentEntity extends Equatable {
     DateTime? updatedAt,
     String? status,
     String? supervisorId,
+    String? userEmail,
   }) {
     return StudentEntity(
       id: id ?? this.id,
@@ -121,11 +125,12 @@ class StudentEntity extends Equatable {
       updatedAt: updatedAt ?? this.updatedAt,
       status: status ?? this.status,
       supervisorId: supervisorId ?? this.supervisorId,
+      userEmail: userEmail ?? this.userEmail,
     );
   }
 
   @override
   String toString() {
-    return 'StudentEntity(id: $id, fullName: $fullName, registrationNumber: $registrationNumber, course: $course, advisorName: $advisorName, isMandatoryInternship: $isMandatoryInternship, classShift: $classShift, internshipShift1: $internshipShift1, internshipShift2: $internshipShift2, birthDate: $birthDate, contractStartDate: $contractStartDate, contractEndDate: $contractEndDate, totalHoursRequired: $totalHoursRequired, totalHoursCompleted: $totalHoursCompleted, weeklyHoursTarget: $weeklyHoursTarget, profilePictureUrl: $profilePictureUrl, phoneNumber: $phoneNumber, createdAt: $createdAt, updatedAt: $updatedAt, status: $status, supervisorId: $supervisorId)';
+    return 'StudentEntity(id: $id, fullName: $fullName, registrationNumber: $registrationNumber, course: $course, advisorName: $advisorName, isMandatoryInternship: $isMandatoryInternship, classShift: $classShift, internshipShift1: $internshipShift1, internshipShift2: $internshipShift2, birthDate: $birthDate, contractStartDate: $contractStartDate, contractEndDate: $contractEndDate, totalHoursRequired: $totalHoursRequired, totalHoursCompleted: $totalHoursCompleted, weeklyHoursTarget: $weeklyHoursTarget, profilePictureUrl: $profilePictureUrl, phoneNumber: $phoneNumber, createdAt: $createdAt, updatedAt: $updatedAt, status: $status, supervisorId: $supervisorId, userEmail: $userEmail)';
   }
 }

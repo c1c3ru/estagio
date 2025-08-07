@@ -129,7 +129,7 @@ class SupervisorDatasource {
       
       final response = await _supabaseClient
           .from('students')
-          .select('*')
+          .select('*, users(email)')
           .eq('id', studentId)
           .maybeSingle();
 
