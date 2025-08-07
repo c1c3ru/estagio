@@ -305,7 +305,8 @@ class _SupervisorTimeApprovalPageState
                   // CORREÇÃO: Usar cache síncrono em vez de FutureBuilder para evitar loop infinito
                   final studentName =
                       _getStudentNameSync(log.studentId, currentState);
-                  return _buildTimeLogApprovalCard(context, log, studentName, index + 1);
+                  return _buildTimeLogApprovalCard(
+                      context, log, studentName, index + 1);
                 },
               ),
             );
@@ -357,8 +358,8 @@ class _SupervisorTimeApprovalPageState
     );
   }
 
-  Widget _buildTimeLogApprovalCard(
-      BuildContext context, TimeLogEntity log, String studentName, int sequentialNumber) {
+  Widget _buildTimeLogApprovalCard(BuildContext context, TimeLogEntity log,
+      String studentName, int sequentialNumber) {
     final theme = Theme.of(context);
     final String checkInStr = _formatTimeOfDay(_parseTime(log.checkInTime));
     final String checkOutStr = _formatTimeOfDay(_parseTime(log.checkOutTime));
@@ -488,7 +489,8 @@ class _SupervisorTimeApprovalPageState
                             children: [
                               Row(
                                 children: [
-                                  Icon(Icons.notes_outlined, size: 16, color: Colors.blue.shade700),
+                                  Icon(Icons.notes_outlined,
+                                      size: 16, color: Colors.blue.shade700),
                                   const SizedBox(width: 6),
                                   Text(
                                     'Descrição:',
