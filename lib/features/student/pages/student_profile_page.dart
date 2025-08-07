@@ -316,7 +316,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      'Perfil Incompleto',
+                      AppStrings.incompleteProfile,
                       style:
                           Theme.of(context).textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
@@ -324,13 +324,13 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Para continuar usando o aplicativo, precisamos de algumas informações adicionais. Clique em "Completar Perfil" para adicionar seus dados.',
+                      'Para continuar usando o aplicativo, precisamos de algumas informações adicionais. Clique em "${AppStrings.completeProfile}" para adicionar seus dados.',
                       style: Theme.of(context).textTheme.bodyMedium,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 32),
                     AppButton(
-                      text: 'Completar Perfil',
+                      text: AppStrings.completeProfile,
                       onPressed: _toggleEditMode,
                       icon: Icons.edit,
                     ),
@@ -363,7 +363,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      'Perfil Incompleto',
+                      AppStrings.incompleteProfile,
                       style:
                           Theme.of(context).textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
@@ -371,13 +371,13 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Para continuar usando o aplicativo, precisamos de algumas informações adicionais. Clique em "Completar Perfil" para adicionar seus dados.',
+                      'Para continuar usando o aplicativo, precisamos de algumas informações adicionais. Clique em "${AppStrings.completeProfile}" para adicionar seus dados.',
                       style: Theme.of(context).textTheme.bodyMedium,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 32),
                     AppButton(
-                      text: 'Completar Perfil',
+                      text: AppStrings.completeProfile,
                       onPressed: _toggleEditMode,
                       icon: Icons.edit,
                     ),
@@ -427,7 +427,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                     _buildReadOnlyProfile(context, student),
                     const SizedBox(height: 24),
                     AppButton(
-                      text: 'Editar Perfil',
+                      text: AppStrings.editProfile,
                       onPressed: _toggleEditMode,
                       icon: Icons.edit,
                     ),

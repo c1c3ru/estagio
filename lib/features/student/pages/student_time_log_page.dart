@@ -345,11 +345,11 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
                           Icon(Icons.history_toggle_off_outlined,
                               size: 60, color: theme.hintColor),
                           const SizedBox(height: 16),
-                          const Text('Nenhum registo de tempo encontrado.',
+                          const Text(AppStrings.noTimeLogsFound,
                               style: TextStyle(fontSize: 16)),
                           const SizedBox(height: 16),
                           AppButton(
-                            text: 'Adicionar Primeiro Registo',
+                            text: AppStrings.addFirstTimeLog,
                             onPressed: () => _showAddEditTimeLogDialog(),
                             icon: Icons.add_circle_outline,
                           )
