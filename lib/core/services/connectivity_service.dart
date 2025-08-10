@@ -1,221 +1,257 @@
 // lib/core/services/connectivity_service.dart
 import 'dart:async';
-
-import 'package:flutter/foundation.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
+import '../utils/app_logger.dart';
+// import '../constants/app_strings.dart';
 
-/// Serviço responsável por monitorar a conectividade de rede
-/// e gerenciar o status online/offline da aplicação
 class ConnectivityService {
   static final ConnectivityService _instance = ConnectivityService._internal();
   factory ConnectivityService() => _instance;
   ConnectivityService._internal();
 
   final Connectivity _connectivity = Connectivity();
-  
-  StreamSubscription<ConnectivityResult>? _connectivitySubscription;
-  final StreamController<bool> _connectionStatusController = StreamController<bool>.broadcast();
-  
-  bool _isOnline = true;
-  bool _hasBeenInitialized = false;
+  final StreamController<bool> _connectivityController =
+      StreamController<bool>.broadcast();
 
-  /// Stream que emite true quando online, false quando offline
-  Stream<bool> get connectionStatus => _connectionStatusController.stream;
+  bool _isOnline = true;
+  Timer? _retryTimer;
+  int _retryCount = 0;
+  static const int _maxRetries = 3;
+  static const Duration _retryDelay = Duration(seconds: 5);
+
+  /// Stream para monitorar mudanças de conectividade
+  Stream<bool> get connectivityStream => _connectivityController.stream;
 
   /// Status atual da conectividade
   bool get isOnline => _isOnline;
 
-  /// Verifica se o serviço foi inicializado
-  bool get isInitialized => _hasBeenInitialized;
+  // ---- Compat: alias legado ----
+  Stream<bool> get connectionStatus => connectivityStream;
 
   /// Inicializa o serviço de conectividade
-  Future<bool> initialize() async {
+  Future<void> initialize() async {
     try {
-      if (kDebugMode) {
-        print('🌐 ConnectivityService: Inicializando monitoramento de conectividade...');
-      }
+      // Verifica conectividade inicial
+      await _checkConnectivity();
 
-      // Verificar status inicial
-      final initialResult = await _connectivity.checkConnectivity();
-      _updateConnectionStatus(initialResult);
+      // Escuta mudanças de conectividade
+      _connectivity.onConnectivityChanged.listen(_onConnectivityChanged);
 
-      // Escutar mudanças de conectividade
-      _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
-        _updateConnectionStatus,
-        onError: (error) {
-          if (kDebugMode) {
-            print('❌ ConnectivityService: Erro ao monitorar conectividade: $error');
-          }
-        },
-      );
-
-      _hasBeenInitialized = true;
-
-      if (kDebugMode) {
-        print('✅ ConnectivityService: Serviço inicializado. Status inicial: ${_isOnline ? 'Online' : 'Offline'}');
-      }
-
-      return true;
+      AppLogger.info('ConnectivityService inicializado');
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ ConnectivityService: Erro ao inicializar: $e');
-      }
-      return false;
+      AppLogger.error('Erro ao inicializar ConnectivityService', error: e);
     }
   }
 
-  /// Atualiza o status de conectividade baseado no resultado
-  void _updateConnectionStatus(ConnectivityResult result) {
-    final wasOnline = _isOnline;
-    
-    switch (result) {
-      case ConnectivityResult.wifi:
-      case ConnectivityResult.mobile:
-      case ConnectivityResult.ethernet:
-        _isOnline = true;
-        break;
-      case ConnectivityResult.none:
-        _isOnline = false;
-        break;
-      default:
-        _isOnline = false;
-        break;
-    }
-
-    // Emitir evento apenas se o status mudou
-    if (wasOnline != _isOnline) {
-      _connectionStatusController.add(_isOnline);
-      
-      if (kDebugMode) {
-        print('🌐 ConnectivityService: Status alterado para ${_isOnline ? 'Online' : 'Offline'}');
-      }
-    }
-  }
-
-  /// Verifica conectividade manualmente (útil para validações específicas)
+  /// Verifica conectividade atual
   Future<bool> checkConnectivity() async {
     try {
       final result = await _connectivity.checkConnectivity();
-      _updateConnectionStatus(result);
+      final wasOnline = _isOnline;
+      _isOnline = result != ConnectivityResult.none;
+
+      if (wasOnline != _isOnline) {
+        _connectivityController.add(_isOnline);
+
+        if (kDebugMode) {
+          AppLogger.debug(
+              'Status de conectividade alterado: ${_isOnline ? 'Online' : 'Offline'}');
+        }
+      }
+
       return _isOnline;
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ ConnectivityService: Erro ao verificar conectividade: $e');
-      }
+      AppLogger.error('Erro ao verificar conectividade', error: e);
       return false;
     }
   }
 
-  /// Aguarda até que a conectividade seja restaurada
-  Future<void> waitForConnection({Duration? timeout}) async {
-    if (_isOnline) return;
+  /// Executa operação com retry automático
+  Future<T> executeWithRetry<T>(
+    Future<T> Function() operation, {
+    int maxRetries = _maxRetries,
+    Duration retryDelay = _retryDelay,
+    String? operationName,
+  }) async {
+    int attempts = 0;
 
-    final completer = Completer<void>();
-    StreamSubscription<bool>? subscription;
+    while (attempts <= maxRetries) {
+      try {
+        // Verifica conectividade antes de tentar
+        if (!await checkConnectivity()) {
+          throw Exception('Sem conectividade com a internet');
+        }
 
-    subscription = connectionStatus.listen((isOnline) {
-      if (isOnline) {
-        subscription?.cancel();
-        completer.complete();
+        final result = await operation();
+
+        // Sucesso - reseta contador de tentativas
+        _retryCount = 0;
+
+        if (kDebugMode) {
+          AppLogger.debug(
+              'Operação ${operationName ?? 'desconhecida'} executada com sucesso');
+        }
+
+        return result;
+      } catch (e) {
+        attempts++;
+
+        if (kDebugMode) {
+          AppLogger.warning(
+              'Tentativa $attempts/${maxRetries + 1} falhou para ${operationName ?? 'operação'}: $e');
+        }
+
+        // Se é a última tentativa, falha
+        if (attempts > maxRetries) {
+          _retryCount = 0;
+          AppLogger.error(
+              'Operação ${operationName ?? 'desconhecida'} falhou após $maxRetries tentativas',
+              error: e);
+          rethrow;
+        }
+
+        // Aguarda antes da próxima tentativa
+        await Future.delayed(retryDelay * attempts);
+      }
+    }
+
+    throw Exception('Número máximo de tentativas excedido');
+  }
+
+  /// Executa operação apenas se estiver online
+  Future<T?> executeIfOnline<T>(
+    Future<T> Function() operation, {
+    String? operationName,
+  }) async {
+    if (!await checkConnectivity()) {
+      if (kDebugMode) {
+        AppLogger.warning(
+            'Operação ${operationName ?? 'desconhecida'} cancelada - offline');
+      }
+      return null;
+    }
+
+    try {
+      final result = await operation();
+
+      if (kDebugMode) {
+        AppLogger.debug(
+            'Operação ${operationName ?? 'desconhecida'} executada com sucesso');
+      }
+
+      return result;
+    } catch (e) {
+      AppLogger.error(
+          'Erro ao executar operação ${operationName ?? 'desconhecida'}',
+          error: e);
+      rethrow;
+    }
+  }
+
+  /// Agenda retry para operação falhada
+  Future<void> scheduleRetry(
+    Future<void> Function() operation, {
+    String? operationName,
+  }) async {
+    if (_retryCount >= _maxRetries) {
+      if (kDebugMode) {
+        AppLogger.warning(
+            'Número máximo de retries atingido para ${operationName ?? 'operação'}');
+      }
+      return;
+    }
+
+    _retryCount++;
+
+    if (kDebugMode) {
+      AppLogger.info(
+          'Agendando retry $_retryCount/$_maxRetries para ${operationName ?? 'operação'} em ${_retryDelay.inSeconds}s');
+    }
+
+    _retryTimer?.cancel();
+    _retryTimer = Timer(_retryDelay, () async {
+      if (await checkConnectivity()) {
+        try {
+          await operation();
+          _retryCount = 0; // Reset contador em caso de sucesso
+        } catch (e) {
+          AppLogger.error(
+              'Retry $_retryCount/$_maxRetries falhou para ${operationName ?? 'operação'}',
+              error: e);
+
+          // Agenda próximo retry se ainda não atingiu o limite
+          if (_retryCount < _maxRetries) {
+            await scheduleRetry(operation, operationName: operationName);
+          }
+        }
+      } else {
+        if (kDebugMode) {
+          AppLogger.warning('Retry cancelado - sem conectividade');
+        }
       }
     });
-
-    if (timeout != null) {
-      Timer(timeout, () {
-        if (!completer.isCompleted) {
-          subscription?.cancel();
-          completer.completeError(TimeoutException('Timeout aguardando conectividade', timeout));
-        }
-      });
-    }
-
-    return completer.future;
   }
 
-  /// Executa uma função apenas quando online
-  Future<T?> executeWhenOnline<T>(Future<T> Function() operation, {
-    Duration? timeout,
-    T? fallbackValue,
-  }) async {
-    try {
-      if (!_isOnline) {
-        if (kDebugMode) {
-          print('⚠️ ConnectivityService: Operação adiada - dispositivo offline');
-        }
-        
-        if (timeout != null) {
-          await waitForConnection(timeout: timeout);
-        } else {
-          await waitForConnection();
-        }
-      }
-
-      return await operation();
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ ConnectivityService: Erro ao executar operação: $e');
-      }
-      return fallbackValue;
-    }
-  }
-
-  /// Obtém informações detalhadas sobre a conectividade
-  Future<Map<String, dynamic>> getConnectionInfo() async {
+  /// Obtém informações detalhadas da conectividade
+  Future<Map<String, dynamic>> getConnectivityInfo() async {
     try {
       final result = await _connectivity.checkConnectivity();
-      
+
       return {
-        'isOnline': _isOnline,
-        'connectionType': result.toString().split('.').last,
-        'timestamp': DateTime.now().toIso8601String(),
-        'isInitialized': _hasBeenInitialized,
+        'isOnline': result != ConnectivityResult.none,
+        'connectionType': result.name,
+        'retryCount': _retryCount,
+        'maxRetries': _maxRetries,
+        'lastCheck': DateTime.now().toIso8601String(),
       };
     } catch (e) {
+      AppLogger.error('Erro ao obter informações de conectividade', error: e);
       return {
         'isOnline': false,
         'connectionType': 'unknown',
-        'timestamp': DateTime.now().toIso8601String(),
         'error': e.toString(),
-        'isInitialized': _hasBeenInitialized,
       };
     }
   }
 
-  /// Simula perda de conectividade (útil para testes)
-  void simulateOffline() {
-    if (kDebugMode) {
-      print('🧪 ConnectivityService: Simulando modo offline');
-      _updateConnectionStatus(ConnectivityResult.none);
+  /// Callback para mudanças de conectividade
+  void _onConnectivityChanged(ConnectivityResult result) async {
+    final wasOnline = _isOnline;
+    _isOnline = result != ConnectivityResult.none;
+
+    if (wasOnline != _isOnline) {
+      _connectivityController.add(_isOnline);
+
+      if (kDebugMode) {
+        AppLogger.info(
+            'Conectividade alterada: ${_isOnline ? 'Online' : 'Offline'} (${result.name})');
+      }
+
+      // Se voltou a ficar online, executa operações pendentes
+      if (_isOnline) {
+        _retryCount = 0; // Reset contador
+        _retryTimer?.cancel();
+      }
     }
   }
 
-  /// Simula restauração de conectividade (útil para testes)
-  void simulateOnline() {
-    if (kDebugMode) {
-      print('🧪 ConnectivityService: Simulando modo online');
-      _updateConnectionStatus(ConnectivityResult.wifi);
+  /// Verifica conectividade interna
+  Future<void> _checkConnectivity() async {
+    try {
+      final result = await _connectivity.checkConnectivity();
+      _isOnline = result != ConnectivityResult.none;
+      _connectivityController.add(_isOnline);
+    } catch (e) {
+      AppLogger.error('Erro ao verificar conectividade inicial', error: e);
+      _isOnline = false;
+      _connectivityController.add(false);
     }
   }
 
-  /// Libera recursos do serviço
+  /// Dispose do serviço
   void dispose() {
-    _connectivitySubscription?.cancel();
-    _connectionStatusController.close();
-    _hasBeenInitialized = false;
-    
-    if (kDebugMode) {
-      print('🌐 ConnectivityService: Serviço finalizado');
-    }
+    _retryTimer?.cancel();
+    _connectivityController.close();
   }
-}
-
-/// Exceção lançada quando uma operação expira aguardando conectividade
-class TimeoutException implements Exception {
-  final String message;
-  final Duration timeout;
-
-  const TimeoutException(this.message, this.timeout);
-
-  @override
-  String toString() => 'TimeoutException: $message (timeout: ${timeout.inSeconds}s)';
 }

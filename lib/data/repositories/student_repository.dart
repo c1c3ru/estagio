@@ -107,12 +107,22 @@ class StudentRepository implements IStudentRepository {
   Future<Either<AppFailure, TimeLogEntity>> checkIn(
       {required String studentId, String? notes}) async {
     try {
-      // Implementação temporária
-      AppLogger.repository('Método checkIn não implementado foi chamado.');
-return const Left(NotImplementedFailure(message: 'Método checkIn não está disponível na versão atual'));
+      final now = DateTime.now();
+      final timeLogData = {
+        'student_id': studentId,
+        'log_date': now.toIso8601String().split('T')[0],
+        'check_in_time': '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
+        'description': notes,
+        'approved': false,
+        'created_at': now.toIso8601String(),
+      };
+      
+      final createdData = await _timeLogDatasource.createTimeLog(timeLogData);
+      AppLogger.repository('Check-in realizado com sucesso para estudante: $studentId');
+      return Right(TimeLogModel.fromJson(createdData).toEntity());
     } catch (e) {
-      AppLogger.error('Erro inesperado em checkIn', error: e);
-      return Left(ServerFailure(message: e.toString()));
+      AppLogger.error('Erro ao realizar check-in', error: e);
+      return Left(ServerFailure(message: 'Erro ao realizar check-in: $e'));
     }
   }
 
@@ -122,12 +132,20 @@ return const Left(NotImplementedFailure(message: 'Método checkIn não está dis
       required String activeTimeLogId,
       String? description}) async {
     try {
-      // Implementação temporária
-      AppLogger.repository('Método checkOut não implementado foi chamado.');
-return const Left(NotImplementedFailure(message: 'Método checkOut não está disponível na versão atual'));
+      final now = DateTime.now();
+      final timeLogData = {
+        'id': activeTimeLogId,
+        'check_out_time': '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
+        'description': description,
+        'updated_at': now.toIso8601String(),
+      };
+      
+      final updatedData = await _timeLogDatasource.updateTimeLog(activeTimeLogId, timeLogData);
+      AppLogger.repository('Check-out realizado com sucesso para estudante: $studentId');
+      return Right(TimeLogModel.fromJson(updatedData).toEntity());
     } catch (e) {
-      AppLogger.error('Erro inesperado em checkOut', error: e);
-      return Left(ServerFailure(message: e.toString()));
+      AppLogger.error('Erro ao realizar check-out', error: e);
+      return Left(ServerFailure(message: 'Erro ao realizar check-out: $e'));
     }
   }
 
@@ -160,12 +178,12 @@ return const Left(NotImplementedFailure(message: 'Método checkOut não está di
   @override
   Future<Either<AppFailure, void>> deleteTimeLog(String timeLogId) async {
     try {
-      // Implementação temporária
-      AppLogger.repository('Método deleteTimeLog não implementado foi chamado.');
-return const Left(NotImplementedFailure(message: 'Método deleteTimeLog não está disponível na versão atual'));
+      await _timeLogDatasource.deleteTimeLog(timeLogId);
+      AppLogger.repository('Time log deletado com sucesso: $timeLogId');
+      return const Right(null);
     } catch (e) {
-      AppLogger.error('Erro inesperado em deleteTimeLog', error: e);
-      return Left(ServerFailure(message: e.toString()));
+      AppLogger.error('Erro ao deletar time log', error: e);
+      return Left(ServerFailure(message: 'Erro ao deletar registro de tempo: $e'));
     }
   }
 

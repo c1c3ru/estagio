@@ -1,6 +1,7 @@
 // ignore_for_file: override_on_non_overriding_member
 
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../core/errors/app_exceptions.dart';
 import '../../domain/repositories/i_time_log_repository.dart';
@@ -32,7 +33,8 @@ class TimeLogRepository implements ITimeLogRepository {
     try {
       final timeLogData = await _timeLogDatasource.getTimeLogById(id);
       if (timeLogData == null) {
-        return const Left(ServerFailure(message: 'Registro de horas não encontrado'));
+        return const Left(
+            ServerFailure(message: 'Registro de horas não encontrado'));
       }
       final timeLog = TimeLogModel.fromJson(timeLogData).toEntity();
       return Right(timeLog);
@@ -43,15 +45,36 @@ class TimeLogRepository implements ITimeLogRepository {
   }
 
   @override
-  Future<Either<AppFailure, List<TimeLogEntity>>> getTimeLogsByStudent(String studentId) async {
+  Future<Either<AppFailure, List<TimeLogEntity>>> getTimeLogsByStudent(
+      String studentId) async {
     try {
+      if (kDebugMode) {
+        print(
+            '🟡 TimeLogRepository: getTimeLogsByStudent iniciado para studentId: $studentId');
+      }
+
       final timeLogsData =
           await _timeLogDatasource.getTimeLogsByStudent(studentId);
+
+      if (kDebugMode) {
+        print(
+            '🟡 TimeLogRepository: getTimeLogsByStudent recebeu ${timeLogsData.length} registros do datasource');
+      }
+
       final timeLogs = timeLogsData
           .map((data) => TimeLogModel.fromJson(data).toEntity())
           .toList();
+
+      if (kDebugMode) {
+        print(
+            '🟡 TimeLogRepository: getTimeLogsByStudent retornando ${timeLogs.length} entidades');
+      }
+
       return Right(timeLogs);
     } catch (e) {
+      if (kDebugMode) {
+        print('🔴 TimeLogRepository: Erro em getTimeLogsByStudent: $e');
+      }
       return Left(ServerFailure(
           message: 'Erro no repositório ao buscar registros do estudante: $e'));
     }
@@ -80,7 +103,8 @@ class TimeLogRepository implements ITimeLogRepository {
   }
 
   @override
-  Future<Either<AppFailure, TimeLogEntity?>> getActiveTimeLog(String studentId) async {
+  Future<Either<AppFailure, TimeLogEntity?>> getActiveTimeLog(
+      String studentId) async {
     try {
       final timeLogData = await _timeLogDatasource.getActiveTimeLog(studentId);
       if (timeLogData == null) return const Right(null);
@@ -93,7 +117,8 @@ class TimeLogRepository implements ITimeLogRepository {
   }
 
   @override
-  Future<Either<AppFailure, TimeLogEntity>> createTimeLog(TimeLogEntity timeLog) async {
+  Future<Either<AppFailure, TimeLogEntity>> createTimeLog(
+      TimeLogEntity timeLog) async {
     try {
       final timeLogModel = TimeLogModel(
         id: timeLog.id,
@@ -109,13 +134,13 @@ class TimeLogRepository implements ITimeLogRepository {
         createdAt: timeLog.createdAt,
         updatedAt: timeLog.updatedAt,
       );
-      
+
       final timeLogData = timeLogModel.toJson();
       // Remove o ID se estiver vazio para permitir que o Supabase gere automaticamente
       if (timeLogData['id'] == null || timeLogData['id'] == '') {
         timeLogData.remove('id');
       }
-      
+
       final createdData = await _timeLogDatasource.createTimeLog(timeLogData);
       final createdTimeLog = TimeLogModel.fromJson(createdData).toEntity();
       return Right(createdTimeLog);
@@ -126,7 +151,8 @@ class TimeLogRepository implements ITimeLogRepository {
   }
 
   @override
-  Future<Either<AppFailure, TimeLogEntity>> updateTimeLog(TimeLogEntity timeLog) async {
+  Future<Either<AppFailure, TimeLogEntity>> updateTimeLog(
+      TimeLogEntity timeLog) async {
     try {
       final timeLogModel = TimeLogModel(
         id: timeLog.id,
@@ -142,7 +168,7 @@ class TimeLogRepository implements ITimeLogRepository {
         createdAt: timeLog.createdAt,
         updatedAt: timeLog.updatedAt,
       );
-      
+
       final updatedData = await _timeLogDatasource.updateTimeLogData(
         timeLog.id,
         timeLogModel.toJson(),
@@ -181,15 +207,16 @@ class TimeLogRepository implements ITimeLogRepository {
   }
 
   @override
-  Future<Either<AppFailure, TimeLogEntity>> clockOut(String studentId, {String? notes}) async {
+  Future<Either<AppFailure, TimeLogEntity>> clockOut(String studentId,
+      {String? notes}) async {
     try {
       final timeLogData =
           await _timeLogDatasource.clockOut(studentId, notes: notes);
       final timeLog = TimeLogModel.fromJson(timeLogData).toEntity();
       return Right(timeLog);
     } catch (e) {
-      return Left(ServerFailure(
-          message: 'Erro no repositório ao registrar saída: $e'));
+      return Left(
+          ServerFailure(message: 'Erro no repositório ao registrar saída: $e'));
     }
   }
 
@@ -197,7 +224,8 @@ class TimeLogRepository implements ITimeLogRepository {
   Future<Either<AppFailure, Duration>> getTotalHoursByPeriod(
       String studentId, DateTime start, DateTime end) async {
     try {
-      final result = await _timeLogDatasource.getTotalHoursByPeriod(studentId, start, end);
+      final result =
+          await _timeLogDatasource.getTotalHoursByPeriod(studentId, start, end);
       return Right(result);
     } catch (e) {
       return Left(AppFailure.unexpected(e.toString()));
@@ -216,7 +244,8 @@ class TimeLogRepository implements ITimeLogRepository {
       return Right(timeLogs);
     } catch (e) {
       return Left(ServerFailure(
-          message: 'Erro no repositório ao buscar registros do supervisor: $e'));
+          message:
+              'Erro no repositório ao buscar registros do supervisor: $e'));
     }
   }
 
@@ -247,9 +276,9 @@ class TimeLogRepository implements ITimeLogRepository {
         'approved_at': approved ? nowIso : null,
         'updated_at': nowIso,
       }..removeWhere((key, value) => value == null);
-      
+
       final result = await _timeLogDatasource.updateTimeLog(
-        timeLogId, 
+        timeLogId,
         updateData,
         rejectionReason: rejectionReason,
       );
@@ -261,17 +290,15 @@ class TimeLogRepository implements ITimeLogRepository {
   }
 
   @override
-  Future<Either<AppFailure, List<TimeLogEntity>>> getPendingTimeLogsBySupervisor(String supervisorId) async {
+  Future<Either<AppFailure, List<TimeLogEntity>>>
+      getPendingTimeLogsBySupervisor(String supervisorId) async {
     try {
       final result = await _timeLogDatasource.getPendingTimeLogs(supervisorId);
-      final timeLogs = result
-          .map((data) => TimeLogModel.fromJson(data).toEntity())
-          .toList();
+      final timeLogs =
+          result.map((data) => TimeLogModel.fromJson(data).toEntity()).toList();
       return Right(timeLogs);
     } catch (e) {
       return Left(AppFailure.unexpected(e.toString()));
     }
   }
-
-
 }

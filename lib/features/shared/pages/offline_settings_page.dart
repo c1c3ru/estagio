@@ -49,22 +49,13 @@ class _OfflineSettingsPageState extends State<OfflineSettingsPage> {
     _syncService.syncStatus.listen((status) {
       if (mounted) {
         setState(() {
-          _isSyncing = status.isInProgress;
+          _isSyncing = (status == SyncStatus.syncing);
         });
 
-        // Mostrar feedback baseado no status
-        switch (status) {
-          case SyncStatus.synced:
-            FeedbackService.showSuccess(context, 'Sincronização concluída!');
-            break;
-          case SyncStatus.syncError:
-            FeedbackService.showError(context, 'Erro na sincronização');
-            break;
-          case SyncStatus.partialSync:
-            FeedbackService.showWarning(context, 'Sincronização parcial');
-            break;
-          default:
-            break;
+        if (status == SyncStatus.completed) {
+          FeedbackService.showSuccess(context, 'Sincronização concluída!');
+        } else if (status == SyncStatus.failed) {
+          FeedbackService.showError(context, 'Erro na sincronização');
         }
 
         // Recarregar estatísticas após mudança de status

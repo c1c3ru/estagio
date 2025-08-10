@@ -138,13 +138,19 @@ class _ExportOptionsWidgetState extends State<ExportOptionsWidget>
     try {
       await widget.onExport(_config);
       if (mounted) {
-        Navigator.of(context).pop();
+        // Mostrar SnackBar antes de fechar o modal
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Arquivo exportado com sucesso!'),
             backgroundColor: Colors.green,
           ),
         );
+        // Fechar modal após um pequeno delay
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            Navigator.of(context).pop();
+          }
+        });
       }
     } catch (e) {
       if (mounted) {

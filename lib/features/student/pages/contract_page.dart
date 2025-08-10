@@ -593,13 +593,21 @@ class _ContractEditFormState extends State<_ContractEditForm> {
     return BlocListener<ContractBloc, ContractState>(
       listener: (context, state) {
         if (state is ContractCreateSuccess || state is ContractUpdateSuccess) {
-          Navigator.of(context).pop();
+          // Capturar contexto antes do Future.delayed
+          final navigator = Navigator.of(context);
+          // Mostrar SnackBar antes de fechar o modal
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Contrato salvo com sucesso!'),
               backgroundColor: AppColors.success,
             ),
           );
+          // Fechar modal após um pequeno delay para garantir que o SnackBar seja exibido
+          Future.delayed(const Duration(milliseconds: 100), () {
+            if (mounted) {
+              navigator.pop();
+            }
+          });
         } else if (state is ContractInsertError ||
             state is ContractUpdateError) {
           setState(() => _isSaving = false);

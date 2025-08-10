@@ -34,7 +34,6 @@ class NotificationHelper {
         title: title,
         body: body,
         scheduledDate: DateTime.now(),
-        type: NotificationType.timeLogApproval,
         data: {
           'timeLogId': timeLog.id,
           'studentId': student.id,
@@ -70,7 +69,6 @@ class NotificationHelper {
         title: title,
         body: body,
         scheduledDate: DateTime.now(),
-        type: NotificationType.timeLogRejection,
         data: {
           'timeLogId': timeLog.id,
           'studentId': student.id,
@@ -105,7 +103,6 @@ class NotificationHelper {
         title: title,
         body: body,
         scheduledDate: DateTime.now(),
-        type: NotificationType.contractExpiring,
         data: {
           'contractId': contract.id,
           'studentId': student.id,
@@ -128,7 +125,6 @@ class NotificationHelper {
         title: studentTitle,
         body: studentBody,
         scheduledDate: DateTime.now(),
-        type: NotificationType.contractExpiring,
         data: {
           'contractId': contract.id,
           'studentId': student.id,
@@ -162,7 +158,6 @@ class NotificationHelper {
         title: title,
         body: body,
         scheduledDate: DateTime.now(),
-        type: NotificationType.newStudent,
         data: {
           'studentId': student.id,
           'supervisorId': supervisor.id,
@@ -190,7 +185,6 @@ class NotificationHelper {
         title: title,
         body: body,
         scheduledDate: DateTime.now(),
-        type: NotificationType.reminder,
         data: {
           'studentId': student.id,
           'action': 'check_in',
@@ -219,7 +213,6 @@ class NotificationHelper {
         title: title,
         body: body,
         scheduledDate: DateTime.now(),
-        type: NotificationType.reminder,
         data: {
           'studentId': student.id,
           'timeLogId': activeTimeLog.id,
@@ -257,7 +250,6 @@ class NotificationHelper {
         title: title,
         body: body,
         scheduledDate: scheduledDate,
-        type: NotificationType.reminder,
         data: {
           // 'studentId': student.id, // Não temos um student aqui, se necessário, passe como parâmetro
           'action': 'check_in',
@@ -295,7 +287,6 @@ class NotificationHelper {
         title: title,
         body: body,
         scheduledDate: scheduledDate,
-        type: NotificationType.reminder,
         data: {
           // 'studentId': student.id, // Não temos um student aqui, se necessário, passe como parâmetro
           'action': 'check_out',
@@ -327,7 +318,6 @@ class NotificationHelper {
         title: title,
         body: body,
         scheduledDate: DateTime.now(),
-        type: NotificationType.systemUpdate,
         data: {
           'version': version,
           'description': description,
@@ -397,7 +387,6 @@ class NotificationHelper {
             title: 'Contrato Expira em $days Dias ⚠️',
             body: 'O contrato de ${student.fullName} expira em $days dias.',
             scheduledDate: reminderDate,
-            type: NotificationType.contractExpiring,
             data: {
               'contractId': contract.id,
               'studentId': student.id,

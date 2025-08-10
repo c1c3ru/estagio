@@ -73,19 +73,36 @@ class SupervisorModule extends Module {
     );
     r.child(
       '/student-details/:studentId',
-      child: (_) =>
-          StudentDetailsPage(studentId: r.args.params['studentId'] as String),
+      child: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: Modular.get<AuthBloc>()),
+          BlocProvider.value(value: Modular.get<SupervisorBloc>()),
+        ],
+        child:
+            StudentDetailsPage(studentId: r.args.params['studentId'] as String),
+      ),
       transition: TransitionType.rightToLeft,
     );
     r.child(
       '/student-edit/:studentId',
-      child: (_) =>
-          StudentEditPage(studentId: r.args.params['studentId'] as String),
+      child: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: Modular.get<AuthBloc>()),
+          BlocProvider.value(value: Modular.get<SupervisorBloc>()),
+        ],
+        child: StudentEditPage(studentId: r.args.params['studentId'] as String),
+      ),
       transition: TransitionType.rightToLeft,
     );
     r.child(
       '/student-create',
-      child: (_) => const StudentEditPage(),
+      child: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: Modular.get<AuthBloc>()),
+          BlocProvider.value(value: Modular.get<SupervisorBloc>()),
+        ],
+        child: const StudentEditPage(),
+      ),
       transition: TransitionType.rightToLeft,
     );
     r.child(
@@ -110,14 +127,20 @@ class SupervisorModule extends Module {
       ),
       transition: TransitionType.fadeIn,
     );
-    
+
     // Rota para a página de relatórios
     r.child(
       '/reports',
-      child: (_) => const SupervisorReportsPage(),
+      child: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: Modular.get<AuthBloc>()),
+          BlocProvider.value(value: Modular.get<SupervisorBloc>()),
+        ],
+        child: const SupervisorReportsPage(),
+      ),
       transition: TransitionType.fadeIn,
     );
-    
+
     // Rota para gerenciar estudantes
     r.child(
       '/manage-students',

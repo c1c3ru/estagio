@@ -94,7 +94,8 @@ class ReminderService {
       }
     } catch (e) {
       if (kDebugMode) {
-        AppLogger.error('[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e[0m');
+        AppLogger.error(
+            '[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e[0m');
       }
     }
   }
@@ -140,7 +141,8 @@ class ReminderService {
       // }
     } catch (e) {
       if (kDebugMode) {
-        AppLogger.error('[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e[0m');
+        AppLogger.error(
+            '[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e[0m');
       }
     }
   }
@@ -203,10 +205,8 @@ class ReminderService {
   Future<void> _cancelDailyReminders() async {
     try {
       // Convertendo IDs para String
-      await _notificationService
-          .cancelNotification('1001'); // Check-in reminder ID
-      await _notificationService
-          .cancelNotification('1002'); // Check-out reminder ID
+      await _notificationService.cancelNotification(1001);
+      await _notificationService.cancelNotification(1002);
 
       if (kDebugMode) {
         print('✅ ReminderService: Lembretes diários cancelados');
@@ -250,14 +250,10 @@ class ReminderService {
   }) async {
     try {
       await _notificationService.scheduleNotification(
-        id: (DateTime.now().millisecondsSinceEpoch % 100000)
-            .toString(), // ID único como String
         title: title,
         body: body,
         scheduledDate: scheduledDate,
-        data: payload != null
-            ? {'payload': payload}
-            : null, // Passando payload como 'data'
+        payload: payload != null ? {'payload': payload} : null,
       );
 
       if (kDebugMode) {
@@ -315,7 +311,8 @@ class ReminderService {
       }
     } catch (e) {
       if (kDebugMode) {
-        AppLogger.error('[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e[0m');
+        AppLogger.error(
+            '[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e[0m');
       }
     }
   }

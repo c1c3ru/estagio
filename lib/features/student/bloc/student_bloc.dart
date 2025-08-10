@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/foundation.dart';
 import '../../../domain/usecases/student/get_student_dashboard_usecase.dart';
 import '../../../domain/entities/contract_entity.dart';
 import '../../../domain/entities/time_log_entity.dart';
@@ -80,45 +81,56 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
                   .toEntity();
 
           // Extrair dados de timeStats e contracts do dashboard
-          final timeStatsData = dashboardData['timeStats'] as Map<String, dynamic>? ?? {};
+          final timeStatsData =
+              dashboardData['timeStats'] as Map<String, dynamic>? ?? {};
           final contractsData = dashboardData['contracts'] as List? ?? [];
-          final activeTimeLogData = timeStatsData['activeTimeLog'] as Map<String, dynamic>?;
-          
+          final activeTimeLogData =
+              timeStatsData['activeTimeLog'] as Map<String, dynamic>?;
+
           final timeStats = StudentTimeStats(
-            hoursThisWeek: (timeStatsData['hoursThisWeek'] as num?)?.toDouble() ?? 0.0,
-            hoursThisMonth: (timeStatsData['hoursThisMonth'] as num?)?.toDouble() ?? 0.0,
-            activeTimeLog: activeTimeLogData != null 
+            hoursThisWeek:
+                (timeStatsData['hoursThisWeek'] as num?)?.toDouble() ?? 0.0,
+            hoursThisMonth:
+                (timeStatsData['hoursThisMonth'] as num?)?.toDouble() ?? 0.0,
+            activeTimeLog: activeTimeLogData != null
                 ? TimeLogEntity(
                     id: activeTimeLogData['id'] as String,
                     studentId: activeTimeLogData['student_id'] as String,
-                    logDate: DateTime.parse(activeTimeLogData['log_date'] as String),
+                    logDate:
+                        DateTime.parse(activeTimeLogData['log_date'] as String),
                     checkInTime: activeTimeLogData['check_in_time'] as String,
-                    checkOutTime: activeTimeLogData['check_out_time'] as String?,
-                    createdAt: DateTime.parse(activeTimeLogData['created_at'] as String),
+                    checkOutTime:
+                        activeTimeLogData['check_out_time'] as String?,
+                    createdAt: DateTime.parse(
+                        activeTimeLogData['created_at'] as String),
                     description: activeTimeLogData['description'] as String?,
-                    hoursLogged: (activeTimeLogData['hours_logged'] as num?)?.toDouble(),
+                    hoursLogged:
+                        (activeTimeLogData['hours_logged'] as num?)?.toDouble(),
                     approved: activeTimeLogData['approved'] as bool?,
                   )
                 : null,
           );
-          
-          final contracts = contractsData.map((contractData) {
-            final data = contractData as Map<String, dynamic>;
-            return ContractEntity(
-              id: data['id'] as String,
-              studentId: data['student_id'] as String,
-              supervisorId: data['supervisor_id'] as String?,
-              contractType: data['contract_type'] as String,
-              status: data['status'] as String,
-              startDate: DateTime.parse(data['start_date'] as String),
-              endDate: DateTime.parse(data['end_date'] as String),
-              description: data['description'] as String?,
-              createdAt: DateTime.parse(data['created_at'] as String),
-              updatedAt: data['updated_at'] != null 
-                  ? DateTime.parse(data['updated_at'] as String) 
-                  : null,
-            );
-          }).toList().cast<ContractEntity>();
+
+          final contracts = contractsData
+              .map((contractData) {
+                final data = contractData as Map<String, dynamic>;
+                return ContractEntity(
+                  id: data['id'] as String,
+                  studentId: data['student_id'] as String,
+                  supervisorId: data['supervisor_id'] as String?,
+                  contractType: data['contract_type'] as String,
+                  status: data['status'] as String,
+                  startDate: DateTime.parse(data['start_date'] as String),
+                  endDate: DateTime.parse(data['end_date'] as String),
+                  description: data['description'] as String?,
+                  createdAt: DateTime.parse(data['created_at'] as String),
+                  updatedAt: data['updated_at'] != null
+                      ? DateTime.parse(data['updated_at'] as String)
+                      : null,
+                );
+              })
+              .toList()
+              .cast<ContractEntity>();
 
           emit(StudentDashboardLoadSuccess(
             student: student,
@@ -190,12 +202,32 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
     LoadStudentTimeLogsEvent event,
     Emitter<StudentState> emit,
   ) async {
+    if (kDebugMode) {
+      print(
+          '🟢 StudentBloc: _onLoadStudentTimeLogs iniciado para userId: ${event.userId}');
+    }
+
     emit(const StudentLoading());
     try {
       final eitherTimeLogs = await _getTimeLogsByStudentUsecase(event.userId);
+
+      if (kDebugMode) {
+        print(
+            '🟢 StudentBloc: _onLoadStudentTimeLogs recebeu resultado do usecase');
+      }
+
       final timeLogs = eitherTimeLogs.getOrElse(() => []);
+
+      if (kDebugMode) {
+        print(
+            '🟢 StudentBloc: _onLoadStudentTimeLogs emitindo StudentTimeLogsLoadSuccess com ${timeLogs.length} logs');
+      }
+
       emit(StudentTimeLogsLoadSuccess(timeLogs: timeLogs));
     } catch (e) {
+      if (kDebugMode) {
+        print('🔴 StudentBloc: Erro em _onLoadStudentTimeLogs: $e');
+      }
       emit(StudentOperationFailure(message: e.toString()));
     }
   }
@@ -215,7 +247,8 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
       );
       result.fold(
         (failure) => emit(StudentOperationFailure(message: failure.message)),
-        (log) => emit(StudentTimeLogOperationSuccess(timeLog: log, message: 'Registro criado com sucesso!')),
+        (log) => emit(StudentTimeLogOperationSuccess(
+            timeLog: log, message: 'Registro criado com sucesso!')),
       );
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
@@ -276,7 +309,8 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
       final result = await _getActiveTimeLogUsecase(event.userId);
       result.fold(
         (failure) => emit(StudentOperationFailure(message: failure.message)),
-        (activeTimeLog) => emit(ActiveTimeLogFetched(activeTimeLog: activeTimeLog)),
+        (activeTimeLog) =>
+            emit(ActiveTimeLogFetched(activeTimeLog: activeTimeLog)),
       );
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
