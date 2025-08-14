@@ -237,6 +237,91 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     });
   }
 
+  void _showSupervisorsList(BuildContext context) async {
+    try {
+      final getAllSupervisorsUsecase = Modular.get<GetAllSupervisorsUsecase>();
+      final result = await getAllSupervisorsUsecase.call();
+      
+      if (!context.mounted) return;
+      
+      result.fold(
+        (failure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro ao carregar supervisores: ${failure.message}')),
+          );
+        },
+        (supervisors) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Lista de Supervisores'),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 400,
+                child: supervisors.isEmpty
+                    ? const Center(
+                        child: Text('Nenhum supervisor encontrado'),
+                      )
+                    : ListView.builder(
+                        itemCount: supervisors.length,
+                        itemBuilder: (context, index) {
+                          final supervisor = supervisors[index];
+                          return Card(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: AppColors.primary,
+                                child: Text(
+                                  supervisor.name.isNotEmpty 
+                                      ? supervisor.name[0].toUpperCase()
+                                      : 'S',
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              ),
+                              title: Text(supervisor.name),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (supervisor.department?.isNotEmpty == true)
+                                    Text('Departamento: ${supervisor.department}'),
+                                  if (supervisor.position?.isNotEmpty == true)
+                                    Text('Cargo: ${supervisor.position}'),
+                                  if (supervisor.phoneNumber?.isNotEmpty == true)
+                                    Text('Telefone: ${supervisor.phoneNumber}'),
+                                ],
+                              ),
+                              trailing: supervisor.phoneNumber?.isNotEmpty == true
+                                  ? IconButton(
+                                      icon: const Icon(Icons.phone),
+                                      onPressed: () {
+                                        // Implementar ação de telefone se necessário
+                                      },
+                                    )
+                                  : null,
+                            ),
+                          );
+                        },
+                      ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Fechar'),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao carregar supervisores: $e')),
+        );
+      }
+    }
+  }
+
   @override
   void dispose() {
     _fullNameController.dispose();
@@ -445,7 +530,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                             horizontal: 24, vertical: 12),
                       ),
                       onPressed: () {
-                        Modular.to.pushNamed('/supervisor/students');
+                        _showSupervisorsList(context);
                       },
                     ),
                   ),

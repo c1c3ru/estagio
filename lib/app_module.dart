@@ -279,6 +279,7 @@ class AppModule extends Module {
           clockOutUsecase: i(),
           getActiveTimeLogUsecase: i(),
           studentRepository: i(),
+          deleteTimeLogUsecase: i(),
         ));
 
     i.add<SupervisorBloc>(() => SupervisorBloc(

@@ -7,6 +7,8 @@ import '../../../domain/usecases/time_log/get_time_logs_by_student_usecase.dart'
 import '../../../domain/usecases/time_log/clock_in_usecase.dart';
 import '../../../domain/usecases/time_log/clock_out_usecase.dart';
 import '../../../domain/usecases/time_log/get_active_time_log_usecase.dart';
+import '../../../domain/usecases/student/delete_time_log_usecase.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../../domain/repositories/i_student_repository.dart';
 
 import '../../../data/models/student_model.dart';
@@ -23,6 +25,7 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
   final ClockOutUsecase _clockOutUsecase;
   final GetActiveTimeLogUsecase _getActiveTimeLogUsecase;
   final IStudentRepository _studentRepository;
+  final DeleteTimeLogUsecase _deleteTimeLogUsecase;
 
   StudentBloc({
     required GetStudentDashboardUsecase getStudentDashboardUsecase,
@@ -31,12 +34,14 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
     required ClockOutUsecase clockOutUsecase,
     required GetActiveTimeLogUsecase getActiveTimeLogUsecase,
     required IStudentRepository studentRepository,
+    required DeleteTimeLogUsecase deleteTimeLogUsecase,
   })  : _getStudentDashboardUsecase = getStudentDashboardUsecase,
         _getTimeLogsByStudentUsecase = getTimeLogsByStudentUsecase,
         _clockInUsecase = clockInUsecase,
         _clockOutUsecase = clockOutUsecase,
         _getActiveTimeLogUsecase = getActiveTimeLogUsecase,
         _studentRepository = studentRepository,
+        _deleteTimeLogUsecase = deleteTimeLogUsecase,
         super(const StudentInitial()) {
     // Registrar handlers para os eventos
     on<LoadStudentDashboardDataEvent>(_onLoadStudentDashboardData);
@@ -64,16 +69,21 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
       result.fold(
         (failure) => emit(StudentOperationFailure(message: failure.message)),
         (dashboardData) {
+          AppLogger.bloc('Dashboard data recebido: ${dashboardData.keys}');
           final studentData = dashboardData['student'];
+          AppLogger.bloc('Student data: ${studentData != null ? "ENCONTRADO" : "NULL"}');
 
           if (studentData == null) {
             // Usuário não tem dados de estudante - precisa completar cadastro
+            AppLogger.bloc('Student data é null - emitindo failure');
             emit(const StudentOperationFailure(
               message:
                   'Perfil incompleto. Complete seu cadastro para continuar.',
             ));
             return;
           }
+
+          AppLogger.bloc('Student data válido - processando...');
 
           // Criar StudentEntity a partir dos dados do dashboard usando StudentModel
           final student =
@@ -132,11 +142,13 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
               .toList()
               .cast<ContractEntity>();
 
+          AppLogger.bloc('Emitindo StudentDashboardLoadSuccess');
           emit(StudentDashboardLoadSuccess(
             student: student,
             timeStats: timeStats,
             contracts: contracts,
           ));
+          AppLogger.bloc('StudentDashboardLoadSuccess emitido');
         },
       );
     } catch (e) {
@@ -261,23 +273,10 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
   ) async {
     emit(const StudentLoading());
     try {
-      // Chame o usecase real para atualizar o log
-      // final result = await _updateTimeLogUsecase(...);
-      // result.fold(
-      //   (failure) => emit(StudentOperationFailure(message: failure.message)),
-      //   (log) => emit(StudentTimeLogOperationSuccess(timeLog: log, message: 'Registo atualizado com sucesso!')),
-      // );
-      emit(
-        StudentTimeLogOperationSuccess(
-            timeLog: TimeLogEntity(
-              id: 'fake',
-              studentId: 'fake',
-              logDate: DateTime.now(),
-              checkInTime: '08:00',
-              createdAt: DateTime.now(),
-            ),
-            message: 'Registo atualizado com sucesso!'),
-      );
+      // Atualização parcial ainda não suportada pelo repositório atual.
+      emit(const StudentOperationFailure(
+          message:
+              'Atualização de registro manual ainda não suportada nesta versão.'));
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
     }
@@ -289,13 +288,11 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
   ) async {
     emit(const StudentLoading());
     try {
-      // Chame o usecase real para deletar o log
-      // final result = await _deleteTimeLogUsecase(...);
-      // result.fold(
-      //   (failure) => emit(StudentOperationFailure(message: failure.message)),
-      //   (_) => emit(const StudentTimeLogDeleteSuccess()),
-      // );
-      emit(const StudentTimeLogDeleteSuccess());
+      final result = await _deleteTimeLogUsecase(event.timeLogId);
+      result.fold(
+        (failure) => emit(StudentOperationFailure(message: failure.message)),
+        (_) => const StudentTimeLogDeleteSuccess(),
+      );
     } catch (e) {
       emit(StudentOperationFailure(message: e.toString()));
     }

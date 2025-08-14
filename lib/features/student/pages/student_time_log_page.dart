@@ -19,7 +19,6 @@ import '../bloc/student_bloc.dart';
 import '../bloc/student_event.dart';
 import '../bloc/student_state.dart';
 import '../../../core/utils/feedback_service.dart';
-import '../widgets/time_tracker_widget.dart';
 
 class StudentTimeLogPage extends StatefulWidget {
   const StudentTimeLogPage({super.key});
@@ -32,6 +31,8 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
   late StudentBloc _studentBloc;
   late AuthBloc _authBloc;
   String? _currentUserId;
+  List<TimeLogEntity>? _lastTimeLogs; // Cache dos últimos time logs
+  bool _isInitialLoad = true; // Flag para controlar carregamento inicial
 
   @override
   void initState() {
@@ -92,15 +93,18 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
   }
 
   // Verifica se já existe registro no mesmo turno para a data
-  bool _hasRegistryInSameShift(DateTime date, TimeOfDay checkInTime, List<TimeLogEntity> existingLogs, {String? excludeLogId}) {
+  bool _hasRegistryInSameShift(
+      DateTime date, TimeOfDay checkInTime, List<TimeLogEntity> existingLogs,
+      {String? excludeLogId}) {
     final targetShift = _determineShift(checkInTime);
     final dateKey = DateTime(date.year, date.month, date.day);
-    
+
     return existingLogs.any((log) {
       // Exclui o próprio log se estiver editando
       if (excludeLogId != null && log.id == excludeLogId) return false;
-      
-      final logDate = DateTime(log.logDate.year, log.logDate.month, log.logDate.day);
+
+      final logDate =
+          DateTime(log.logDate.year, log.logDate.month, log.logDate.day);
       if (logDate == dateKey) {
         final logCheckInTime = _stringToTimeOfDay(log.checkInTime);
         final logShift = _determineShift(logCheckInTime);
@@ -274,12 +278,12 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
                   final currentState = _studentBloc.state;
                   if (currentState is StudentTimeLogsLoadSuccess) {
                     final hasConflict = _hasRegistryInSameShift(
-                      selectedDate, 
-                      selectedCheckInTime!, 
+                      selectedDate,
+                      selectedCheckInTime!,
                       currentState.timeLogs,
                       excludeLogId: timeLog?.id,
                     );
-                    
+
                     if (hasConflict) {
                       final shift = _determineShift(selectedCheckInTime!);
                       String shiftName;
@@ -296,13 +300,12 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
                         default:
                           shiftName = shift;
                       }
-                      
+
                       ScaffoldMessenger.of(dialogContext).showSnackBar(
                         SnackBar(
                           content: Text(
-                            'Já existe um registro no turno da $shiftName para esta data. '
-                            'Você só pode registrar horários em turnos diferentes no mesmo dia.'
-                          ),
+                              'Já existe um registro no turno da $shiftName para esta data. '
+                              'Você só pode registrar horários em turnos diferentes no mesmo dia.'),
                           backgroundColor: Colors.orange,
                         ),
                       );
@@ -341,8 +344,6 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
       },
     );
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -385,60 +386,35 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
           }
         },
         builder: (context, state) {
-          if (state is StudentLoading && state is! StudentTimeLogsLoadSuccess) {
-            if (_studentBloc.state is! StudentTimeLogsLoadSuccess) {
-              // Evita loading sobre lista antiga
-              return const LoadingIndicator();
-            }
+          if (state is StudentTimeLogsLoadSuccess) {
+            _lastTimeLogs = state.timeLogs; // Cache dos dados
+            _isInitialLoad = false; // Marca que já carregou
+            return _buildTimeLogContent(state.timeLogs);
           }
 
-          if (state is StudentTimeLogsLoadSuccess) {
-            return RefreshIndicator(
-              onRefresh: _refreshTimeLogs,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    // Registro rápido (clock in/out)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TimeTrackerWidget(
-                        currentUserId: _currentUserId,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    if (state.timeLogs.isEmpty)
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.history_toggle_off_outlined,
-                              size: 60, color: theme.hintColor),
-                          const SizedBox(height: 16),
-                          const Text(AppStrings.noTimeLogsFound,
-                              style: TextStyle(fontSize: 16)),
-                          const SizedBox(height: 16),
-                          AppButton(
-                            text: AppStrings.addFirstTimeLog,
-                            onPressed: () => _showAddEditTimeLogDialog(),
-                            icon: Icons.add_circle_outline,
-                          )
-                        ],
-                      )
-                    else ...[
-                    _buildTimeLogTable(state.timeLogs),
-                    const SizedBox(height: 16),
-                    _buildMonthlySummary(state.timeLogs),
-                    ],
-                  ],
-                ),
-              ),
-            );
+          // Tratar ActiveTimeLogFetched - usar cache se disponível
+          if (state is ActiveTimeLogFetched) {
+            if (_lastTimeLogs != null) {
+              return _buildTimeLogContent(_lastTimeLogs!);
+            }
+            // Se não temos cache e é carregamento inicial, carregar apenas uma vez
+            if (_lastTimeLogs == null && _isInitialLoad) {
+              _refreshTimeLogs();
+              _isInitialLoad = false;
+            }
+            return const LoadingIndicator();
           }
-          if (state is StudentOperationFailure &&
-              _studentBloc.state is! StudentTimeLogsLoadSuccess) {
+
+          if (state is StudentOperationFailure) {
             return _buildErrorStatePage(context, state.message);
           }
-          // Fallback para loading ou estado inicial
+
+          // Mostrar loading apenas se ainda não temos dados
+          if (state is StudentLoading) {
+            return const LoadingIndicator();
+          }
+
+          // Estado inicial - mostrar loading
           return const LoadingIndicator();
         },
       ),
@@ -448,6 +424,51 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
         label: const Text('Adicionar Registo'),
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: theme.colorScheme.onPrimary,
+      ),
+    );
+  }
+
+  Widget _buildTimeLogContent(List<TimeLogEntity> timeLogs) {
+    final theme = Theme.of(context);
+    return RefreshIndicator(
+      onRefresh: _refreshTimeLogs,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Registro rápido (clock in/out) - temporariamente removido para evitar loop infinito
+            //
+            // Align(TODO: Reintegrar TimeTrackerWidget sem causar loop infinito
+            //   alignment: Alignment.centerLeft,
+            //   child: TimeTrackerWidget(
+            //     currentUserId: _currentUserId,
+            //   ),
+            // ),
+            const SizedBox(height: 16),
+            if (timeLogs.isEmpty)
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.history_toggle_off_outlined,
+                      size: 60, color: theme.hintColor),
+                  const SizedBox(height: 16),
+                  const Text(AppStrings.noTimeLogsFound,
+                      style: TextStyle(fontSize: 16)),
+                  const SizedBox(height: 16),
+                  AppButton(
+                    text: AppStrings.addFirstTimeLog,
+                    onPressed: () => _showAddEditTimeLogDialog(),
+                    icon: Icons.add_circle_outline,
+                  )
+                ],
+              )
+            else ...[
+              _buildTimeLogTable(timeLogs),
+              const SizedBox(height: 16),
+              _buildMonthlySummary(timeLogs),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -578,11 +599,14 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
             log.logDate.month == currentMonth.month)
         .toList();
 
-    final totalHours =
-        monthlyLogs.fold<double>(0, (sum, log) => sum + (log.hoursLogged ?? 0));
+    // Calcular horas usando o mesmo método da tabela
+    final totalHours = monthlyLogs.fold<double>(
+        0, (sum, log) => sum + _calculateLogHours(log));
+
     final approvedHours = monthlyLogs
         .where((log) => log.approved == true)
-        .fold<double>(0, (sum, log) => sum + (log.hoursLogged ?? 0));
+        .fold<double>(0, (sum, log) => sum + _calculateLogHours(log));
+
     final pendingHours = totalHours - approvedHours;
 
     return Card(
@@ -658,23 +682,25 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
     return grouped;
   }
 
-  double _calculateDayHours(List<TimeLogEntity> dayLogs) {
-    double totalHours = 0;
-    for (final log in dayLogs) {
-      if (log.checkOutTime != null) {
-        final checkInParts = log.checkInTime.split(':');
-        final checkOutParts = log.checkOutTime!.split(':');
+  // Função auxiliar para calcular horas de um único log
+  double _calculateLogHours(TimeLogEntity log) {
+    if (log.checkOutTime != null) {
+      final checkInParts = log.checkInTime.split(':');
+      final checkOutParts = log.checkOutTime!.split(':');
 
-        final checkInMinutes =
-            int.parse(checkInParts[0]) * 60 + int.parse(checkInParts[1]);
-        final checkOutMinutes =
-            int.parse(checkOutParts[0]) * 60 + int.parse(checkOutParts[1]);
+      final checkInMinutes =
+          int.parse(checkInParts[0]) * 60 + int.parse(checkInParts[1]);
+      final checkOutMinutes =
+          int.parse(checkOutParts[0]) * 60 + int.parse(checkOutParts[1]);
 
-        final diffMinutes = checkOutMinutes - checkInMinutes;
-        totalHours += diffMinutes / 60.0;
-      }
+      final diffMinutes = checkOutMinutes - checkInMinutes;
+      return diffMinutes / 60.0;
     }
-    return totalHours;
+    return 0.0;
+  }
+
+  double _calculateDayHours(List<TimeLogEntity> dayLogs) {
+    return dayLogs.fold<double>(0, (sum, log) => sum + _calculateLogHours(log));
   }
 
   String _formatTime(String time) {
