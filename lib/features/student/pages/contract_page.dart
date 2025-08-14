@@ -171,12 +171,7 @@ class _ContractPageState extends State<ContractPage> {
                         ),
                       ),
                       const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: AppColors.primary),
-                        tooltip: 'Editar Contrato',
-                        onPressed: () =>
-                            _showEditContractModal(contract: activeContract),
-                      ),
+                      // Botão de edição removido para estudantes - apenas supervisores podem editar contratos
                       const Icon(
                         Icons.business,
                         color: AppColors.primary,
@@ -261,6 +256,10 @@ class _ContractPageState extends State<ContractPage> {
               studentId: widget.studentId!,
               contract: contract,
               supervisorId: supervisorId,
+              onContractSaved: () {
+                _loadContracts();
+                _loadActiveContract();
+              },
             ),
           ),
         );
@@ -391,6 +390,17 @@ class _ContractCard extends StatelessWidget {
 
   const _ContractCard({required this.contract});
 
+  String _getContractTypeDisplay(String type) {
+    switch (type) {
+      case 'mandatory_internship':
+        return 'Estágio Obrigatório';
+      case 'voluntary_internship':
+        return 'Estágio Não Obrigatório';
+      default:
+        return type;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final statusColor = _getStatusColor(contract.status);
@@ -407,7 +417,7 @@ class _ContractCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    contract.contractType,
+                    _getContractTypeDisplay(contract.contractType),
                     style: AppTextStyles.bodyLarge.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -487,11 +497,13 @@ class _ContractEditForm extends StatefulWidget {
   final String studentId;
   final dynamic contract;
   final String? supervisorId;
+  final VoidCallback? onContractSaved;
 
   const _ContractEditForm({
     required this.studentId,
     this.contract,
     this.supervisorId,
+    this.onContractSaved,
   });
 
   @override
@@ -602,6 +614,10 @@ class _ContractEditFormState extends State<_ContractEditForm> {
               backgroundColor: AppColors.success,
             ),
           );
+          
+          // Recarregar os dados automaticamente
+          widget.onContractSaved?.call();
+          
           // Fechar modal após um pequeno delay para garantir que o SnackBar seja exibido
           Future.delayed(const Duration(milliseconds: 100), () {
             if (mounted) {

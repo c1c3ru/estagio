@@ -292,7 +292,7 @@ class AuthDatasource implements IAuthDatasource {
               'advisor_name': user.userMetadata?['advisor_name'] ?? 'Orientador não informado',
               'is_mandatory_internship': true,
               'class_shift': user.userMetadata?['class_shift'] ?? 'morning',
-              'internship_shift1': user.userMetadata?['internship_shift'] ?? 'morning',
+              'internship_shift_1': user.userMetadata?['internship_shift'] ?? 'morning',
               'birth_date': user.userMetadata?['birth_date'] ?? '2000-01-01',
               'contract_start_date': DateTime.now().toIso8601String().split('T')[0],
               'contract_end_date': DateTime.now().add(const Duration(days: 365)).toIso8601String().split('T')[0],

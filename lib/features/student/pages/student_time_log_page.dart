@@ -79,6 +79,37 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
   String _timeOfDayToString(TimeOfDay time) =>
       '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
 
+  // Determina o turno baseado no horário de entrada
+  String _determineShift(TimeOfDay checkInTime) {
+    final hour = checkInTime.hour;
+    if (hour >= 6 && hour < 12) {
+      return 'morning'; // Manhã: 6h às 11h59
+    } else if (hour >= 12 && hour < 18) {
+      return 'afternoon'; // Tarde: 12h às 17h59
+    } else {
+      return 'night'; // Noite: 18h às 5h59
+    }
+  }
+
+  // Verifica se já existe registro no mesmo turno para a data
+  bool _hasRegistryInSameShift(DateTime date, TimeOfDay checkInTime, List<TimeLogEntity> existingLogs, {String? excludeLogId}) {
+    final targetShift = _determineShift(checkInTime);
+    final dateKey = DateTime(date.year, date.month, date.day);
+    
+    return existingLogs.any((log) {
+      // Exclui o próprio log se estiver editando
+      if (excludeLogId != null && log.id == excludeLogId) return false;
+      
+      final logDate = DateTime(log.logDate.year, log.logDate.month, log.logDate.day);
+      if (logDate == dateKey) {
+        final logCheckInTime = _stringToTimeOfDay(log.checkInTime);
+        final logShift = _determineShift(logCheckInTime);
+        return logShift == targetShift;
+      }
+      return false;
+    });
+  }
+
   void _showAddEditTimeLogDialog({TimeLogEntity? timeLog}) {
     if (_currentUserId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -135,9 +166,7 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
                         context: dialogContext,
                         initialDate: selectedDate,
                         firstDate: DateTime(2000),
-                        lastDate: DateTime.now().add(const Duration(
-                            days:
-                                1)), // Permite até amanhã para evitar problemas de fuso
+                        lastDate: DateTime.now(), // Não permite datas futuras
                         locale: const Locale('pt', 'BR'),
                       );
                       if (picked != null && picked != selectedDate) {
@@ -239,6 +268,46 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
                               Text('Por favor, selecione a hora de entrada.')),
                     );
                     return;
+                  }
+
+                  // Verificar se já existe registro no mesmo turno para a data
+                  final currentState = _studentBloc.state;
+                  if (currentState is StudentTimeLogsLoadSuccess) {
+                    final hasConflict = _hasRegistryInSameShift(
+                      selectedDate, 
+                      selectedCheckInTime!, 
+                      currentState.timeLogs,
+                      excludeLogId: timeLog?.id,
+                    );
+                    
+                    if (hasConflict) {
+                      final shift = _determineShift(selectedCheckInTime!);
+                      String shiftName;
+                      switch (shift) {
+                        case 'morning':
+                          shiftName = 'manhã';
+                          break;
+                        case 'afternoon':
+                          shiftName = 'tarde';
+                          break;
+                        case 'night':
+                          shiftName = 'noite';
+                          break;
+                        default:
+                          shiftName = shift;
+                      }
+                      
+                      ScaffoldMessenger.of(dialogContext).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Já existe um registro no turno da $shiftName para esta data. '
+                            'Você só pode registrar horários em turnos diferentes no mesmo dia.'
+                          ),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                      return;
+                    }
                   }
 
                   if (timeLog == null) {
