@@ -486,6 +486,7 @@ class _StudentFilterSheetState extends State<_StudentFilterSheet> {
       initialDate: initial ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
+      locale: const Locale('pt', 'BR'),
     );
     if (picked != null) onPicked(picked);
   }

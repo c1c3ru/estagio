@@ -47,8 +47,10 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
       child: DropdownButton<String>(
         value: _selectedPeriod,
         items: const [
-          DropdownMenuItem(value: 'Últimos 7 dias', child: Text('Últimos 7 dias')),
-          DropdownMenuItem(value: 'Últimos 30 dias', child: Text('Últimos 30 dias')),
+          DropdownMenuItem(
+              value: 'Últimos 7 dias', child: Text('Últimos 7 dias')),
+          DropdownMenuItem(
+              value: 'Últimos 30 dias', child: Text('Últimos 30 dias')),
           DropdownMenuItem(value: 'Último mês', child: Text('Último mês')),
         ],
         onChanged: (value) {
@@ -69,10 +71,14 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
   void _exportReport() async {
     setState(() => _isLoading = true);
     try {
-      await _reportService.exportToCSV(
-        reportType: 'time_log',
-        reportData: {},
+      final now = DateTime.now();
+      final report = await _reportService.generateStudentTimeLogReport(
+        studentId: 'current',
+        studentName: 'Estudante',
+        startDate: now.subtract(const Duration(days: 7)),
+        endDate: now,
       );
+      await _reportService.exportToCSV(report);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Relatório exportado com sucesso')),

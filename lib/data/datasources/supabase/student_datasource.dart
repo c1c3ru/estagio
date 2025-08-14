@@ -171,6 +171,7 @@ class StudentDatasource {
       // Calcular estatísticas de tempo
       double totalHoursThisWeek = 0.0;
       double totalHoursThisMonth = 0.0;
+      double approvedHoursTotal = 0.0;
       final now = DateTime.now();
       final weekStart = now.subtract(Duration(days: now.weekday - 1));
       final monthStart = DateTime(now.year, now.month, 1);
@@ -184,6 +185,13 @@ class StudentDatasource {
         }
         if (logDate.isAfter(weekStart)) {
           totalHoursThisWeek += hours;
+        }
+
+        // Soma apenas horas aprovadas para o total consolidado
+        final isApproved = (log['approved'] == true) ||
+            (log['status'] != null && log['status'] == 'approved');
+        if (isApproved) {
+          approvedHoursTotal += (hours as num).toDouble();
         }
       }
 
@@ -209,6 +217,7 @@ class StudentDatasource {
         'timeStats': {
           'hoursThisWeek': totalHoursThisWeek,
           'hoursThisMonth': totalHoursThisMonth,
+          'approvedHoursTotal': approvedHoursTotal,
           'recentLogs': timeLogsResponse.take(10).toList(), // Últimos 10 logs
           'activeTimeLog': activeTimeLog,
         },

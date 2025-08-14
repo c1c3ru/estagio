@@ -17,8 +17,8 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
 import 'auth_bloc_test.mocks.dart';
-import '../../../mocks/mock_notification_service.dart';
-import 'package:gestao_de_estagio/core/services/notification_service.dart';
+// import '../../../mocks/mock_notification_service.dart';
+// import 'package:gestao_de_estagio/core/services/notification_service.dart';
 
 @GenerateMocks([
   LoginUsecase,
@@ -52,7 +52,7 @@ void main() {
         .thenAnswer((_) => const Stream.empty());
 
     // Injetar mock de NotificationService globalmente se necessário
-    NotificationService.instance = MockNotificationService();
+    // Compat removida: NotificationService agora é instanciado via DI
 
     authBloc = AuthBloc(
       loginUseCase: mockLoginUseCase,

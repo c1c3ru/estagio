@@ -176,6 +176,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
       initialDate: _selectedBirthDate ?? DateTime.now(),
       firstDate: DateTime(1950),
       lastDate: DateTime(2101),
+      locale: const Locale('pt', 'BR'),
     );
     await Future.delayed(
         const Duration(milliseconds: 100)); // Evita erro de navigator lock

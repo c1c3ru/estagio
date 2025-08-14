@@ -93,7 +93,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/icon/icon.png"
+  image_path: "assets/images/estagioIcon.png"
 
 flutter:
   uses-material-design: true

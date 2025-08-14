@@ -18,6 +18,7 @@ import '../../../../domain/entities/contract_entity.dart';
 import '../bloc/supervisor_bloc.dart';
 import '../bloc/supervisor_event.dart';
 import '../bloc/supervisor_state.dart';
+import '../../../../domain/repositories/i_student_repository.dart';
 
 class StudentDetailsPage extends StatefulWidget {
   final String studentId;
@@ -375,22 +376,32 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
           children: [
             Text('Progresso das Horas', style: theme.textTheme.titleMedium),
             const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                    '${student.totalHoursCompleted.toStringAsFixed(1)}h completas',
-                    style: theme.textTheme.bodyMedium),
-                Text('${student.totalHoursRequired.toStringAsFixed(1)}h (Meta)',
-                    style: theme.textTheme.bodyMedium),
-              ],
+            FutureBuilder<Map<String, dynamic>>(
+              future: Modular.get<IStudentRepository>()
+                  .getStudentDashboard(student.id)
+                  .then((either) => either.getOrElse(() => {})),
+              builder: (context, snapshot) {
+                final approved = (snapshot.data?['timeStats']?['approvedHoursTotal']
+                            as num?)
+                        ?.toDouble() ??
+                    student.totalHoursCompleted;
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('${approved.toStringAsFixed(1)}h completas',
+                        style: theme.textTheme.bodyMedium),
+                    Text('${student.totalHoursRequired.toStringAsFixed(1)}h (Meta)',
+                        style: theme.textTheme.bodyMedium),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 8),
             if (student.totalHoursRequired > 0)
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: LinearProgressIndicator(
-                  value: 0.0,
+                  value: 0.0, // Pode ser ajustado quando approved for carregado via FutureBuilder
                   minHeight: 12,
                   backgroundColor:
                       theme.colorScheme.primaryContainer.withAlpha(100),

@@ -1,261 +1,230 @@
 // lib/core/services/sync_service.dart
 import 'dart:async';
-import '../utils/app_logger.dart';
-import '../constants/app_strings.dart';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
+import '../utils/app_logger.dart';
+// import '../constants/app_strings.dart';
 import 'connectivity_service.dart';
 import 'cache_service.dart';
 
-/// Serviço responsável por sincronizar dados entre cache local e backend
-/// Gerencia operações offline e sincronização automática
+enum SyncStatus { pending, syncing, completed, failed }
+
+enum OperationType { create, update, delete }
+
+class PendingOperation {
+  final String id;
+  final OperationType type;
+  final String entityType;
+  final String? entityId;
+  final Map<String, dynamic> data;
+  final DateTime createdAt;
+  final int retryCount;
+  final SyncStatus status;
+  final String? errorMessage;
+
+  PendingOperation({
+    required this.id,
+    required this.type,
+    required this.entityType,
+    this.entityId,
+    required this.data,
+    required this.createdAt,
+    this.retryCount = 0,
+    this.status = SyncStatus.pending,
+    this.errorMessage,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type.name,
+      'entityType': entityType,
+      'entityId': entityId,
+      'data': jsonEncode(data),
+      'createdAt': createdAt.toIso8601String(),
+      'retryCount': retryCount,
+      'status': status.name,
+      'errorMessage': errorMessage,
+    };
+  }
+
+  factory PendingOperation.fromJson(Map<String, dynamic> json) {
+    return PendingOperation(
+      id: json['id'],
+      type: OperationType.values.firstWhere((e) => e.name == json['type']),
+      entityType: json['entityType'],
+      entityId: json['entityId'],
+      data: jsonDecode(json['data']),
+      createdAt: DateTime.parse(json['createdAt']),
+      retryCount: json['retryCount'] ?? 0,
+      status: SyncStatus.values.firstWhere((e) => e.name == json['status']),
+      errorMessage: json['errorMessage'],
+    );
+  }
+}
+
 class SyncService {
   static final SyncService _instance = SyncService._internal();
   factory SyncService() => _instance;
   SyncService._internal();
 
+  Database? _database;
   final ConnectivityService _connectivityService = ConnectivityService();
-  final CacheService _cacheService = CacheService();
-  
-  StreamSubscription<bool>? _connectivitySubscription;
-  Timer? _syncTimer;
-  
+  // ignore: unused_field
+  final CacheService _cacheService = CacheService(); // kept for future use
+
+  final StreamController<SyncStatus> _syncStatusController =
+      StreamController<SyncStatus>.broadcast();
+  final StreamController<List<PendingOperation>> _pendingOperationsController =
+      StreamController<List<PendingOperation>>.broadcast();
+
   bool _isInitialized = false;
   bool _isSyncing = false;
-  
-  final StreamController<SyncStatus> _syncStatusController = StreamController<SyncStatus>.broadcast();
+  Timer? _autoSyncTimer;
 
-  /// Stream que emite o status da sincronização
-  Stream<SyncStatus> get syncStatus => _syncStatusController.stream;
+  /// Stream para monitorar status de sincronização
+  Stream<SyncStatus> get syncStatusStream => _syncStatusController.stream;
 
-  /// Verifica se está sincronizando
+  /// Stream para monitorar operações pendentes
+  Stream<List<PendingOperation>> get pendingOperationsStream =>
+      _pendingOperationsController.stream;
+
+  /// Status atual de sincronização
   bool get isSyncing => _isSyncing;
-
-  /// Verifica se o serviço foi inicializado
   bool get isInitialized => _isInitialized;
 
   /// Inicializa o serviço de sincronização
   Future<bool> initialize() async {
     try {
-      if (kDebugMode) {
-        print('🔄 SyncService: Inicializando serviço de sincronização...');
-      }
+      if (_isInitialized) return true;
 
-      // Verificar se os serviços dependentes estão inicializados
-      if (!_connectivityService.isInitialized) {
-        await _connectivityService.initialize();
-      }
+      // Inicializa banco de dados local
+      await _initializeDatabase();
 
-      if (!_cacheService.isInitialized) {
-        await _cacheService.initialize();
-      }
-
-      // Escutar mudanças de conectividade para sincronização automática
-      _connectivitySubscription = _connectivityService.connectionStatus.listen(
-        _onConnectivityChanged,
-        onError: (error) {
-          if (kDebugMode) {
-            print('❌ SyncService: Erro ao monitorar conectividade: $error');
-          }
-        },
-      );
-
-      // Timer periódico para limpeza e sincronização
-      _syncTimer = Timer.periodic(
-        const Duration(minutes: 15),
-        (timer) => _performPeriodicTasks(),
-      );
+      // Configura auto-sync
+      _setupAutoSync();
 
       _isInitialized = true;
-
-      // Tentar sincronização inicial se estiver online
-      if (_connectivityService.isOnline) {
-        unawaited(_syncPendingOperations());
-      }
-
-      if (kDebugMode) {
-        print('✅ SyncService: Serviço inicializado com sucesso');
-      }
+      AppLogger.info('SyncService inicializado com sucesso');
 
       return true;
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ SyncService: Erro ao inicializar: $e');
-      }
+      AppLogger.error('Erro ao inicializar SyncService', error: e);
       return false;
     }
   }
 
-  /// Manipula mudanças de conectividade
-  void _onConnectivityChanged(bool isOnline) {
-    if (kDebugMode) {
-      print('🔄 SyncService: Conectividade alterada - ${isOnline ? 'Online' : 'Offline'}');
-    }
+  /// Inicializa banco de dados SQLite
+  Future<void> _initializeDatabase() async {
+    final databasesPath = await getDatabasesPath();
+    final path = join(databasesPath, 'sync_operations.db');
 
-    if (isOnline && !_isSyncing) {
-      // Quando voltar online, sincronizar operações pendentes
-      unawaited(_syncPendingOperations());
-    }
+    _database = await openDatabase(
+      path,
+      version: 1,
+      onCreate: _createTables,
+      onUpgrade: _upgradeDatabase,
+    );
   }
 
-  /// Executa tarefas periódicas (limpeza e sincronização)
-  Future<void> _performPeriodicTasks() async {
-    try {
-      // Limpar dados expirados
-      await _cacheService.clearExpiredData();
+  /// Cria tabelas do banco de dados
+  Future<void> _createTables(Database db, int version) async {
+    // Tabela para operações pendentes
+    await db.execute('''
+      CREATE TABLE pending_operations (
+        id TEXT PRIMARY KEY,
+        type TEXT NOT NULL,
+        entity_type TEXT NOT NULL,
+        entity_id TEXT,
+        data TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        retry_count INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'pending',
+        error_message TEXT
+      )
+    ''');
 
-      // Tentar sincronizar se estiver online
+    // Tabela para dados offline
+    await db.execute('''
+      CREATE TABLE offline_data (
+        id TEXT PRIMARY KEY,
+        entity_type TEXT NOT NULL,
+        data TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        sync_version INTEGER DEFAULT 1
+      )
+    ''');
+
+    // Índices para performance
+    await db.execute(
+        'CREATE INDEX idx_pending_status ON pending_operations(status)');
+    await db.execute(
+        'CREATE INDEX idx_pending_entity_type ON pending_operations(entity_type)');
+    await db.execute(
+        'CREATE INDEX idx_offline_entity_type ON offline_data(entity_type)');
+  }
+
+  /// Atualiza banco de dados
+  Future<void> _upgradeDatabase(
+      Database db, int oldVersion, int newVersion) async {
+    // Implementar migrações futuras aqui
+  }
+
+  /// Configura sincronização automática
+  void _setupAutoSync() {
+    _autoSyncTimer?.cancel();
+    _autoSyncTimer = Timer.periodic(const Duration(minutes: 5), (_) {
       if (_connectivityService.isOnline && !_isSyncing) {
-        await _syncPendingOperations();
+        syncPendingOperations();
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ SyncService: Erro nas tarefas periódicas: $e');
-      }
-    }
+    });
   }
 
-  /// Armazena dados no cache com estratégia offline-first
-  Future<bool> cacheDataOfflineFirst({
-    required String key,
-    required Map<String, dynamic> data,
-    required String entityType,
-    Duration? expiresIn,
-  }) async {
-    try {
-      // Sempre armazenar no cache primeiro
-      final cached = await _cacheService.cacheData(
-        key: key,
-        data: data,
-        entityType: entityType,
-        expiresIn: expiresIn,
-        syncStatus: _connectivityService.isOnline ? 'synced' : 'pending_sync',
-      );
-
-      if (!cached) {
-        return false;
-      }
-
-      // Se offline, marcar para sincronização posterior
-      if (!_connectivityService.isOnline) {
-        await _cacheService.addPendingOperation(
-          operationType: 'cache_sync',
-          entityType: entityType,
-          entityId: key,
-          data: data,
-        );
-
-        if (kDebugMode) {
-          print('🔄 SyncService: Dados armazenados offline - Key: $key');
-        }
-      }
-
-      return true;
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ SyncService: Erro ao armazenar dados offline-first: $e');
-      }
-      return false;
-    }
-  }
-
-  /// Recupera dados com estratégia cache-first
-  Future<Map<String, dynamic>?> getDataCacheFirst(String key) async {
-    try {
-      // Tentar cache primeiro
-      final cachedData = await _cacheService.getCachedData(key);
-      
-      if (cachedData != null) {
-        if (kDebugMode) {
-          print('🔄 SyncService: Dados recuperados do cache - Key: $key');
-        }
-        return cachedData;
-      }
-
-      // Se não estiver no cache e estiver online, buscar no backend
-      if (_connectivityService.isOnline) {
-        if (kDebugMode) {
-          print('🔄 SyncService: Cache miss - tentando backend - Key: $key');
-        }
-        // Aqui seria implementada a busca no backend
-        // return await _fetchFromBackend(key);
-      }
-
-      return null;
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ SyncService: Erro ao recuperar dados cache-first: $e');
-      }
-      return null;
-    }
-  }
-
-  /// Recupera lista de dados por tipo com estratégia cache-first
-  Future<List<Map<String, dynamic>>> getDataListCacheFirst(String entityType) async {
-    try {
-      // Sempre retornar dados do cache primeiro
-      final cachedData = await _cacheService.getCachedDataByType(entityType);
-      
-      if (kDebugMode) {
-        print('🔄 SyncService: ${cachedData.length} itens recuperados do cache - Type: $entityType');
-      }
-
-      // Se estiver online e não tiver dados no cache, buscar no backend
-      if (_connectivityService.isOnline && cachedData.isEmpty) {
-        if (kDebugMode) {
-          print('🔄 SyncService: Cache vazio - tentando backend - Type: $entityType');
-        }
-        // Aqui seria implementada a busca no backend
-        // final backendData = await _fetchListFromBackend(entityType);
-        // if (backendData.isNotEmpty) {
-        //   await _cacheMultipleData(backendData, entityType);
-        //   return backendData;
-        // }
-      }
-
-      return cachedData;
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ SyncService: Erro ao recuperar lista cache-first: $e');
-      }
-      return [];
-    }
-  }
-
-  /// Adiciona operação para execução offline
-  Future<bool> addOfflineOperation({
-    required String operationType,
+  /// Adiciona operação pendente
+  Future<void> addPendingOperation({
+    required OperationType type,
     required String entityType,
     String? entityId,
     required Map<String, dynamic> data,
   }) async {
     try {
-      final success = await _cacheService.addPendingOperation(
-        operationType: operationType,
+      if (!_isInitialized) {
+        throw Exception('SyncService não inicializado');
+      }
+
+      final operation = PendingOperation(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        type: type,
         entityType: entityType,
         entityId: entityId,
         data: data,
+        createdAt: DateTime.now(),
       );
 
-      if (success) {
-        _syncStatusController.add(SyncStatus.pendingOperationsAdded);
-        
-        // Se estiver online, tentar sincronizar imediatamente
-        if (_connectivityService.isOnline && !_isSyncing) {
-          unawaited(_syncPendingOperations());
-        }
-      }
+      await _database!.insert(
+        'pending_operations',
+        operation.toJson(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
 
-      return success;
-    } catch (e) {
+      // Notifica mudanças
+      _notifyPendingOperationsChanged();
+
       if (kDebugMode) {
-        print('❌ SyncService: Erro ao adicionar operação offline: $e');
+        AppLogger.debug(
+            'Operação pendente adicionada: ${operation.type.name} ${operation.entityType}');
       }
-      return false;
+    } catch (e) {
+      AppLogger.error('Erro ao adicionar operação pendente', error: e);
+      rethrow;
     }
   }
 
-  /// Sincroniza operações pendentes com o backend
-  Future<bool> _syncPendingOperations() async {
+  /// Sincroniza operações pendentes
+  Future<bool> syncPendingOperations() async {
     if (_isSyncing || !_connectivityService.isOnline) {
       return false;
     }
@@ -264,17 +233,10 @@ class SyncService {
       _isSyncing = true;
       _syncStatusController.add(SyncStatus.syncing);
 
-      if (kDebugMode) {
-        print('🔄 SyncService: Iniciando sincronização de operações pendentes...');
-      }
+      final pendingOperations = await getPendingOperations();
 
-      final pendingOperations = await _cacheService.getPendingOperations();
-      
       if (pendingOperations.isEmpty) {
-        if (kDebugMode) {
-          print('🔄 SyncService: Nenhuma operação pendente para sincronizar');
-        }
-        _syncStatusController.add(SyncStatus.synced);
+        _syncStatusController.add(SyncStatus.completed);
         return true;
       }
 
@@ -283,205 +245,302 @@ class SyncService {
 
       for (final operation in pendingOperations) {
         try {
-          final operationId = operation['id'] as int;
-          final operationType = operation['operation_type'] as String;
-          final entityType = operation['entity_type'] as String;
-          final data = operation['data'] as Map<String, dynamic>;
-
-          // Aqui seria implementada a sincronização específica para cada tipo de operação
-          final success = await _executeSyncOperation(operationType, entityType, data);
+          final success = await _executeOperation(operation);
 
           if (success) {
-            await _cacheService.markOperationCompleted(operationId);
+            await _markOperationCompleted(operation.id);
             successCount++;
-            
-            if (kDebugMode) {
-              print('✅ SyncService: Operação sincronizada - Type: $operationType, Entity: $entityType');
-            }
           } else {
-            await _cacheService.incrementOperationRetry(operationId);
+            await _incrementRetryCount(operation.id);
             failureCount++;
-            
-            if (kDebugMode) {
-              print('❌ SyncService: Falha na sincronização - Type: $operationType, Entity: $entityType');
-            }
           }
         } catch (e) {
+          await _markOperationFailed(operation.id, e.toString());
           failureCount++;
-          if (kDebugMode) {
-            AppLogger.error('\u001b[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e\u001b[0m');
-          }
         }
       }
 
-      if (kDebugMode) {
-        print('🔄 SyncService: Sincronização concluída - Sucesso: $successCount, Falhas: $failureCount');
-      }
+      _notifyPendingOperationsChanged();
 
-      _syncStatusController.add(
-        failureCount == 0 ? SyncStatus.synced : SyncStatus.partialSync,
-      );
+      final finalStatus =
+          failureCount == 0 ? SyncStatus.completed : SyncStatus.failed;
+      _syncStatusController.add(finalStatus);
+
+      if (kDebugMode) {
+        AppLogger.info(
+            'Sincronização concluída: $successCount sucessos, $failureCount falhas');
+      }
 
       return failureCount == 0;
     } catch (e) {
-      if (kDebugMode) {
-        AppLogger.error('\u001b[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e\u001b[0m');
-      }
-      _syncStatusController.add(SyncStatus.syncError);
+      AppLogger.error('Erro durante sincronização', error: e);
+      _syncStatusController.add(SyncStatus.failed);
       return false;
     } finally {
       _isSyncing = false;
     }
   }
 
-  /// Executa uma operação de sincronização específica
-  Future<bool> _executeSyncOperation(
-    String operationType,
-    String entityType,
-    Map<String, dynamic> data,
-  ) async {
+  /// Executa operação específica
+  Future<bool> _executeOperation(PendingOperation operation) async {
     try {
-      // Aqui seria implementada a lógica específica para cada tipo de operação
-      // Por exemplo:
-      switch (operationType) {
-        case 'create':
-          // return await _createInBackend(entityType, data);
-          break;
-        case 'update':
-          // return await _updateInBackend(entityType, data);
-          break;
-        case 'delete':
-          // return await _deleteInBackend(entityType, data);
-          break;
-        case 'cache_sync':
-          // return await _syncCacheToBackend(entityType, data);
-          break;
-        default:
-          if (kDebugMode) {
-            print('⚠️ SyncService: Tipo de operação desconhecido: $operationType');
-          }
-          return false;
+      switch (operation.type) {
+        case OperationType.create:
+          return await _executeCreateOperation(operation);
+        case OperationType.update:
+          return await _executeUpdateOperation(operation);
+        case OperationType.delete:
+          return await _executeDeleteOperation(operation);
       }
-
-      // Por enquanto, simular sucesso para demonstração
-      await Future.delayed(const Duration(milliseconds: 100));
-      return true;
     } catch (e) {
-      if (kDebugMode) {
-        AppLogger.error('\u001b[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} [$operationType] - $e\u001b[0m');
-      }
+      AppLogger.error('Erro ao executar operação ${operation.type.name}',
+          error: e);
       return false;
     }
   }
 
-  /// Força sincronização manual
-  Future<bool> forcSync() async {
-    if (!_connectivityService.isOnline) {
-      if (kDebugMode) {
-        print('⚠️ SyncService: Não é possível sincronizar - dispositivo offline');
-      }
-      return false;
+  /// Executa operação de criação
+  Future<bool> _executeCreateOperation(PendingOperation operation) async {
+    // Implementação específica para cada tipo de entidade
+    switch (operation.entityType) {
+      case 'time_log':
+        // return await _timeLogRepository.createTimeLog(operation.data);
+        return true; // Placeholder
+      case 'contract':
+        // return await _contractRepository.createContract(operation.data);
+        return true; // Placeholder
+      default:
+        AppLogger.warning(
+            'Tipo de entidade não suportado: ${operation.entityType}');
+        return false;
     }
+  }
 
-    return await _syncPendingOperations();
+  /// Executa operação de atualização
+  Future<bool> _executeUpdateOperation(PendingOperation operation) async {
+    // Implementação similar ao create
+    return true; // Placeholder
+  }
+
+  /// Executa operação de exclusão
+  Future<bool> _executeDeleteOperation(PendingOperation operation) async {
+    // Implementação similar ao create
+    return true; // Placeholder
+  }
+
+  /// Obtém operações pendentes
+  Future<List<PendingOperation>> getPendingOperations() async {
+    try {
+      if (!_isInitialized) return [];
+
+      final result = await _database!.query(
+        'pending_operations',
+        where: 'status = ? AND retry_count < 3',
+        whereArgs: [SyncStatus.pending.name],
+        orderBy: 'created_at ASC',
+      );
+
+      return result.map((row) => PendingOperation.fromJson(row)).toList();
+    } catch (e) {
+      AppLogger.error('Erro ao obter operações pendentes', error: e);
+      return [];
+    }
+  }
+
+  /// Marca operação como concluída
+  Future<void> _markOperationCompleted(String operationId) async {
+    await _database!.update(
+      'pending_operations',
+      {'status': SyncStatus.completed.name},
+      where: 'id = ?',
+      whereArgs: [operationId],
+    );
+  }
+
+  /// Marca operação como falhada
+  Future<void> _markOperationFailed(String operationId, String error) async {
+    await _database!.update(
+      'pending_operations',
+      {
+        'status': SyncStatus.failed.name,
+        'error_message': error,
+      },
+      where: 'id = ?',
+      whereArgs: [operationId],
+    );
+  }
+
+  /// Incrementa contador de tentativas
+  Future<void> _incrementRetryCount(String operationId) async {
+    await _database!.rawUpdate(
+      'UPDATE pending_operations SET retry_count = retry_count + 1 WHERE id = ?',
+      [operationId],
+    );
+  }
+
+  /// Armazena dados offline
+  Future<void> storeOfflineData({
+    required String id,
+    required String entityType,
+    required Map<String, dynamic> data,
+  }) async {
+    try {
+      if (!_isInitialized) return;
+
+      await _database!.insert(
+        'offline_data',
+        {
+          'id': id,
+          'entity_type': entityType,
+          'data': jsonEncode(data),
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+
+      if (kDebugMode) {
+        AppLogger.debug('Dados offline armazenados: $entityType/$id');
+      }
+    } catch (e) {
+      AppLogger.error('Erro ao armazenar dados offline', error: e);
+    }
+  }
+
+  /// Obtém dados offline
+  Future<List<Map<String, dynamic>>> getOfflineData(String entityType) async {
+    try {
+      if (!_isInitialized) return [];
+
+      final result = await _database!.query(
+        'offline_data',
+        where: 'entity_type = ?',
+        whereArgs: [entityType],
+        orderBy: 'updated_at DESC',
+      );
+
+      return result.map((row) {
+        final data = jsonDecode(row['data'] as String) as Map<String, dynamic>;
+        data['_offline_id'] = row['id'];
+        data['_offline_updated_at'] = row['updated_at'];
+        return data;
+      }).toList();
+    } catch (e) {
+      AppLogger.error('Erro ao obter dados offline', error: e);
+      return [];
+    }
+  }
+
+  /// Limpa dados offline antigos
+  Future<void> clearOldOfflineData({Duration? olderThan}) async {
+    try {
+      if (!_isInitialized) return;
+
+      final cutoff =
+          DateTime.now().subtract(olderThan ?? const Duration(days: 7));
+
+      final deletedCount = await _database!.delete(
+        'offline_data',
+        where: 'updated_at < ?',
+        whereArgs: [cutoff.toIso8601String()],
+      );
+
+      if (kDebugMode) {
+        AppLogger.debug('$deletedCount registros offline antigos removidos');
+      }
+    } catch (e) {
+      AppLogger.error('Erro ao limpar dados offline antigos', error: e);
+    }
   }
 
   /// Obtém estatísticas de sincronização
   Future<Map<String, dynamic>> getSyncStats() async {
     try {
-      final cacheStats = await _cacheService.getCacheStats();
-      final connectivityInfo = await _connectivityService.getConnectionInfo();
+      if (!_isInitialized) return {};
+
+      final pendingCount = Sqflite.firstIntValue(
+            await _database!.rawQuery(
+                'SELECT COUNT(*) FROM pending_operations WHERE status = "pending"'),
+          ) ??
+          0;
+
+      final failedCount = Sqflite.firstIntValue(
+            await _database!.rawQuery(
+                'SELECT COUNT(*) FROM pending_operations WHERE status = "failed"'),
+          ) ??
+          0;
+
+      final offlineDataCount = Sqflite.firstIntValue(
+            await _database!.rawQuery('SELECT COUNT(*) FROM offline_data'),
+          ) ??
+          0;
 
       return {
+        'pendingOperations': pendingCount,
+        'failedOperations': failedCount,
+        'offlineDataCount': offlineDataCount,
         'isOnline': _connectivityService.isOnline,
         'isSyncing': _isSyncing,
-        'isInitialized': _isInitialized,
-        'pendingOperations': cacheStats['pendingOperations'] ?? 0,
-        'cachedItems': cacheStats['totalCachedItems'] ?? 0,
-        'expiredItems': cacheStats['expiredItems'] ?? 0,
-        'connectivity': connectivityInfo,
-        'lastSyncAttempt': DateTime.now().toIso8601String(),
+        'lastSync':
+            DateTime.now().toIso8601String(), // Implementar tracking real
       };
     } catch (e) {
-      return {
-        'isOnline': false,
-        'isSyncing': false,
-        'isInitialized': false,
-        'error': e.toString(),
-      };
+      AppLogger.error('Erro ao obter estatísticas de sincronização', error: e);
+      return {};
     }
   }
 
-  /// Limpa todos os dados de cache e operações pendentes
-  Future<bool> clearAllData() async {
-    try {
-      final success = await _cacheService.clearAllCache();
-      
-      if (success) {
-        _syncStatusController.add(SyncStatus.cleared);
-        
-        if (kDebugMode) {
-          print('🔄 SyncService: Todos os dados foram limpos');
-        }
-      }
+  /// Notifica mudanças nas operações pendentes
+  void _notifyPendingOperationsChanged() {
+    getPendingOperations().then((operations) {
+      _pendingOperationsController.add(operations);
+    });
+  }
 
-      return success;
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ SyncService: Erro ao limpar dados: $e');
-      }
+  /// Força sincronização manual
+  Future<bool> forceSync() async {
+    if (!_connectivityService.isOnline) {
+      AppLogger.warning('Sincronização forçada cancelada - offline');
       return false;
     }
+
+    return await syncPendingOperations();
   }
 
-  /// Libera recursos do serviço
+  /// Dispose do serviço
   void dispose() {
-    _connectivitySubscription?.cancel();
-    _syncTimer?.cancel();
+    _autoSyncTimer?.cancel();
     _syncStatusController.close();
+    _pendingOperationsController.close();
+    _database?.close();
     _isInitialized = false;
-    
-    if (kDebugMode) {
-      print('🔄 SyncService: Serviço finalizado');
-    }
-  }
-}
-
-/// Status da sincronização
-enum SyncStatus {
-  syncing,
-  synced,
-  partialSync,
-  syncError,
-  pendingOperationsAdded,
-  cleared,
-}
-
-/// Extensão para facilitar uso do SyncStatus
-extension SyncStatusExtension on SyncStatus {
-  String get description {
-    switch (this) {
-      case SyncStatus.syncing:
-        return 'Sincronizando...';
-      case SyncStatus.synced:
-        return 'Sincronizado';
-      case SyncStatus.partialSync:
-        return 'Sincronização parcial';
-      case SyncStatus.syncError:
-        return 'Erro na sincronização';
-      case SyncStatus.pendingOperationsAdded:
-        return 'Operações adicionadas à fila';
-      case SyncStatus.cleared:
-        return 'Dados limpos';
-    }
   }
 
-  bool get isError => this == SyncStatus.syncError;
-  bool get isSuccess => this == SyncStatus.synced;
-  bool get isInProgress => this == SyncStatus.syncing;
-}
+  // ---- Compat: aliases e métodos legados usados em UI/tests ----
+  Stream<SyncStatus> get syncStatus => syncStatusStream;
 
-/// Função auxiliar para não aguardar futures
-void unawaited(Future<void> future) {
-  // Ignora o resultado do future para execução assíncrona
+  Future<bool> forcSync() => forceSync();
+
+  Future<void> addOfflineOperation({
+    required String operationType,
+    required String entityType,
+    String? entityId,
+    required Map<String, dynamic> data,
+  }) async {
+    // Mapeia string para OperationType
+    final type = () {
+      switch (operationType) {
+        case 'create':
+          return OperationType.create;
+        case 'update':
+          return OperationType.update;
+        case 'delete':
+          return OperationType.delete;
+        default:
+          return OperationType.create;
+      }
+    }();
+    await addPendingOperation(
+        type: type, entityType: entityType, entityId: entityId, data: data);
+  }
 }

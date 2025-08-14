@@ -21,7 +21,7 @@ import '../../../../domain/entities/supervisor_entity.dart';
 import '../../../../domain/usecases/contract/get_active_contract_by_student_usecase.dart';
 import '../../../../domain/usecases/supervisor/get_supervisor_by_id_usecase.dart';
 import '../../../../domain/usecases/supervisor/get_all_supervisors_usecase.dart';
-import '../../../../domain/usecases/student/create_student_usecase.dart';
+import '../../../../domain/repositories/i_student_repository.dart';
 
 import '../bloc/student_bloc.dart' as student_bloc;
 import '../bloc/student_event.dart' as student_event;
@@ -185,68 +185,27 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
             ),
           ));
         } else {
-          // Criar novo perfil
-          final student = StudentEntity(
-            id: _currentUserId!,
+          // Criar novo perfil via BLoC para manter padrão
+          final params = student_event.UpdateStudentProfileEventParams(
             fullName: _fullNameController.text.trim(),
             registrationNumber: _registrationNumberController.text.trim(),
             course: _courseController.text.trim(),
             advisorName: _advisorNameController.text.trim(),
-            isMandatoryInternship: _selectedIsMandatoryInternship ?? false,
-            classShift: _selectedClassShift?.name ?? ClassShift.morning.name,
-            internshipShift1:
-                _selectedInternshipShift?.name ?? InternshipShift.morning.name,
-            internshipShift2: null,
-            birthDate: _selectedBirthDate ?? DateTime(2000, 1, 1),
-            contractStartDate: DateTime.now(),
-            contractEndDate: DateTime.now().add(const Duration(days: 365)),
-            totalHoursRequired: 0.0,
-            totalHoursCompleted: 0.0,
-            weeklyHoursTarget: 0.0,
-            profilePictureUrl: _profilePictureUrlController.text.trim().isEmpty
-                ? null
-                : _profilePictureUrlController.text.trim(),
             phoneNumber: _phoneNumberController.text.trim().isEmpty
                 ? null
                 : _phoneNumberController.text.trim(),
-            createdAt: DateTime.now(),
-            updatedAt: null,
-            status: 'active',
-            supervisorId: null,
+            profilePictureUrl: _profilePictureUrlController.text.trim().isEmpty
+                ? null
+                : _profilePictureUrlController.text.trim(),
+            birthDate: _selectedBirthDate ?? DateTime(2000, 1, 1),
+            classShift: _selectedClassShift ?? ClassShift.morning,
+            internshipShift: _selectedInternshipShift ?? InternshipShift.morning,
+            isMandatoryInternship: _selectedIsMandatoryInternship ?? false,
           );
-
-          // Usar o use case diretamente
-          final createStudentUsecase = Modular.get<CreateStudentUsecase>();
-          createStudentUsecase(student).then((result) {
-            if (mounted) {
-              result.fold(
-                (failure) {
-                  ScaffoldMessenger.of(context)
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(
-                      SnackBar(
-                        content: Text('Erro ao criar perfil: ${failure.message}'),
-                        backgroundColor: Theme.of(context).colorScheme.error,
-                      ),
-                    );
-                },
-                (createdStudent) {
-                  setState(() {
-                    _currentStudent = createdStudent;
-                    _isEditMode = false;
-                  });
-                  ScaffoldMessenger.of(context)
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(
-                      const SnackBar(
-                        content: Text('Perfil criado com sucesso!'),
-                        backgroundColor: AppColors.success,
-                      ),
-                    );
-                },
-              );
-            }
-          });
+          _studentBloc.add(student_event.UpdateStudentProfileInfoEvent(
+            userId: _currentUserId!,
+            params: params,
+          ));
         }
       }
 
@@ -276,6 +235,91 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     setState(() {
       _isEditMode = false;
     });
+  }
+
+  void _showSupervisorsList(BuildContext context) async {
+    try {
+      final getAllSupervisorsUsecase = Modular.get<GetAllSupervisorsUsecase>();
+      final result = await getAllSupervisorsUsecase.call();
+      
+      if (!context.mounted) return;
+      
+      result.fold(
+        (failure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro ao carregar supervisores: ${failure.message}')),
+          );
+        },
+        (supervisors) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Lista de Supervisores'),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 400,
+                child: supervisors.isEmpty
+                    ? const Center(
+                        child: Text('Nenhum supervisor encontrado'),
+                      )
+                    : ListView.builder(
+                        itemCount: supervisors.length,
+                        itemBuilder: (context, index) {
+                          final supervisor = supervisors[index];
+                          return Card(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: AppColors.primary,
+                                child: Text(
+                                  supervisor.name.isNotEmpty 
+                                      ? supervisor.name[0].toUpperCase()
+                                      : 'S',
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              ),
+                              title: Text(supervisor.name),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (supervisor.department?.isNotEmpty == true)
+                                    Text('Departamento: ${supervisor.department}'),
+                                  if (supervisor.position?.isNotEmpty == true)
+                                    Text('Cargo: ${supervisor.position}'),
+                                  if (supervisor.phoneNumber?.isNotEmpty == true)
+                                    Text('Telefone: ${supervisor.phoneNumber}'),
+                                ],
+                              ),
+                              trailing: supervisor.phoneNumber?.isNotEmpty == true
+                                  ? IconButton(
+                                      icon: const Icon(Icons.phone),
+                                      onPressed: () {
+                                        // Implementar ação de telefone se necessário
+                                      },
+                                    )
+                                  : null,
+                            ),
+                          );
+                        },
+                      ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Fechar'),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao carregar supervisores: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -358,7 +402,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      'Perfil Incompleto',
+                      AppStrings.incompleteProfile,
                       style:
                           Theme.of(context).textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
@@ -366,13 +410,13 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Para continuar usando o aplicativo, precisamos de algumas informações adicionais. Clique em "Completar Perfil" para adicionar seus dados.',
+                      'Para continuar usando o aplicativo, precisamos de algumas informações adicionais. Clique em "${AppStrings.completeProfile}" para adicionar seus dados.',
                       style: Theme.of(context).textTheme.bodyMedium,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 32),
                     AppButton(
-                      text: 'Completar Perfil',
+                      text: AppStrings.completeProfile,
                       onPressed: _toggleEditMode,
                       icon: Icons.edit,
                     ),
@@ -405,7 +449,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      'Perfil Incompleto',
+                      AppStrings.incompleteProfile,
                       style:
                           Theme.of(context).textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
@@ -413,13 +457,13 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Para continuar usando o aplicativo, precisamos de algumas informações adicionais. Clique em "Completar Perfil" para adicionar seus dados.',
+                      'Para continuar usando o aplicativo, precisamos de algumas informações adicionais. Clique em "${AppStrings.completeProfile}" para adicionar seus dados.',
                       style: Theme.of(context).textTheme.bodyMedium,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 32),
                     AppButton(
-                      text: 'Completar Perfil',
+                      text: AppStrings.completeProfile,
                       onPressed: _toggleEditMode,
                       icon: Icons.edit,
                     ),
@@ -469,7 +513,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                     _buildReadOnlyProfile(context, student),
                     const SizedBox(height: 24),
                     AppButton(
-                      text: 'Editar Perfil',
+                      text: AppStrings.editProfile,
                       onPressed: _toggleEditMode,
                       icon: Icons.edit,
                     ),
@@ -486,7 +530,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                             horizontal: 24, vertical: 12),
                       ),
                       onPressed: () {
-                        Modular.to.pushNamed('/supervisor/students');
+                        _showSupervisorsList(context);
                       },
                     ),
                   ),
@@ -564,9 +608,23 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
         _buildReadOnlyInfo(context, 'Horas Necessárias',
             '${student.totalHoursRequired.toStringAsFixed(1)}h',
             icon: Icons.hourglass_empty_outlined),
-        _buildReadOnlyInfo(context, 'Horas Completas',
-            '${student.totalHoursCompleted.toStringAsFixed(1)}h',
-            icon: Icons.hourglass_full_outlined),
+        FutureBuilder<Map<String, dynamic>>(
+          future: Modular.get<IStudentRepository>()
+              .getStudentDashboard(student.id)
+              .then((either) => either.getOrElse(() => {})),
+          builder: (context, snapshot) {
+            final approved = (snapshot.data?['timeStats']?['approvedHoursTotal']
+                        as num?)
+                    ?.toDouble() ??
+                student.totalHoursCompleted;
+            return _buildReadOnlyInfo(
+              context,
+              'Horas Completas',
+              '${approved.toStringAsFixed(1)}h',
+              icon: Icons.hourglass_full_outlined,
+            );
+          },
+        ),
       ],
     );
   }

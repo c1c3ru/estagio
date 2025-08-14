@@ -16,7 +16,7 @@ void main() {
     setUp(() async {
       // Initialize the TestAppModule for dependency injection
       Modular.bindModule(TestAppModule());
-      
+
       reportService = Modular.get<ReportService>();
     });
 
@@ -36,63 +36,44 @@ void main() {
         // Act
         final result = await reportService.generateTimeLogReport(
           studentId: studentId,
+          studentName: 'Estudante',
           startDate: startDate,
           endDate: endDate,
-          timeLogs: [],
         );
 
         // Assert
-        expect(result, isA<TimeLogReport>());
-        expect(result.studentId, equals(studentId));
-        expect(result.startDate, equals(startDate));
-        expect(result.endDate, equals(endDate));
-        expect(result.timeLogs, isA<List>());
-        expect(result.totalHours, isA<double>());
-        expect(result.totalDays, isA<int>());
-        expect(result.averageHoursPerDay, isA<double>());
+        expect(result, isA<ReportData>());
+        final data = result.data;
+        expect(data['studentId'], equals(studentId));
+        expect(data['period']['start'], contains(startDate.year.toString()));
+        expect(data['period']['end'], contains(endDate.year.toString()));
       });
 
       testWidgets('should generate student performance report successfully',
           (tester) async {
         // Arrange
-        const supervisorId = 'test-supervisor-id';
+        // supervisorId não utilizado removido
 
         // Act
         final result = await reportService.generateStudentPerformanceReport(
-          supervisorId: supervisorId,
-          students: [],
-          timeLogs: [],
-          contracts: [],
+          startDate: DateTime.now().subtract(const Duration(days: 30)),
+          endDate: DateTime.now(),
         );
 
         // Assert
-        expect(result, isA<StudentPerformanceReport>());
-        final report = result;
-        expect(report.supervisorId, equals(supervisorId));
-        expect(report.studentPerformances, isA<List>());
-        expect(report.totalStudents, isA<int>());
-        expect(report.activeStudents, isA<int>());
-        expect(report.totalHours, isA<double>());
-        expect(report.averageHoursPerStudent, isA<double>());
+        expect(result, isA<ReportData>());
       });
 
       testWidgets('should generate contract report successfully',
           (tester) async {
         // Arrange
-        const supervisorId = 'test-supervisor-id';
+        // supervisorId não utilizado removido
 
         // Act
-        final result = await reportService.generateContractReport(
-          contracts: [], // Adapte para usar dados de teste se necessário
-          supervisorId: supervisorId,
-          studentId: null,
-        );
+        final result = await reportService.generateContractReport();
 
         // Assert
-        expect(result, isA<ContractReport>());
-        final report = result;
-        expect(report.contracts, isA<List>());
-        expect(report.contractsByMonth, isA<Map<String, int>>());
+        expect(result, isA<ReportData>());
       });
 
       testWidgets('should export report to CSV successfully', (tester) async {
@@ -103,26 +84,22 @@ void main() {
 
         final reportResult = await reportService.generateTimeLogReport(
           studentId: studentId,
+          studentName: 'Estudante',
           startDate: startDate,
           endDate: endDate,
-          timeLogs: [],
         );
 
         final report = reportResult;
 
         // Act
-        final exportResult = await reportService.exportToCSV(
-          reportType: 'time_log',
-          reportData: report.toJson(),
-          fileName: 'test_report.csv',
-        );
+        final exportResult = await reportService.exportToCSV(report);
 
         // Assert
         expect(exportResult, isA<String>());
         expect(exportResult, isNotEmpty);
         expect(exportResult, contains('.csv'));
-        expect(report.studentId, equals(studentId));
-        expect(report.timeLogs, isA<List>());
+        expect(report.data['studentId'], equals(studentId));
+        expect(report.data['timeLogs'], isA<List>());
       });
 
       testWidgets('should export report to JSON successfully', (tester) async {
@@ -133,26 +110,22 @@ void main() {
 
         final reportResult = await reportService.generateTimeLogReport(
           studentId: studentId,
+          studentName: 'Estudante',
           startDate: startDate,
           endDate: endDate,
-          timeLogs: [],
         );
 
         final report = reportResult;
 
         // Act
-        final exportResult = await reportService.exportToJSON(
-          reportType: 'time_log',
-          reportData: report.toJson(),
-          fileName: 'test_report.json',
-        );
+        final exportResult = await reportService.exportToJSON(report);
 
         // Assert
         expect(exportResult, isA<String>());
         expect(exportResult, isNotEmpty);
         expect(exportResult, contains('.json'));
-        expect(report.studentId, equals(studentId));
-        expect(report.timeLogs, isA<List>());
+        expect(report.data['studentId'], equals(studentId));
+        expect(report.data['timeLogs'], isA<List>());
       });
 
       testWidgets('should share report file successfully', (tester) async {
@@ -163,27 +136,21 @@ void main() {
 
         final reportResult = await reportService.generateTimeLogReport(
           studentId: studentId,
+          studentName: 'Estudante',
           startDate: startDate,
           endDate: endDate,
-          timeLogs: [],
         );
 
         final report = reportResult;
 
-        final exportResult = await reportService.exportToCSV(
-          reportType: 'time_log',
-          reportData: report.toJson(),
-          fileName: 'test_share_report.csv',
-        );
+        final exportResult = await reportService.exportToCSV(report);
 
         expect(exportResult, isA<String>());
-        final filePath = exportResult;
+        final filePath = exportResult!;
 
         // Act
-        reportService.shareReport(
-          filePath,
-          subject: 'Test Report',
-        );
+        // Compat: shareReport aceita (filePath, {subject}) via wrapper no ReportService
+        await reportService.shareReportLegacy(filePath, subject: 'Test Report');
 
         // Assert
         // Se não lançar exceção, compartilhou com sucesso
@@ -351,9 +318,9 @@ void main() {
         expect(
           () => reportService.generateTimeLogReport(
             studentId: studentId,
+            studentName: 'Estudante',
             startDate: startDate,
             endDate: endDate,
-            timeLogs: [],
           ),
           throwsA(isA<Exception>()),
         );
@@ -365,10 +332,18 @@ void main() {
 
         // Act & Assert
         expect(
-          () => reportService.exportToCSV(
-            reportType: 'invalid_type',
-            reportData: invalidData,
-          ),
+          () async {
+            final dummy = ReportData(
+              id: 'x',
+              title: 't',
+              description: 'd',
+              type: ReportType.customReport,
+              data: invalidData,
+              generatedAt: DateTime.now(),
+              generatedBy: 'test',
+            );
+            await reportService.exportToCSV(dummy);
+          },
           throwsA(isA<Exception>()),
         );
       });

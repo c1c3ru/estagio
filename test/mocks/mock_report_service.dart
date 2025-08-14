@@ -3,98 +3,90 @@ import 'package:mockito/mockito.dart';
 
 class MockReportService extends Mock implements ReportService {
   @override
-  Future<TimeLogReport> generateTimeLogReport({
+  Future<ReportData> generateTimeLogReport({
     required String studentId,
     required DateTime startDate,
     required DateTime endDate,
-    required List<Map<String, dynamic>> timeLogs,
+    required String studentName,
   }) async {
-    // For error handling test, throw an exception when studentId is invalid
     if (studentId == 'invalid-student-id') {
       throw Exception('Invalid student ID');
     }
-    
-    // Return a valid report for other cases
-    return TimeLogReport(
-      studentId: studentId,
-      startDate: startDate,
-      endDate: endDate,
-      totalHours: 0.0,
-      totalDays: 0,
-      averageHoursPerDay: 0.0,
-      hoursByWeekday: {},
-      hoursByWeek: {},
-      hoursByMonth: {},
-      timeLogs: [],
+    return ReportData(
+      id: 'mock_time_log',
+      title: 'Relatório de Horas - $studentName',
+      description: 'Mock',
+      type: ReportType.studentTimeLog,
+      data: {
+        'studentId': studentId,
+        'period': {
+          'start': startDate.toIso8601String(),
+          'end': endDate.toIso8601String(),
+        },
+        'summary': {
+          'totalHours': 0.0,
+          'totalDays': 0,
+          'averageHoursPerDay': 0.0,
+        },
+        'timeLogs': [],
+      },
       generatedAt: DateTime.now(),
+      generatedBy: 'test',
     );
   }
 
   @override
-  Future<String> exportToCSV({
-    required String reportType,
-    required Map<String, dynamic> reportData,
-    String? fileName,
-  }) async {
-    // For error handling test, throw an exception when reportType is invalid
-    if (reportType == 'invalid_type') {
-      throw Exception('Tipo de relatório não suportado: $reportType');
-    }
-    
-    // Return a mock file path for other cases
+  Future<String?> exportToCSV(ReportData report) async {
     return '/mock/path/report.csv';
   }
 
   @override
-  Future<String> exportToJSON({
-    required String reportType,
-    required Map<String, dynamic> reportData,
-    String? fileName,
-  }) async {
-    // Return a mock file path
-    return '/mock/path/report.json';
-  }
+  Future<String?> exportToJSON(ReportData report) async =>
+      '/mock/path/report.json';
 
   @override
-  Future<StudentPerformanceReport> generateStudentPerformanceReport({
-    required String supervisorId,
-    required List<Map<String, dynamic>> students,
-    required List<Map<String, dynamic>> timeLogs,
-    required List<Map<String, dynamic>> contracts,
+  Future<ReportData> generateStudentPerformanceReport({
+    required DateTime startDate,
+    required DateTime endDate,
   }) async {
-    // Return a valid report
-    return StudentPerformanceReport(
-      supervisorId: supervisorId,
-      totalStudents: 0,
-      activeStudents: 0,
-      totalHours: 0.0,
-      averageHoursPerStudent: 0.0,
-      studentPerformances: [],
+    return ReportData(
+      id: 'mock_perf',
+      title: 'Performance',
+      description: 'Mock',
+      type: ReportType.performanceMetrics,
+      data: {
+        'period': {
+          'start': startDate.toIso8601String(),
+          'end': endDate.toIso8601String()
+        },
+        'metrics': {
+          'averageHoursPerStudent': 0.0,
+        },
+      },
       generatedAt: DateTime.now(),
+      generatedBy: 'test',
     );
   }
 
   @override
-  Future<ContractReport> generateContractReport({
-    required List<Map<String, dynamic>> contracts,
-    String? supervisorId,
-    String? studentId,
+  Future<ReportData> generateContractReport({
+    DateTime? startDate,
+    DateTime? endDate,
   }) async {
-    // Return a valid report
-    return ContractReport(
-      totalContracts: 0,
-      activeContracts: 0,
-      completedContracts: 0,
-      expiredContracts: 0,
-      expiringContracts: 0,
-      contractsByMonth: {},
-      contracts: [],
+    return ReportData(
+      id: 'mock_contract',
+      title: 'Contratos',
+      description: 'Mock',
+      type: ReportType.contractStatus,
+      data: {
+        'contracts': [],
+        'statusDistribution': {},
+      },
       generatedAt: DateTime.now(),
+      generatedBy: 'test',
     );
   }
 
   @override
-  Future<void> shareReport(String filePath, {String? subject}) async {
-    // Mock implementation - do nothing
-  }
+  Future<void> shareReportLegacy(String filePath, {String? subject}) async {}
 }

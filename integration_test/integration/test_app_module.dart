@@ -15,8 +15,31 @@ class MockCacheService implements CacheService {
   final List<Map<String, dynamic>> _pendingOperations = [];
   bool _isInitialized = false;
 
-  @override
   bool get isInitialized => _isInitialized;
+  // Compat com nova API
+  // remove duplicate initialize (already declared above)
+  @override
+  Future<void> dispose() async {
+    _isInitialized = false;
+  }
+
+  // API nova de CacheService que o mock precisa implementar
+  @override
+  Future<void> clear() async {
+    _cache.clear();
+    _pendingOperations.clear();
+  }
+
+  @override
+  T? get<T>(String key) {
+    final v = _cache[key];
+    return v as T?;
+  }
+
+  @override
+  Map<String, dynamic> getStats() => {'totalItems': _cache.length};
+  @override
+  bool has(String key) => _cache.containsKey(key);
 
   @override
   Future<bool> initialize() async {
@@ -30,16 +53,17 @@ class MockCacheService implements CacheService {
     required Map<String, dynamic> data,
     required String entityType,
     Duration? expiresIn,
-    String syncStatus = 'synced',
+    String? syncStatus,
   }) async {
     final cacheEntry = Map<String, dynamic>.from(data);
     cacheEntry['entityType'] = entityType;
     cacheEntry['syncStatus'] = syncStatus;
-    
+
     if (expiresIn != null) {
-      cacheEntry['expiresAt'] = DateTime.now().add(expiresIn).millisecondsSinceEpoch;
+      cacheEntry['expiresAt'] =
+          DateTime.now().add(expiresIn).millisecondsSinceEpoch;
     }
-    
+
     _cache[key] = cacheEntry;
     return true;
   }
@@ -61,12 +85,10 @@ class MockCacheService implements CacheService {
         .toList();
   }
 
-  @override
   Future<bool> deleteCachedData(String key) async {
     return _cache.remove(key) != null;
   }
 
-  @override
   Future<bool> addPendingOperation({
     required String operationType,
     required String entityType,
@@ -93,12 +115,10 @@ class MockCacheService implements CacheService {
     return List<Map<String, dynamic>>.from(_pendingOperations);
   }
 
-  @override
   Future<bool> markOperationCompleted(int operationId) async {
     return true;
   }
 
-  @override
   Future<bool> incrementOperationRetry(int operationId) async {
     return true;
   }
@@ -107,18 +127,18 @@ class MockCacheService implements CacheService {
   Future<int> clearExpiredData() async {
     final now = DateTime.now().millisecondsSinceEpoch;
     final expiredKeys = <String>[];
-    
+
     _cache.forEach((key, value) {
       final expiresAt = value['expiresAt'] as int?;
       if (expiresAt != null && expiresAt < now) {
         expiredKeys.add(key);
       }
     });
-    
+
     for (final key in expiredKeys) {
       _cache.remove(key);
     }
-    
+
     return expiredKeys.length;
   }
 
@@ -129,7 +149,6 @@ class MockCacheService implements CacheService {
     return true;
   }
 
-  @override
   Future<Map<String, dynamic>> getCacheStats() async {
     final expiredCount = await clearExpiredData();
     return {
@@ -140,9 +159,21 @@ class MockCacheService implements CacheService {
     };
   }
 
+  // remove duplicate dispose at line ~168
+
+  // Implementações exigidas pela interface atual
   @override
-  Future<void> dispose() async {
-    _isInitialized = false;
+  Stream<String> get cacheUpdates => const Stream.empty();
+  @override
+  Future<void> remove(String key) async {
+    _cache.remove(key);
+  }
+
+  @override
+  Future<void> set<T>(String key, T data,
+      {Duration? ttl, bool persist = false}) async {
+    _cache[key] =
+        Map<String, dynamic>.from((data as Map<String, dynamic>?) ?? {});
   }
 }
 
@@ -160,7 +191,7 @@ class MockSyncService implements SyncService {
   bool get isSyncing => _isSyncing;
 
   @override
-  Stream<SyncStatus> get syncStatus => Stream.value(SyncStatus.synced);
+  Stream<SyncStatus> get syncStatus => Stream.value(SyncStatus.completed);
 
   @override
   Future<bool> initialize() async {
@@ -168,7 +199,6 @@ class MockSyncService implements SyncService {
     return true;
   }
 
-  @override
   Future<bool> cacheDataOfflineFirst({
     required String key,
     required Map<String, dynamic> data,
@@ -184,12 +214,10 @@ class MockSyncService implements SyncService {
     );
   }
 
-  @override
   Future<Map<String, dynamic>?> getDataCacheFirst(String key) async {
     return await cacheService.getCachedData(key);
   }
 
-  @override
   Future<List<Map<String, dynamic>>> getDataListCacheFirst(
       String entityType) async {
     return await cacheService.getCachedDataByType(entityType);
@@ -230,7 +258,6 @@ class MockSyncService implements SyncService {
     };
   }
 
-  @override
   Future<bool> clearAllData() async {
     return await cacheService.clearAllCache();
   }
@@ -240,6 +267,35 @@ class MockSyncService implements SyncService {
     cacheService.dispose();
     _isInitialized = false;
   }
+
+  // Adaptações para a interface nova
+  @override
+  Future<bool> forceSync() async => true;
+  @override
+  Future<void> addPendingOperation(
+      {required OperationType type,
+      required String entityType,
+      String? entityId,
+      required Map<String, dynamic> data}) async {}
+  @override
+  Future<List<PendingOperation>> getPendingOperations() async => [];
+  @override
+  Future<void> clearOldOfflineData({Duration? olderThan}) async {}
+  @override
+  Future<List<Map<String, dynamic>>> getOfflineData(String entityType) async =>
+      [];
+  @override
+  Future<void> storeOfflineData(
+      {required String id,
+      required String entityType,
+      required Map<String, dynamic> data}) async {}
+  @override
+  Future<bool> syncPendingOperations() async => true;
+  @override
+  Stream<List<PendingOperation>> get pendingOperationsStream =>
+      const Stream.empty();
+  @override
+  Stream<SyncStatus> get syncStatusStream => syncStatus;
 }
 
 class TestAppModule extends AppModule {

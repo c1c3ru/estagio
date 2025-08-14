@@ -1,485 +1,328 @@
 // lib/core/services/cache_service.dart
 import 'dart:async';
-import '../utils/app_logger.dart';
-import '../constants/app_strings.dart';
-import 'dart:convert';
+// import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import '../utils/app_logger.dart';
+// import '../constants/app_strings.dart';
 
-/// Serviço responsável por gerenciar cache local usando SQLite
-/// para suporte offline e sincronização de dados
+class CacheEntry {
+  final dynamic data;
+  final DateTime createdAt;
+  final Duration ttl;
+  final String key;
+
+  CacheEntry({
+    required this.data,
+    required this.createdAt,
+    required this.ttl,
+    required this.key,
+  });
+
+  bool get isExpired => DateTime.now().isAfter(createdAt.add(ttl));
+
+  Map<String, dynamic> toJson() {
+    return {
+      'data': data,
+      'createdAt': createdAt.toIso8601String(),
+      'ttl': ttl.inSeconds,
+      'key': key,
+    };
+  }
+
+  factory CacheEntry.fromJson(Map<String, dynamic> json) {
+    return CacheEntry(
+      data: json['data'],
+      createdAt: DateTime.parse(json['createdAt']),
+      ttl: Duration(seconds: json['ttl']),
+      key: json['key'],
+    );
+  }
+}
+
 class CacheService {
   static final CacheService _instance = CacheService._internal();
   factory CacheService() => _instance;
   CacheService._internal();
 
-  Database? _database;
-  bool _isInitialized = false;
+  final Map<String, CacheEntry> _memoryCache = {};
+  final StreamController<String> _cacheUpdateController =
+      StreamController<String>.broadcast();
 
-  /// Verifica se o serviço foi inicializado
-  bool get isInitialized => _isInitialized;
+  // Configurações de cache
+  static const int _maxCacheSize = 100;
+  static const Duration _defaultTtl = Duration(minutes: 30);
+  static const Duration _cleanupInterval = Duration(minutes: 5);
 
-  /// Inicializa o banco de dados local
+  Timer? _cleanupTimer;
+
+  /// Inicializa o serviço de cache
   Future<bool> initialize() async {
+    _startCleanupTimer();
+    AppLogger.info('CacheService inicializado');
+    return true;
+  }
+
+  /// Adiciona um item ao cache
+  Future<void> set<T>(
+    String key,
+    T data, {
+    Duration? ttl,
+    bool persist = false,
+  }) async {
     try {
-      if (kDebugMode) {
-        print('💾 CacheService: Inicializando banco de dados local...');
-      }
-
-      final databasesPath = await getDatabasesPath();
-      final path = join(databasesPath, 'estagio_cache.db');
-
-      _database = await openDatabase(
-        path,
-        version: 1,
-        onCreate: _createTables,
-        onUpgrade: _upgradeDatabase,
+      final entry = CacheEntry(
+        data: data,
+        createdAt: DateTime.now(),
+        ttl: ttl ?? _defaultTtl,
+        key: key,
       );
 
-      _isInitialized = true;
+      // Remove entrada antiga se existir
+      _memoryCache.remove(key);
 
-      if (kDebugMode) {
-        print('✅ CacheService: Banco de dados inicializado em: $path');
+      // Verifica se o cache está cheio
+      if (_memoryCache.length >= _maxCacheSize) {
+        _removeOldestEntries(count: 10);
       }
 
-      return true;
+      _memoryCache[key] = entry;
+
+      if (persist) {
+        await _persistToStorage(key, entry);
+      }
+
+      _cacheUpdateController.add(key);
+
+      if (kDebugMode) {
+        AppLogger.debug(
+            'Item adicionado ao cache: $key (TTL: ${ttl?.inMinutes ?? _defaultTtl.inMinutes}min)');
+      }
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ CacheService: Erro ao inicializar banco: $e');
+      AppLogger.error('Erro ao adicionar item ao cache', error: e);
+    }
+  }
+
+  /// Obtém um item do cache
+  T? get<T>(String key) {
+    try {
+      final entry = _memoryCache[key];
+
+      if (entry == null) {
+        return null;
       }
-      return false;
+
+      if (entry.isExpired) {
+        _memoryCache.remove(key);
+        if (kDebugMode) {
+          AppLogger.debug('Item expirado removido do cache: $key');
+        }
+        return null;
+      }
+
+      if (kDebugMode) {
+        AppLogger.debug('Item encontrado no cache: $key');
+      }
+
+      return entry.data as T;
+    } catch (e) {
+      AppLogger.error('Erro ao obter item do cache', error: e);
+      return null;
     }
   }
 
-  /// Cria as tabelas do banco de dados
-  Future<void> _createTables(Database db, int version) async {
-    if (kDebugMode) {
-      print('💾 CacheService: Criando tabelas do banco...');
-    }
+  /// Verifica se um item existe no cache e não está expirado
+  bool has(String key) {
+    final entry = _memoryCache[key];
+    return entry != null && !entry.isExpired;
+  }
 
-    // Tabela para cache genérico de dados
-    await db.execute('''
-      CREATE TABLE cache_data (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        key TEXT UNIQUE NOT NULL,
-        data TEXT NOT NULL,
-        entity_type TEXT NOT NULL,
-        created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL,
-        expires_at INTEGER,
-        sync_status TEXT DEFAULT 'synced'
-      )
-    ''');
+  /// Remove um item específico do cache
+  Future<void> remove(String key) async {
+    try {
+      _memoryCache.remove(key);
+      await _removeFromStorage(key);
+      _cacheUpdateController.add(key);
 
-    // Tabela para operações pendentes (para sincronização)
-    await db.execute('''
-      CREATE TABLE pending_operations (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        operation_type TEXT NOT NULL,
-        entity_type TEXT NOT NULL,
-        entity_id TEXT,
-        data TEXT NOT NULL,
-        created_at INTEGER NOT NULL,
-        retry_count INTEGER DEFAULT 0,
-        max_retries INTEGER DEFAULT 3,
-        status TEXT DEFAULT 'pending'
-      )
-    ''');
-
-    // Tabela para metadados de sincronização
-    await db.execute('''
-      CREATE TABLE sync_metadata (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        entity_type TEXT UNIQUE NOT NULL,
-        last_sync_at INTEGER,
-        sync_version INTEGER DEFAULT 1,
-        total_records INTEGER DEFAULT 0
-      )
-    ''');
-
-    // Índices para melhor performance
-    await db.execute('CREATE INDEX idx_cache_key ON cache_data(key)');
-    await db.execute('CREATE INDEX idx_cache_entity_type ON cache_data(entity_type)');
-    await db.execute('CREATE INDEX idx_cache_expires_at ON cache_data(expires_at)');
-    await db.execute('CREATE INDEX idx_pending_status ON pending_operations(status)');
-    await db.execute('CREATE INDEX idx_pending_entity_type ON pending_operations(entity_type)');
-
-    if (kDebugMode) {
-      print('✅ CacheService: Tabelas criadas com sucesso');
+      if (kDebugMode) {
+        AppLogger.debug('Item removido do cache: $key');
+      }
+    } catch (e) {
+      AppLogger.error('Erro ao remover item do cache', error: e);
     }
   }
 
-  /// Atualiza o banco de dados para versões mais recentes
-  Future<void> _upgradeDatabase(Database db, int oldVersion, int newVersion) async {
-    if (kDebugMode) {
-      print('💾 CacheService: Atualizando banco da versão $oldVersion para $newVersion');
+  /// Limpa todo o cache
+  Future<void> clear() async {
+    try {
+      _memoryCache.clear();
+      await _clearStorage();
+      _cacheUpdateController.add('*');
+
+      if (kDebugMode) {
+        AppLogger.debug('Cache limpo completamente');
+      }
+    } catch (e) {
+      AppLogger.error('Erro ao limpar cache', error: e);
     }
-    // Implementar migrações futuras aqui
   }
 
-  /// Armazena dados no cache
+  /// Obtém estatísticas do cache
+  Map<String, dynamic> getStats() {
+    // final now = DateTime.now();
+    int expiredCount = 0;
+    int validCount = 0;
+
+    for (final entry in _memoryCache.values) {
+      if (entry.isExpired) {
+        expiredCount++;
+      } else {
+        validCount++;
+      }
+    }
+
+    return {
+      'totalItems': _memoryCache.length,
+      'validItems': validCount,
+      'expiredItems': expiredCount,
+      'maxSize': _maxCacheSize,
+      'memoryUsage': _estimateMemoryUsage(),
+    };
+  }
+
+  /// Stream para monitorar mudanças no cache
+  Stream<String> get cacheUpdates => _cacheUpdateController.stream;
+
+  /// Remove as entradas mais antigas do cache
+  void _removeOldestEntries({int count = 5}) {
+    final sortedEntries = _memoryCache.entries.toList()
+      ..sort((a, b) => a.value.createdAt.compareTo(b.value.createdAt));
+
+    for (int i = 0; i < count && i < sortedEntries.length; i++) {
+      _memoryCache.remove(sortedEntries[i].key);
+    }
+
+    if (kDebugMode) {
+      AppLogger.debug('Removidas $count entradas antigas do cache');
+    }
+  }
+
+  /// Inicia o timer de limpeza automática
+  void _startCleanupTimer() {
+    _cleanupTimer?.cancel();
+    _cleanupTimer = Timer.periodic(_cleanupInterval, (_) {
+      _cleanupExpiredEntries();
+    });
+  }
+
+  /// Remove entradas expiradas do cache
+  void _cleanupExpiredEntries() {
+    final expiredKeys = <String>[];
+
+    for (final entry in _memoryCache.entries) {
+      if (entry.value.isExpired) {
+        expiredKeys.add(entry.key);
+      }
+    }
+
+    for (final key in expiredKeys) {
+      _memoryCache.remove(key);
+    }
+
+    if (expiredKeys.isNotEmpty && kDebugMode) {
+      AppLogger.debug(
+          'Limpeza automática: ${expiredKeys.length} itens expirados removidos');
+    }
+  }
+
+  /// Estimativa de uso de memória
+  double _estimateMemoryUsage() {
+    // Estimativa simples: ~1KB por entrada
+    return _memoryCache.length * 1.0;
+  }
+
+  /// Persiste entrada no storage local
+  Future<void> _persistToStorage(String key, CacheEntry entry) async {
+    // Implementação futura com SharedPreferences ou Hive
+    // Por enquanto, apenas log
+    if (kDebugMode) {
+      AppLogger.debug('Persistindo entrada no storage: $key');
+    }
+  }
+
+  /// Remove entrada do storage local
+  Future<void> _removeFromStorage(String key) async {
+    // Implementação futura
+    if (kDebugMode) {
+      AppLogger.debug('Removendo entrada do storage: $key');
+    }
+  }
+
+  /// Limpa storage local
+  Future<void> _clearStorage() async {
+    // Implementação futura
+    if (kDebugMode) {
+      AppLogger.debug('Limpando storage local');
+    }
+  }
+
+  /// Dispose do serviço
+  void dispose() {
+    _cleanupTimer?.cancel();
+    _cacheUpdateController.close();
+    _memoryCache.clear();
+  }
+
+  // ---- Compat: métodos legados usados em testes/integration ----
   Future<bool> cacheData({
     required String key,
     required Map<String, dynamic> data,
     required String entityType,
     Duration? expiresIn,
-    String syncStatus = 'synced',
+    String? syncStatus,
   }) async {
-    try {
-      if (!_isInitialized || _database == null) {
-        throw Exception('CacheService não inicializado');
-      }
-
-      final now = DateTime.now().millisecondsSinceEpoch;
-      final expiresAt = expiresIn != null ? now + expiresIn.inMilliseconds : null;
-
-      await _database!.insert(
-        'cache_data',
-        {
-          'key': key,
-          'data': jsonEncode(data),
-          'entity_type': entityType,
-          'created_at': now,
-          'updated_at': now,
-          'expires_at': expiresAt,
-          'sync_status': syncStatus,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-
-      if (kDebugMode) {
-        print('💾 CacheService: Dados armazenados - Key: $key, Type: $entityType');
-      }
-
-      return true;
-    } catch (e) {
-      if (kDebugMode) {
-        AppLogger.error('\u001b[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e\u001b[0m');
-      }
-      return false;
-    }
+    await set<Map<String, dynamic>>(key, data, ttl: expiresIn);
+    return true;
   }
 
-  /// Recupera dados do cache
   Future<Map<String, dynamic>?> getCachedData(String key) async {
-    try {
-      if (!_isInitialized || _database == null) {
-        throw Exception('CacheService não inicializado');
-      }
-
-      final result = await _database!.query(
-        'cache_data',
-        where: 'key = ?',
-        whereArgs: [key],
-        limit: 1,
-      );
-
-      if (result.isEmpty) {
-        return null;
-      }
-
-      final record = result.first;
-      final expiresAt = record['expires_at'] as int?;
-      
-      // Verificar se expirou
-      if (expiresAt != null && DateTime.now().millisecondsSinceEpoch > expiresAt) {
-        await deleteCachedData(key);
-        return null;
-      }
-
-      final data = jsonDecode(record['data'] as String) as Map<String, dynamic>;
-      
-      if (kDebugMode) {
-        print('💾 CacheService: Dados recuperados - Key: $key');
-      }
-
-      return data;
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ CacheService: Erro ao recuperar dados: $e');
-      }
-      return null;
-    }
+    return get<Map<String, dynamic>>(key);
   }
 
-  /// Recupera múltiplos dados por tipo de entidade
-  Future<List<Map<String, dynamic>>> getCachedDataByType(String entityType) async {
-    try {
-      if (!_isInitialized || _database == null) {
-        throw Exception('CacheService não inicializado');
+  Future<List<Map<String, dynamic>>> getCachedDataByType(
+      String entityType) async {
+    // Como não persistimos por tipo, retornamos todos os itens que parecem Map e contém hint do tipo
+    final result = <Map<String, dynamic>>[];
+    for (final entry in _memoryCache.values) {
+      if (!entry.isExpired && entry.data is Map<String, dynamic>) {
+        final map = entry.data as Map<String, dynamic>;
+        if (map['entity_type'] == entityType || map['_type'] == entityType) {
+          result.add(map);
+        }
       }
-
-      final now = DateTime.now().millisecondsSinceEpoch;
-      
-      final result = await _database!.query(
-        'cache_data',
-        where: 'entity_type = ? AND (expires_at IS NULL OR expires_at > ?)',
-        whereArgs: [entityType, now],
-        orderBy: 'updated_at DESC',
-      );
-
-      final dataList = result.map((record) {
-        final data = jsonDecode(record['data'] as String) as Map<String, dynamic>;
-        data['_cache_key'] = record['key'];
-        data['_cache_updated_at'] = record['updated_at'];
-        data['_cache_sync_status'] = record['sync_status'];
-        return data;
-      }).toList();
-
-      if (kDebugMode) {
-        print('💾 CacheService: ${dataList.length} registros recuperados para tipo: $entityType');
-      }
-
-      return dataList;
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ CacheService: Erro ao recuperar dados por tipo: $e');
-      }
-      return [];
     }
+    return result;
   }
 
-  /// Remove dados do cache
-  Future<bool> deleteCachedData(String key) async {
-    try {
-      if (!_isInitialized || _database == null) {
-        throw Exception('CacheService não inicializado');
-      }
-
-      await _database!.delete(
-        'cache_data',
-        where: 'key = ?',
-        whereArgs: [key],
-      );
-
-      if (kDebugMode) {
-        print('💾 CacheService: Dados removidos - Key: $key');
-      }
-
-      return true;
-    } catch (e) {
-      if (kDebugMode) {
-        AppLogger.error('\u001b[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e\u001b[0m');
-      }
-      return false;
-    }
-  }
-
-  /// Adiciona operação pendente para sincronização
-  Future<bool> addPendingOperation({
-    required String operationType,
-    required String entityType,
-    String? entityId,
-    required Map<String, dynamic> data,
-    int maxRetries = 3,
-  }) async {
-    try {
-      if (!_isInitialized || _database == null) {
-        throw Exception('CacheService não inicializado');
-      }
-
-      await _database!.insert('pending_operations', {
-        'operation_type': operationType,
-        'entity_type': entityType,
-        'entity_id': entityId,
-        'data': jsonEncode(data),
-        'created_at': DateTime.now().millisecondsSinceEpoch,
-        'max_retries': maxRetries,
-        'status': 'pending',
-      });
-
-      if (kDebugMode) {
-        print('💾 CacheService: Operação pendente adicionada - Type: $operationType, Entity: $entityType');
-      }
-
-      return true;
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ CacheService: Erro ao adicionar operação pendente: $e');
-      }
-      return false;
-    }
-  }
-
-  /// Recupera operações pendentes para sincronização
   Future<List<Map<String, dynamic>>> getPendingOperations() async {
-    try {
-      if (!_isInitialized || _database == null) {
-        throw Exception('CacheService não inicializado');
-      }
-
-      final result = await _database!.query(
-        'pending_operations',
-        where: 'status = ? AND retry_count < max_retries',
-        whereArgs: ['pending'],
-        orderBy: 'created_at ASC',
-      );
-
-      return result.map((record) {
-        final data = Map<String, dynamic>.from(record);
-        data['data'] = jsonDecode(record['data'] as String);
-        return data;
-      }).toList();
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ CacheService: Erro ao recuperar operações pendentes: $e');
-      }
-      return [];
-    }
+    // Compat: não gerenciamos operações pendentes no CacheService após refatoração
+    return [];
   }
 
-  /// Marca operação como concluída
-  Future<bool> markOperationCompleted(int operationId) async {
-    try {
-      if (!_isInitialized || _database == null) {
-        throw Exception('CacheService não inicializado');
-      }
-
-      await _database!.update(
-        'pending_operations',
-        {'status': 'completed'},
-        where: 'id = ?',
-        whereArgs: [operationId],
-      );
-
-      return true;
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ CacheService: Erro ao marcar operação como concluída: $e');
-      }
-      return false;
-    }
-  }
-
-  /// Incrementa contador de tentativas de uma operação
-  Future<bool> incrementOperationRetry(int operationId) async {
-    try {
-      if (!_isInitialized || _database == null) {
-        throw Exception('CacheService não inicializado');
-      }
-
-      await _database!.rawUpdate(
-        'UPDATE pending_operations SET retry_count = retry_count + 1 WHERE id = ?',
-        [operationId],
-      );
-
-      return true;
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ CacheService: Erro ao incrementar tentativas: $e');
-      }
-      return false;
-    }
-  }
-
-  /// Limpa dados expirados do cache
-  Future<int> clearExpiredData() async {
-    try {
-      if (!_isInitialized || _database == null) {
-        throw Exception('CacheService não inicializado');
-      }
-
-      final now = DateTime.now().millisecondsSinceEpoch;
-      final deletedCount = await _database!.delete(
-        'cache_data',
-        where: 'expires_at IS NOT NULL AND expires_at <= ?',
-        whereArgs: [now],
-      );
-
-      if (kDebugMode) {
-        print('💾 CacheService: $deletedCount registros expirados removidos');
-      }
-
-      return deletedCount;
-    } catch (e) {
-      if (kDebugMode) {
-        AppLogger.error('\u001b[31m${AppStrings.errorOccurred}: ${AppStrings.serverError} - $e\u001b[0m');
-      }
-      return 0;
-    }
-  }
-
-  /// Limpa todo o cache
   Future<bool> clearAllCache() async {
-    try {
-      if (!_isInitialized || _database == null) {
-        throw Exception('CacheService não inicializado');
-      }
-
-      await _database!.delete('cache_data');
-      await _database!.delete('pending_operations');
-      await _database!.delete('sync_metadata');
-
-      if (kDebugMode) {
-        print('💾 CacheService: Todo o cache foi limpo');
-      }
-
-      return true;
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ CacheService: Erro ao limpar cache: $e');
-      }
-      return false;
-    }
+    await clear();
+    return true;
   }
 
-  /// Obtém estatísticas do cache
-  Future<Map<String, dynamic>> getCacheStats() async {
-    try {
-      if (!_isInitialized || _database == null) {
-        throw Exception('CacheService não inicializado');
-      }
-
-      final cacheCount = Sqflite.firstIntValue(
-        await _database!.rawQuery('SELECT COUNT(*) FROM cache_data'),
-      ) ?? 0;
-
-      final pendingCount = Sqflite.firstIntValue(
-        await _database!.rawQuery('SELECT COUNT(*) FROM pending_operations WHERE status = "pending"'),
-      ) ?? 0;
-
-      final expiredCount = Sqflite.firstIntValue(
-        await _database!.rawQuery(
-          'SELECT COUNT(*) FROM cache_data WHERE expires_at IS NOT NULL AND expires_at <= ?',
-          [DateTime.now().millisecondsSinceEpoch],
-        ),
-      ) ?? 0;
-
-      return {
-        'totalCachedItems': cacheCount,
-        'pendingOperations': pendingCount,
-        'expiredItems': expiredCount,
-        'isInitialized': _isInitialized,
-      };
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ CacheService: Erro ao obter estatísticas: $e');
-      }
-      return {
-        'totalCachedItems': 0,
-        'pendingOperations': 0,
-        'expiredItems': 0,
-        'isInitialized': false,
-        'error': e.toString(),
-      };
-    }
-  }
-
-  /// Libera recursos do serviço
-  Future<void> dispose() async {
-    try {
-      await _database?.close();
-      _database = null;
-      _isInitialized = false;
-      
-      if (kDebugMode) {
-        print('💾 CacheService: Serviço finalizado');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ CacheService: Erro ao finalizar serviço: $e');
+  Future<int> clearExpiredData() async {
+    int removed = 0;
+    final keys = _memoryCache.keys.toList();
+    for (final key in keys) {
+      final entry = _memoryCache[key];
+      if (entry != null && entry.isExpired) {
+        _memoryCache.remove(key);
+        removed++;
       }
     }
+    return removed;
   }
 }

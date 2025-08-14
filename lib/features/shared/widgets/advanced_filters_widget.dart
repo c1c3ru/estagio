@@ -600,6 +600,7 @@ class _AdvancedFiltersWidgetState extends State<AdvancedFiltersWidget> {
               initialDate: date ?? DateTime.now(),
               firstDate: DateTime.now().subtract(const Duration(days: 365 * 2)),
               lastDate: DateTime.now().add(const Duration(days: 365)),
+              locale: const Locale('pt', 'BR'),
             );
             if (picked != null) {
               onChanged(picked);

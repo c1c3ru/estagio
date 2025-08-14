@@ -39,14 +39,20 @@ class StudentModule extends Module {
     // Rota para a página de registo de horas (Time Log)
     r.child(
       '/time-log',
-      child: (_) => const StudentTimeLogPage(),
+      child: (_) => BlocProvider.value(
+        value: Modular.get<StudentBloc>(),
+        child: const StudentTimeLogPage(),
+      ),
       transition: TransitionType.fadeIn,
     );
 
     // Rota para a página de perfil do estudante
     r.child(
       '/profile',
-      child: (_) => const StudentProfilePage(),
+      child: (_) => BlocProvider.value(
+        value: Modular.get<StudentBloc>(),
+        child: const StudentProfilePage(),
+      ),
       transition: TransitionType.fadeIn,
     );
 
@@ -73,14 +79,20 @@ class StudentModule extends Module {
     // Rota para a página de colegas online
     r.child(
       '/colleagues',
-      child: (_) => const StudentColleaguesPage(),
+      child: (_) => BlocProvider.value(
+        value: Modular.get<StudentBloc>(),
+        child: const StudentColleaguesPage(),
+      ),
       transition: TransitionType.fadeIn,
     );
 
     // Rota para a página de relatórios
     r.child(
       '/reports',
-      child: (_) => const StudentReportsPage(),
+      child: (_) => BlocProvider.value(
+        value: Modular.get<StudentBloc>(),
+        child: const StudentReportsPage(),
+      ),
       transition: TransitionType.fadeIn,
     );
   }

@@ -8,6 +8,7 @@ import 'package:gestao_de_estagio/features/shared/animations/lottie_animations.d
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:gestao_de_estagio/domain/usecases/supervisor/get_all_supervisors_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart' as flutter_bloc;
+import 'package:gestao_de_estagio/core/enums/contract_status.dart';
 
 class ContractPage extends StatefulWidget {
   final String? studentId;
@@ -160,7 +161,9 @@ class _ContractPageState extends State<ContractPage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          'ATIVO',
+                          ContractStatus.fromString(activeContract.status)
+                              .displayName
+                              .toUpperCase(),
                           style: AppTextStyles.caption.copyWith(
                             color: AppColors.white,
                             fontWeight: FontWeight.w600,
@@ -168,12 +171,7 @@ class _ContractPageState extends State<ContractPage> {
                         ),
                       ),
                       const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: AppColors.primary),
-                        tooltip: 'Editar Contrato',
-                        onPressed: () =>
-                            _showEditContractModal(contract: activeContract),
-                      ),
+                      // Botão de edição removido para estudantes - apenas supervisores podem editar contratos
                       const Icon(
                         Icons.business,
                         color: AppColors.primary,
@@ -258,6 +256,10 @@ class _ContractPageState extends State<ContractPage> {
               studentId: widget.studentId!,
               contract: contract,
               supervisorId: supervisorId,
+              onContractSaved: () {
+                _loadContracts();
+                _loadActiveContract();
+              },
             ),
           ),
         );
@@ -388,10 +390,22 @@ class _ContractCard extends StatelessWidget {
 
   const _ContractCard({required this.contract});
 
+  String _getContractTypeDisplay(String type) {
+    switch (type) {
+      case 'mandatory_internship':
+        return 'Estágio Obrigatório';
+      case 'voluntary_internship':
+        return 'Estágio Não Obrigatório';
+      default:
+        return type;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final statusColor = _getStatusColor(contract.status);
-    final statusText = _getStatusText(contract.status);
+    final statusText =
+        ContractStatus.fromString(contract.status).displayName.toUpperCase();
 
     return Card(
       child: Padding(
@@ -403,7 +417,7 @@ class _ContractCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    contract.contractType,
+                    _getContractTypeDisplay(contract.contractType),
                     style: AppTextStyles.bodyLarge.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -463,27 +477,14 @@ class _ContractCard extends StatelessWidget {
         return AppColors.success;
       case 'completed':
         return AppColors.info;
-      case 'suspended':
-        return AppColors.warning;
-      case 'cancelled':
+      case 'expired':
         return AppColors.error;
+      case 'terminated':
+        return AppColors.error;
+      case 'pending_approval':
+        return AppColors.warning;
       default:
         return AppColors.grey;
-    }
-  }
-
-  String _getStatusText(String status) {
-    switch (status) {
-      case 'active':
-        return 'ATIVO';
-      case 'completed':
-        return 'CONCLUÍDO';
-      case 'suspended':
-        return 'SUSPENSO';
-      case 'cancelled':
-        return 'CANCELADO';
-      default:
-        return 'DESCONHECIDO';
     }
   }
 
@@ -496,11 +497,13 @@ class _ContractEditForm extends StatefulWidget {
   final String studentId;
   final dynamic contract;
   final String? supervisorId;
+  final VoidCallback? onContractSaved;
 
   const _ContractEditForm({
     required this.studentId,
     this.contract,
     this.supervisorId,
+    this.onContractSaved,
   });
 
   @override
@@ -538,23 +541,23 @@ class _ContractEditFormState extends State<_ContractEditForm> {
   }
 
   final List<String> _statusOptions = [
-    'ativo',
-    'pendente',
-    'finalizado',
+    'active',
+    'pending_approval',
+    'expired',
+    'terminated',
+    'completed',
   ];
-
-
 
   @override
   void initState() {
     super.initState();
     _loadSupervisores();
     if (widget.contract != null) {
-      _contractType = _contractTypes.contains(widget.contract.contractType) 
-          ? widget.contract.contractType 
+      _contractType = _contractTypes.contains(widget.contract.contractType)
+          ? widget.contract.contractType
           : _contractTypes.first;
-      _status = _statusOptions.contains(widget.contract.status) 
-          ? widget.contract.status 
+      _status = _statusOptions.contains(widget.contract.status)
+          ? widget.contract.status
           : _statusOptions.first;
       _descriptionController.text = widget.contract.description ?? '';
       _startDate = widget.contract.startDate;
@@ -602,13 +605,25 @@ class _ContractEditFormState extends State<_ContractEditForm> {
     return BlocListener<ContractBloc, ContractState>(
       listener: (context, state) {
         if (state is ContractCreateSuccess || state is ContractUpdateSuccess) {
-          Navigator.of(context).pop();
+          // Capturar contexto antes do Future.delayed
+          final navigator = Navigator.of(context);
+          // Mostrar SnackBar antes de fechar o modal
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Contrato salvo com sucesso!'),
               backgroundColor: AppColors.success,
             ),
           );
+          
+          // Recarregar os dados automaticamente
+          widget.onContractSaved?.call();
+          
+          // Fechar modal após um pequeno delay para garantir que o SnackBar seja exibido
+          Future.delayed(const Duration(milliseconds: 100), () {
+            if (mounted) {
+              navigator.pop();
+            }
+          });
         } else if (state is ContractInsertError ||
             state is ContractUpdateError) {
           setState(() => _isSaving = false);
@@ -693,7 +708,9 @@ class _ContractEditFormState extends State<_ContractEditForm> {
                 items: _statusOptions
                     .map((status) => DropdownMenuItem(
                           value: status,
-                          child: Text(status),
+                          child: Text(
+                            ContractStatus.fromString(status).displayName,
+                          ),
                         ))
                     .toList(),
                 onChanged: (value) => setState(() => _status = value),
@@ -752,7 +769,8 @@ class _ContractEditFormState extends State<_ContractEditForm> {
                       },
                       validator: (v) {
                         if (_endDate == null) return 'Obrigatório';
-                        if (_startDate != null && _endDate!.isBefore(_startDate!)) {
+                        if (_startDate != null &&
+                            _endDate!.isBefore(_startDate!)) {
                           return 'Data fim deve ser posterior à data início';
                         }
                         return null;
@@ -772,7 +790,8 @@ class _ContractEditFormState extends State<_ContractEditForm> {
                 items: const [
                   DropdownMenuItem(
                     value: '20',
-                    child: Text('20 horas/semana (Educação Especial/Fundamental)'),
+                    child:
+                        Text('20 horas/semana (Educação Especial/Fundamental)'),
                   ),
                   DropdownMenuItem(
                     value: '30',
@@ -795,7 +814,8 @@ class _ContractEditFormState extends State<_ContractEditForm> {
                   children: [
                     Text(
                       'Limites Legais (Lei 11.788/2008):',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                     ),
                     SizedBox(height: 4),
                     Text(

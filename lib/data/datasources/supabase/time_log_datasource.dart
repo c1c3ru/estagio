@@ -36,14 +36,25 @@ class TimeLogDatasource {
   Future<List<Map<String, dynamic>>> getTimeLogsByStudent(
       String studentId) async {
     try {
+      if (kDebugMode) {
+        debugPrint('🔵 TimeLogDatasource: getTimeLogsByStudent iniciado para studentId: $studentId');
+      }
+      
       final response = await _supabaseClient
           .from('time_logs')
           .select('*')
           .eq('student_id', studentId)
           .order('created_at', ascending: false);
 
+      if (kDebugMode) {
+        debugPrint('🔵 TimeLogDatasource: getTimeLogsByStudent retornou ${response.length} registros');
+      }
+
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
+      if (kDebugMode) {
+        debugPrint('🔴 TimeLogDatasource: Erro em getTimeLogsByStudent: $e');
+      }
       throw Exception('Erro ao buscar registros do estudante: $e');
     }
   }
@@ -87,36 +98,40 @@ class TimeLogDatasource {
       Map<String, dynamic> timeLogData) async {
     try {
       if (kDebugMode) {
-        debugPrint('🔵 TimeLogDatasource: createTimeLog chamado com dados: $timeLogData');
+        debugPrint(
+            '🔵 TimeLogDatasource: createTimeLog chamado com dados: $timeLogData');
       }
-      
+
       final dataToInsert = Map<String, dynamic>.from(timeLogData);
-      
+
       // Remove campos UUID se estiverem vazios ou nulos
       final uuidFields = ['id', 'supervisor_id'];
       for (final field in uuidFields) {
-        if (dataToInsert[field] == null || 
-            dataToInsert[field] == '' || 
+        if (dataToInsert[field] == null ||
+            dataToInsert[field] == '' ||
             dataToInsert[field] == 'null') {
           dataToInsert.remove(field);
         }
       }
-      
+
       // Validar campos obrigatórios
-      if (dataToInsert['student_id'] == null || dataToInsert['student_id'] == '') {
+      if (dataToInsert['student_id'] == null ||
+          dataToInsert['student_id'] == '') {
         throw Exception('student_id é obrigatório');
       }
       if (dataToInsert['log_date'] == null || dataToInsert['log_date'] == '') {
         throw Exception('log_date é obrigatório');
       }
-      if (dataToInsert['check_in_time'] == null || dataToInsert['check_in_time'] == '') {
+      if (dataToInsert['check_in_time'] == null ||
+          dataToInsert['check_in_time'] == '') {
         throw Exception('check_in_time é obrigatório');
       }
-      
+
       if (kDebugMode) {
-        debugPrint('🔵 TimeLogDatasource: Dados finais para inserção: $dataToInsert');
+        debugPrint(
+            '🔵 TimeLogDatasource: Dados finais para inserção: $dataToInsert');
       }
-      
+
       final response = await _supabaseClient
           .from('time_logs')
           .insert(dataToInsert)
@@ -129,13 +144,12 @@ class TimeLogDatasource {
       return response;
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('🔴 TimeLogDatasource: Erro detalhado ao criar registro: $e');
+        debugPrint(
+            '🔴 TimeLogDatasource: Erro detalhado ao criar registro: $e');
       }
       throw Exception('Erro ao criar registro de horas: $e');
     }
   }
-
-
 
   Future<void> deleteTimeLog(String id) async {
     try {
@@ -149,14 +163,15 @@ class TimeLogDatasource {
       {String? notes}) async {
     try {
       if (kDebugMode) {
-        debugPrint('🔵 TimeLogDatasource: Iniciando clockIn para studentId: $studentId');
+        debugPrint(
+            '🔵 TimeLogDatasource: Iniciando clockIn para studentId: $studentId');
       }
-      
+
       // Verificar se studentId é válido
       if (studentId.isEmpty) {
         throw Exception('ID do estudante não pode estar vazio');
       }
-      
+
       // Verificar se já existe um registro ativo
       final activeLog = await getActiveTimeLog(studentId);
       if (activeLog != null) {
@@ -167,21 +182,23 @@ class TimeLogDatasource {
       final timeLogData = {
         'student_id': studentId,
         'log_date': now.toIso8601String().split('T')[0], // YYYY-MM-DD format
-        'check_in_time': '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}', // HH:MM:SS format
+        'check_in_time':
+            '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}', // HH:MM:SS format
         'description': notes?.isNotEmpty == true ? notes : null,
         'approved': false,
       };
-      
+
       // Remove campos nulos ou vazios
       timeLogData.removeWhere((key, value) => value == null || value == '');
-      
+
       if (kDebugMode) {
         debugPrint('🔵 TimeLogDatasource: Dados para inserção: $timeLogData');
       }
 
       final result = await createTimeLog(timeLogData);
       if (kDebugMode) {
-        debugPrint('🔵 TimeLogDatasource: Registro criado com sucesso: ${result['id']}');
+        debugPrint(
+            '🔵 TimeLogDatasource: Registro criado com sucesso: ${result['id']}');
       }
       return result;
     } catch (e) {
@@ -199,7 +216,7 @@ class TimeLogDatasource {
       if (studentId.isEmpty) {
         throw Exception('ID do estudante não pode estar vazio');
       }
-      
+
       // Buscar registro ativo
       final activeLog = await getActiveTimeLog(studentId);
       if (activeLog == null) {
@@ -208,27 +225,31 @@ class TimeLogDatasource {
 
       final now = DateTime.now();
       final checkInTime = activeLog['check_in_time'] as String;
-      
+
       // Parse do horário de entrada
       final checkInParts = checkInTime.split(':');
       final logDate = DateTime.parse(activeLog['log_date']);
       final checkInDateTime = DateTime(
-        logDate.year, logDate.month, logDate.day,
-        int.parse(checkInParts[0]), 
-        int.parse(checkInParts[1]),
-        checkInParts.length > 2 ? int.parse(checkInParts[2]) : 0
-      );
-      
+          logDate.year,
+          logDate.month,
+          logDate.day,
+          int.parse(checkInParts[0]),
+          int.parse(checkInParts[1]),
+          checkInParts.length > 2 ? int.parse(checkInParts[2]) : 0);
+
       // Calcular duração
       final duration = now.difference(checkInDateTime);
       final hoursLogged = (duration.inMinutes / 60.0);
-      
+
       final updateData = {
-        'check_out_time': '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}',
-        'hours_logged': double.parse(hoursLogged.toStringAsFixed(2)), // Arredondar para 2 casas decimais
-        'description': notes?.isNotEmpty == true ? notes : activeLog['description'],
+        'check_out_time':
+            '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}',
+        'hours_logged': double.parse(
+            hoursLogged.toStringAsFixed(2)), // Arredondar para 2 casas decimais
+        'description':
+            notes?.isNotEmpty == true ? notes : activeLog['description'],
       };
-      
+
       // Remove campos nulos
       updateData.removeWhere((key, value) => value == null);
 
@@ -250,7 +271,8 @@ class TimeLogDatasource {
   }
 
   /// Obtém registros pendentes de aprovação
-  Future<List<Map<String, dynamic>>> getPendingTimeLogs(String supervisorId) async {
+  Future<List<Map<String, dynamic>>> getPendingTimeLogs(
+      String supervisorId) async {
     try {
       final response = await _supabaseClient
           .from('time_logs')
@@ -259,7 +281,7 @@ class TimeLogDatasource {
             students!inner(*)
           ''')
           .eq('students.supervisor_id', supervisorId)
-          .eq('status', 'pending')
+          .eq('approved', false)
           .order('created_at', ascending: false);
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
@@ -269,7 +291,7 @@ class TimeLogDatasource {
 
   /// Atualiza registro com motivo de rejeição
   Future<Map<String, dynamic>> updateTimeLog(
-    String id, 
+    String id,
     Map<String, dynamic> timeLogData, {
     String? rejectionReason,
   }) async {
@@ -279,7 +301,8 @@ class TimeLogDatasource {
     return await updateTimeLogData(id, timeLogData);
   }
 
-  Future<Map<String, dynamic>> updateTimeLogData(String id, Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> updateTimeLogData(
+      String id, Map<String, dynamic> data) async {
     try {
       final response = await _supabaseClient
           .from('time_logs')
@@ -316,6 +339,11 @@ class TimeLogDatasource {
       int completedLogs = 0;
 
       for (final log in timeLogs) {
+        // Considera apenas logs aprovados
+        final isApproved = (log['approved'] == true) ||
+            (log['status'] != null && log['status'] == 'approved');
+        if (!isApproved) continue;
+
         if (log['check_out_time'] != null) {
           final logDate = DateTime.parse(log['log_date']);
           final checkInTime = log['check_in_time'] as String;

@@ -61,6 +61,7 @@ class AppStrings {
   static const String students = 'Estudantes';
   static const String studentProfile = 'Perfil do Estudante';
   static const String timeLog = 'Registro de Horas';
+  static const String timeRecord = 'Registro de Horas';
   static const String clockIn = 'Entrada';
   static const String clockOut = 'Saída';
   static const String totalHours = 'Total de Horas';
@@ -81,6 +82,9 @@ class AppStrings {
   static const String startDate = 'Data de Início';
   static const String endDate = 'Data de Término';
   static const String workload = 'Carga Horária';
+  static const String contractInformation = 'Informações do Contrato';
+  static const String noContractsFound = 'Nenhum contrato encontrado';
+  static const String errorLoadingContracts = 'Erro ao carregar contratos';
 
   // Errors
   static const String networkError = 'Erro de conexão';
@@ -121,13 +125,28 @@ class AppStrings {
   static const String expiringIn30Days = 'A Vencer em 30d';
   static const String totalContracts = 'Total de Contratos';
   static const String closed = 'Encerrados';
-  
+
+  // Time logs
+  static const String noTimeLogsFound = 'Nenhum registo de tempo encontrado.';
+  static const String addFirstTimeLog = 'Adicionar Primeiro Registo';
+  static const String startTimeRecord = 'Iniciar Registro';
+  static const String finishTimeRecord = 'Finalizar Registro';
+
+  // Profile
+  static const String incompleteProfile = 'Perfil Incompleto';
+  static const String completeProfile = 'Completar Perfil';
+  static const String editProfile = 'Editar Perfil';
+
   // Empty states
-  static const String noStudentsForReports = 'Nenhum estudante encontrado para gerar relatórios de performance.';
-  static const String noContractsForReports = 'Nenhum contrato encontrado para gerar relatórios.';
-  static const String noDataForAnalysis = 'Nenhum dado disponível para gerar análises.';
-  static const String errorLoadingReports = 'Erro ao carregar dados dos relatórios';
-  
+  static const String noStudentsForReports =
+      'Nenhum estudante encontrado para gerar relatórios de performance.';
+  static const String noContractsForReports =
+      'Nenhum contrato encontrado para gerar relatórios.';
+  static const String noDataForAnalysis =
+      'Nenhum dado disponível para gerar análises.';
+  static const String errorLoadingReports =
+      'Erro ao carregar dados dos relatórios';
+
   // Time approval
   static const String timeApproval = 'Aprovações de Horas';
   static const String confirmApproval = 'Confirmar Aprovação';
@@ -138,17 +157,17 @@ class AppStrings {
   static const String rejectionReason = 'Motivo da Rejeição (Opcional)';
   static const String confirmRejection = 'Confirmar Rejeição';
   static const String approved = 'Aprovado';
-  static const String timeRecord = 'Registro de Horas';
   static const String entry = 'Entrada';
   static const String exit = 'Saída';
   static const String hoursLogged = 'Horas Registadas';
   static const String description = 'Descrição';
   static const String date = 'Data';
   static const String hours = 'Horas';
-  
+
   // Manage students
   static const String manageStudentsTitle = 'Gerenciar Estudantes';
-  static const String searchPlaceholder = 'Pesquisar por nome, curso ou matrícula...';
+  static const String searchPlaceholder =
+      'Pesquisar por nome, curso ou matrícula...';
   static const String noStudentsFound = 'Nenhum estudante encontrado';
   static const String noResultsFor = 'Nenhum resultado para';
   static const String registration = 'Matrícula';
@@ -164,12 +183,12 @@ class AppStrings {
   static const String evening = 'Noite';
   static const String fullTime = 'Integral';
   static const String ead = 'EAD';
-  
+
   // Contract types
   static const String mandatory = 'Obrigatório';
   static const String nonMandatory = 'Não obrigatório';
   static const String contractType = 'Tipo';
-  
+
   // Supabase
   static const String supabaseUrl = 'YOUR_SUPABASE_URL';
   static const String supabaseAnnonKey = 'YOUR_SUPABASE_ANON_KEY';
