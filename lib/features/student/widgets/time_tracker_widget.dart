@@ -35,6 +35,7 @@ class _TimeTrackerWidgetState extends State<TimeTrackerWidget> {
   late AuthBloc _authBloc;
   String? _userId;
   TimeLogEntity? _activeTimeLog;
+  bool _hasInitialFetch = false; // Flag para controlar busca inicial
 
   @override
   void initState() {
@@ -51,8 +52,9 @@ class _TimeTrackerWidgetState extends State<TimeTrackerWidget> {
       }
     }
 
-    if (_userId != null && _activeTimeLog == null) {
-      // Se não recebeu um log ativo inicial, tenta buscar
+    // Só busca se não recebeu um log ativo inicial E ainda não fez a busca inicial
+    if (_userId != null && _activeTimeLog == null && !_hasInitialFetch) {
+      _hasInitialFetch = true;
       _studentBloc.add(FetchActiveTimeLogEvent(userId: _userId!));
     }
   }
@@ -108,7 +110,9 @@ class _TimeTrackerWidgetState extends State<TimeTrackerWidget> {
             _activeTimeLog = state.activeTimeLog;
           });
         } else if (state is StudentTimeLogOperationSuccess) {
-          if (_userId != null) {
+          // Só busca novamente após operações de check-in/check-out bem-sucedidas
+          if (_userId != null && !_hasInitialFetch) {
+            _hasInitialFetch = true;
             _studentBloc.add(FetchActiveTimeLogEvent(userId: _userId!));
           }
           FeedbackService.showSuccess(context, state.message);

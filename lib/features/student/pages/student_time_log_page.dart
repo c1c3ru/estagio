@@ -18,6 +18,7 @@ import '../../../../domain/entities/time_log_entity.dart';
 import '../bloc/student_bloc.dart';
 import '../bloc/student_event.dart';
 import '../bloc/student_state.dart';
+import '../widgets/time_tracker_widget.dart';
 import '../../../core/utils/feedback_service.dart';
 
 class StudentTimeLogPage extends StatefulWidget {
@@ -436,14 +437,12 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Registro rápido (clock in/out) - temporariamente removido para evitar loop infinito
-            //
-            // Align(TODO: Reintegrar TimeTrackerWidget sem causar loop infinito
-            //   alignment: Alignment.centerLeft,
-            //   child: TimeTrackerWidget(
-            //     currentUserId: _currentUserId,
-            //   ),
-            // ),
+            Align(
+              alignment: Alignment.topCenter,
+              child: TimeTrackerWidget(
+                currentUserId: _currentUserId,
+              ),
+            ),
             const SizedBox(height: 16),
             if (timeLogs.isEmpty)
               Column(
