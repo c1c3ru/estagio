@@ -131,6 +131,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
     on<CreateSupervisorEvent>(_onCreateSupervisor);
     on<UpdateSupervisorEvent>(_onUpdateSupervisor);
     on<DeleteSupervisorEvent>(_onDeleteSupervisor);
+    on<LoadAllStudentsEvent>(_onLoadAllStudents);
   }
 
   Future<void> _onLoadSupervisorDashboardData(
@@ -683,6 +684,51 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
       add(LoadAllSupervisorsEvent());
     } catch (e) {
       emit(SupervisorOperationFailure(message: e.toString()));
+    }
+  }
+
+  Future<void> _onLoadAllStudents(
+    LoadAllStudentsEvent event,
+    Emitter<SupervisorState> emit,
+  ) async {
+    emit(const SupervisorLoading(loadingMessage: 'Carregando estudantes...'));
+    
+    try {
+      // Obter o supervisor atual do AuthBloc
+      final authState = _authBloc.state;
+      if (authState is! auth_state.AuthSuccess) {
+        emit(const SupervisorOperationFailure(
+            message: 'Usuário não autenticado'));
+        return;
+      }
+
+      final supervisorResult = await _getSupervisorByUserIdUsecase.call(authState.user.id);
+      
+      await supervisorResult.fold(
+        (failure) async {
+          emit(SupervisorOperationFailure(message: failure.message));
+        },
+        (supervisor) async {
+          if (supervisor == null) {
+            emit(const SupervisorOperationFailure(
+                message: 'Supervisor não encontrado'));
+            return;
+          }
+          
+          // Carregar todos os estudantes do supervisor
+          final studentsResult = await _getAllStudentsForSupervisorUsecase.call(
+            supervisorId: supervisor.id,
+          );
+          
+          studentsResult.fold(
+            (failure) => emit(SupervisorOperationFailure(message: failure.message)),
+            (students) => emit(SupervisorStudentsLoadSuccess(students: students)),
+          );
+        },
+      );
+    } catch (e) {
+      emit(SupervisorOperationFailure(
+          message: 'Erro ao carregar estudantes: ${e.toString()}'));
     }
   }
 }
