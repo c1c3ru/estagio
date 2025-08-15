@@ -13,6 +13,7 @@ class ContractEntity extends Equatable {
   final String? createdBy;
   final DateTime createdAt;
   final DateTime? updatedAt;
+  final bool receivesScholarship;
 
   const ContractEntity({
     required this.id,
@@ -27,6 +28,7 @@ class ContractEntity extends Equatable {
     this.createdBy,
     required this.createdAt,
     this.updatedAt,
+    this.receivesScholarship = false,
   });
 
   @override
@@ -43,6 +45,7 @@ class ContractEntity extends Equatable {
         createdBy,
         createdAt,
         updatedAt,
+        receivesScholarship,
       ];
 
   ContractEntity copyWith({
@@ -58,6 +61,7 @@ class ContractEntity extends Equatable {
     String? createdBy,
     DateTime? createdAt,
     DateTime? updatedAt,
+    bool? receivesScholarship,
   }) {
     return ContractEntity(
       id: id ?? this.id,
@@ -72,6 +76,7 @@ class ContractEntity extends Equatable {
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      receivesScholarship: receivesScholarship ?? this.receivesScholarship,
     );
   }
 
@@ -89,6 +94,7 @@ class ContractEntity extends Equatable {
       'created_by': createdBy,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
+      'receives_scholarship': receivesScholarship,
     };
   }
 }

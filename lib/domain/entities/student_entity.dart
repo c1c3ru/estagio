@@ -10,6 +10,7 @@ class StudentEntity extends Equatable {
   final String course;
   final String advisorName;
   final bool isMandatoryInternship;
+  final bool receivesScholarship;
   final String classShift;
   final String internshipShift1;
   final String? internshipShift2;
@@ -34,6 +35,7 @@ class StudentEntity extends Equatable {
     required this.course,
     required this.advisorName,
     required this.isMandatoryInternship,
+    this.receivesScholarship = false,
     required this.classShift,
     required this.internshipShift1,
     this.internshipShift2,
@@ -60,6 +62,7 @@ class StudentEntity extends Equatable {
         course,
         advisorName,
         isMandatoryInternship,
+        receivesScholarship,
         classShift,
         internshipShift1,
         internshipShift2,
@@ -85,6 +88,7 @@ class StudentEntity extends Equatable {
     String? course,
     String? advisorName,
     bool? isMandatoryInternship,
+    bool? receivesScholarship,
     String? classShift,
     String? internshipShift1,
     String? internshipShift2,
@@ -110,6 +114,7 @@ class StudentEntity extends Equatable {
       advisorName: advisorName ?? this.advisorName,
       isMandatoryInternship:
           isMandatoryInternship ?? this.isMandatoryInternship,
+      receivesScholarship: receivesScholarship ?? this.receivesScholarship,
       classShift: classShift ?? this.classShift,
       internshipShift1: internshipShift1 ?? this.internshipShift1,
       internshipShift2: internshipShift2 ?? this.internshipShift2,
@@ -131,6 +136,6 @@ class StudentEntity extends Equatable {
 
   @override
   String toString() {
-    return 'StudentEntity(id: $id, fullName: $fullName, registrationNumber: $registrationNumber, course: $course, advisorName: $advisorName, isMandatoryInternship: $isMandatoryInternship, classShift: $classShift, internshipShift1: $internshipShift1, internshipShift2: $internshipShift2, birthDate: $birthDate, contractStartDate: $contractStartDate, contractEndDate: $contractEndDate, totalHoursRequired: $totalHoursRequired, totalHoursCompleted: $totalHoursCompleted, weeklyHoursTarget: $weeklyHoursTarget, profilePictureUrl: $profilePictureUrl, phoneNumber: $phoneNumber, createdAt: $createdAt, updatedAt: $updatedAt, status: $status, supervisorId: $supervisorId, userEmail: $userEmail)';
+    return 'StudentEntity(id: $id, fullName: $fullName, registrationNumber: $registrationNumber, course: $course, advisorName: $advisorName, isMandatoryInternship: $isMandatoryInternship, receivesScholarship: $receivesScholarship, classShift: $classShift, internshipShift1: $internshipShift1, internshipShift2: $internshipShift2, birthDate: $birthDate, contractStartDate: $contractStartDate, contractEndDate: $contractEndDate, totalHoursRequired: $totalHoursRequired, totalHoursCompleted: $totalHoursCompleted, weeklyHoursTarget: $weeklyHoursTarget, profilePictureUrl: $profilePictureUrl, phoneNumber: $phoneNumber, createdAt: $createdAt, updatedAt: $updatedAt, status: $status, supervisorId: $supervisorId, userEmail: $userEmail)';
   }
 }

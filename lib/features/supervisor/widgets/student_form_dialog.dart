@@ -37,6 +37,7 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
   late TextEditingController _weeklyHoursController;
   late TextEditingController _passwordController;
   bool _isMandatoryInternship = false;
+  bool _receivesScholarship = false;
   ClassShift _classShift = ClassShift.morning;
   InternshipShift _internshipShift = InternshipShift.morning;
   DateTime? _startDate;
@@ -66,6 +67,7 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
     _weeklyHoursController =
         TextEditingController(text: s?.weeklyHoursTarget.toString() ?? '');
     _isMandatoryInternship = s?.isMandatoryInternship ?? false;
+    _receivesScholarship = s?.receivesScholarship ?? false;
     _classShift = s != null
         ? ClassShift.values.firstWhere((e) => e.name == s.classShift,
             orElse: () => ClassShift.morning)
@@ -252,6 +254,11 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
                 onChanged: (v) => setState(() => _isMandatoryInternship = v),
                 title: const Text('Estágio obrigatório'),
               ),
+              SwitchListTile(
+                value: _receivesScholarship,
+                onChanged: (v) => setState(() => _receivesScholarship = v),
+                title: const Text('Recebe bolsa'),
+              ),
             ],
           ),
         ),
@@ -271,6 +278,7 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
                 course: _courseController.text.trim(),
                 advisorName: _advisorController.text.trim(),
                 isMandatoryInternship: _isMandatoryInternship,
+                receivesScholarship: _receivesScholarship,
                 classShift: _classShift.name,
                 internshipShift1: _internshipShift.name,
                 internshipShift2: null,

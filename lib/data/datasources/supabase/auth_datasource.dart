@@ -42,6 +42,7 @@ class AuthDatasource implements IAuthDatasource {
     required UserRole role,
     String? registration,
     bool? isMandatoryInternship,
+    bool? receivesScholarship,
     String? supervisorId,
     String? course,
     String? advisorName,
@@ -63,6 +64,7 @@ class AuthDatasource implements IAuthDatasource {
           if (course != null) 'course': course,
           if (advisorName != null) 'advisor_name': advisorName,
           if (department != null) 'department': department,
+          if (receivesScholarship != null) 'receives_scholarship': receivesScholarship,
         },
       );
 
@@ -224,6 +226,7 @@ class AuthDatasource implements IAuthDatasource {
               'advisorName': studentData['advisor_name'],
               'registrationNumber': studentData['registration_number'],
               'isMandatoryInternship': studentData['is_mandatory_internship'],
+              'receivesScholarship': studentData['receives_scholarship'] ?? false,
               'classShift': studentData['class_shift'],
               'internshipShift1': studentData['internship_shift_1'],
               'internshipShift2': studentData['internship_shift_2'],
@@ -291,6 +294,7 @@ class AuthDatasource implements IAuthDatasource {
               'course': user.userMetadata?['course'] ?? 'Curso não informado',
               'advisor_name': user.userMetadata?['advisor_name'] ?? 'Orientador não informado',
               'is_mandatory_internship': true,
+              'receives_scholarship': user.userMetadata?['receives_scholarship'] ?? false,
               'class_shift': user.userMetadata?['class_shift'] ?? 'morning',
               'internship_shift_1': user.userMetadata?['internship_shift'] ?? 'morning',
               'birth_date': user.userMetadata?['birth_date'] ?? '2000-01-01',

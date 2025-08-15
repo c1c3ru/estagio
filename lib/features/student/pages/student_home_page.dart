@@ -287,6 +287,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                           ),
                                           const SizedBox(height: 8),
                                           Text('Tipo: ${_mapContractType(contracts.first.contractType)} | Status: ${_mapContractStatus(contracts.first.status)}'),
+                                          Text('Bolsa: ${contracts.first.receivesScholarship ? 'Sim' : 'Não'}'),
                                           Text('Início: ${_formatDatePtBr(contracts.first.startDate)}'),
                                           Text('Fim: ${_formatDatePtBr(contracts.first.endDate)}'),
                                         ],

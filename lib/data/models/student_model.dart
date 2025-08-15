@@ -7,6 +7,7 @@ class StudentModel {
   final String course;
   final String advisorName;
   final bool isMandatoryInternship;
+  final bool receivesScholarship;
   final String classShift;
   final String internshipShift1;
   final String? internshipShift2;
@@ -31,6 +32,7 @@ class StudentModel {
     required this.course,
     required this.advisorName,
     required this.isMandatoryInternship,
+    this.receivesScholarship = false,
     required this.classShift,
     required this.internshipShift1,
     this.internshipShift2,
@@ -70,6 +72,7 @@ class StudentModel {
       course: json['course'] as String,
       advisorName: json['advisor_name'] as String,
       isMandatoryInternship: json['is_mandatory_internship'] as bool,
+      receivesScholarship: (json['receives_scholarship'] as bool?) ?? false,
       classShift: json['class_shift'] as String,
       internshipShift1: json['internship_shift_1'] as String,
       internshipShift2: json['internship_shift_2'] as String?,
@@ -102,6 +105,7 @@ class StudentModel {
       'course': course,
       'advisor_name': advisorName,
       'is_mandatory_internship': isMandatoryInternship,
+      'receives_scholarship': receivesScholarship,
       'class_shift': classShift,
       'internship_shift_1': internshipShift1,
       'internship_shift_2': internshipShift2,
@@ -128,6 +132,7 @@ class StudentModel {
       course: course,
       advisorName: advisorName,
       isMandatoryInternship: isMandatoryInternship,
+      receivesScholarship: receivesScholarship,
       classShift: classShift,
       internshipShift1: internshipShift1,
       internshipShift2: internshipShift2,

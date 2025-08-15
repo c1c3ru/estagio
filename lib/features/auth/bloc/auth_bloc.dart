@@ -137,6 +137,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       role: event.role,
       registration: event.registration,
       isMandatoryInternship: event.isMandatoryInternship,
+      receivesScholarship: event.receivesScholarship,
       supervisorId: event.supervisorId,
       course: event.course,
       advisorName: event.advisorName,

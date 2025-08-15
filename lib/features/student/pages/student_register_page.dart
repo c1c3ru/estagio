@@ -47,7 +47,8 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
   DateTime? _selectedContractEndDate;
 
   // Novos campos para estágio obrigatório e supervisor
-  bool? _isMandatoryInternship;
+  bool _isMandatoryInternship = false;
+  bool _receivesScholarship = false;
   String? _selectedSupervisorId;
   List<Map<String, dynamic>> _supervisors = [];
   bool _loadingSupervisors = false;
@@ -121,11 +122,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
   void _onRegisterPressed() {
     if (_formKey.currentState?.validate() ?? false) {
       if (_selectedRole == UserRole.student) {
-        if (_isMandatoryInternship == null) {
-          FeedbackService.showWarning(
-              context, 'Informe se o estágio é obrigatório.');
-          return;
-        }
+        // Validação removida pois _isMandatoryInternship agora é bool (não nullable)
         if (_selectedSupervisorId == null) {
           FeedbackService.showWarning(context, 'Selecione um supervisor.');
           return;
@@ -150,7 +147,8 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
           password: _passwordController.text,
           role: _selectedRole,
           registration: _registrationController.text.trim(),
-          isMandatoryInternship: _isMandatoryInternship ?? false,
+          isMandatoryInternship: _isMandatoryInternship,
+          receivesScholarship: _receivesScholarship,
           supervisorId: _selectedSupervisorId,
           // Novos campos
           course: _courseController.text.trim(),
@@ -396,9 +394,20 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                           title: const Text('Estágio obrigatório?',
                               style:
                                   TextStyle(color: AppColors.textPrimaryDark)),
-                          value: _isMandatoryInternship ?? false,
+                          value: _isMandatoryInternship,
                           onChanged: (value) {
                             setState(() => _isMandatoryInternship = value);
+                          },
+                          activeColor: AppColors.primary,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        SwitchListTile(
+                          title: const Text('Recebe bolsa?',
+                              style:
+                                  TextStyle(color: AppColors.textPrimaryDark)),
+                          value: _receivesScholarship,
+                          onChanged: (value) {
+                            setState(() => _receivesScholarship = value);
                           },
                           activeColor: AppColors.primary,
                           contentPadding: EdgeInsets.zero,
