@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import 'app_text_styles.dart';
+import 'app_theme_extensions.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
@@ -10,6 +11,9 @@ class AppTheme {
       primarySwatch: Colors.blue,
       primaryColor: AppColors.primary,
       scaffoldBackgroundColor: AppColors.background,
+      extensions: const [
+        AppTokens(),
+      ],
 
       // Color Scheme
       colorScheme: const ColorScheme.light(
@@ -33,13 +37,14 @@ class AppTheme {
       ),
 
       // Card Theme
-      cardTheme: const CardThemeData(
+      cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 2,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12)),
+          borderRadius:
+              BorderRadius.all(Radius.circular(const AppTokens().radiusMd)),
         ),
-        margin: EdgeInsets.all(8),
+        margin: EdgeInsets.all(const AppTokens().spaceSm),
       ),
 
       // Elevated Button Theme
@@ -48,9 +53,12 @@ class AppTheme {
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.white,
           elevation: 2,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: EdgeInsets.symmetric(
+            horizontal: const AppTokens().spaceXl,
+            vertical: const AppTokens().spaceMd,
+          ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(const AppTokens().radiusSm),
           ),
           textStyle: AppTextStyles.button,
         ),
@@ -60,9 +68,12 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.primary,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: EdgeInsets.symmetric(
+            horizontal: const AppTokens().spaceLg,
+            vertical: const AppTokens().spaceMd,
+          ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(const AppTokens().radiusSm),
           ),
           textStyle: AppTextStyles.button,
         ),
@@ -73,9 +84,12 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
           side: const BorderSide(color: AppColors.primary),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: EdgeInsets.symmetric(
+            horizontal: const AppTokens().spaceXl,
+            vertical: const AppTokens().spaceMd,
+          ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(const AppTokens().radiusSm),
           ),
           textStyle: AppTextStyles.button,
         ),
@@ -86,23 +100,29 @@ class AppTheme {
         filled: true,
         fillColor: AppColors.surface,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius:
+              BorderRadius.circular(const AppTokens().radiusSm),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius:
+              BorderRadius.circular(const AppTokens().radiusSm),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius:
+              BorderRadius.circular(const AppTokens().radiusSm),
           borderSide: const BorderSide(color: AppColors.borderFocus, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius:
+              BorderRadius.circular(const AppTokens().radiusSm),
           borderSide: const BorderSide(color: AppColors.borderError),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: const AppTokens().spaceLg,
+          vertical: const AppTokens().spaceMd,
+        ),
         hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textHint),
         labelStyle:
             AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
@@ -148,6 +168,9 @@ class AppTheme {
       primarySwatch: Colors.blue,
       primaryColor: AppColors.primary,
       scaffoldBackgroundColor: AppColors.surfaceDark,
+      extensions: const [
+        AppTokens(),
+      ],
 
       // Color Scheme
       colorScheme: const ColorScheme.dark(
@@ -171,13 +194,14 @@ class AppTheme {
       ),
 
       // Card Theme
-      cardTheme: const CardThemeData(
+      cardTheme: CardThemeData(
         color: AppColors.greyDark,
         elevation: 2,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12)),
+          borderRadius:
+              BorderRadius.all(Radius.circular(const AppTokens().radiusMd)),
         ),
-        margin: EdgeInsets.all(8),
+        margin: EdgeInsets.all(const AppTokens().spaceSm),
       ),
 
       // Text Theme

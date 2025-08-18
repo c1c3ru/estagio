@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/app_colors.dart';
+import '../../core/theme/app_theme_extensions.dart';
 
 class ModernButton extends StatefulWidget {
   final String text;
@@ -63,6 +64,7 @@ class _ModernButtonState extends State<ModernButton>
 
   @override
   Widget build(BuildContext context) {
+    final t = context.tokens;
     return AnimatedBuilder(
       animation: _scaleAnimation,
       builder: (context, child) {
@@ -84,7 +86,7 @@ class _ModernButtonState extends State<ModernButton>
                       )
                     : null,
                 color: widget.useGradient ? null : (widget.backgroundColor ?? AppColors.primary),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(t.radiusLg),
                 boxShadow: [
                   BoxShadow(
                     color: (widget.backgroundColor ?? AppColors.primary).withOpacity(0.3),
@@ -110,7 +112,7 @@ class _ModernButtonState extends State<ModernButton>
                           children: [
                             if (widget.icon != null) ...[
                               Icon(widget.icon, color: Colors.white, size: 20),
-                              const SizedBox(width: 8),
+                              SizedBox(width: t.spaceSm),
                             ],
                             Text(
                               widget.text,

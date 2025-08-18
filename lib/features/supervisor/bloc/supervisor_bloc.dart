@@ -131,6 +131,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
     on<CreateSupervisorEvent>(_onCreateSupervisor);
     on<UpdateSupervisorEvent>(_onUpdateSupervisor);
     on<DeleteSupervisorEvent>(_onDeleteSupervisor);
+    on<LoadAllStudentsEvent>(_onLoadAllStudents);
   }
 
   Future<void> _onLoadSupervisorDashboardData(
@@ -150,14 +151,14 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
     }
 
     try {
-      // Obter o supervisor logado
+      // Obter o utilizador autenticado
       final currentAuthState = _authBloc.state;
-      String? supervisorId;
+      String? authUserId;
 
       if (currentAuthState is auth_state.AuthSuccess) {
-        supervisorId = currentAuthState.user.id;
+        authUserId = currentAuthState.user.id;
         if (kDebugMode) {
-          print('🟡 SupervisorBloc: Supervisor ID: $supervisorId');
+          print('🟡 SupervisorBloc: Auth User ID: $authUserId');
         }
       } else {
         if (kDebugMode) {
@@ -169,15 +170,39 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
       }
 
       if (kDebugMode) {
-        print('🟡 SupervisorBloc: Iniciando carregamento de dados...');
+        print('🟡 SupervisorBloc: Carregando perfil do supervisor por userId...');
+      }
+      // Primeiro, obter o perfil do supervisor a partir do userId autenticado
+      final supervisorProfileResult =
+          await _getSupervisorByUserIdUsecase.call(authUserId);
+
+      final SupervisorEntity? supervisorProfile = supervisorProfileResult.fold(
+        (failure) {
+          if (kDebugMode) {
+            print('🟡 SupervisorBloc: Falha ao carregar perfil do supervisor: ${failure.message}');
+          }
+          return null;
+        },
+        (supervisor) => supervisor,
+      );
+
+      if (supervisorProfile == null) {
+        emit(const SupervisorOperationFailure(
+            message: 'Supervisor não encontrado para o utilizador atual'));
+        return;
       }
 
-      // Carregar dados um por vez para identificar qual está falhando
+      final String supervisorId = supervisorProfile.id;
+
       if (kDebugMode) {
-        print('🟡 SupervisorBloc: Carregando estudantes...');
+        print('🟡 SupervisorBloc: Iniciando carregamento de dados...');
+        print('🟡 SupervisorBloc: Carregando estudantes para supervisorId=$supervisorId');
       }
+
+      // Carregar estudantes do supervisor
       final studentsResult = await _getAllStudentsForSupervisorUsecase.call(
-          supervisorId: supervisorId);
+        supervisorId: supervisorId,
+      );
 
       if (kDebugMode) {
         print(
@@ -206,17 +231,6 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
             '🟡 SupervisorBloc: Time logs carregados: ${timeLogsResult.fold((l) => 'Erro: ${l.message}', (r) => '${r.length} logs')}');
       }
 
-      if (kDebugMode) {
-        print('🟡 SupervisorBloc: Carregando perfil do supervisor...');
-      }
-      final supervisorProfileResult =
-          await _getSupervisorByUserIdUsecase.call(supervisorId);
-
-      if (kDebugMode) {
-        print(
-            '🟡 SupervisorBloc: Perfil do supervisor carregado: ${supervisorProfileResult.fold((l) => 'Erro: ${l.message}', (r) => r?.fullName ?? 'null')}');
-      }
-
       final List<StudentEntity> students = studentsResult.fold(
         (failure) => throw failure,
         (studentList) => studentList,
@@ -232,23 +246,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
         (timeLogList) => timeLogList,
       );
 
-      // Carregar perfil do supervisor
-      final SupervisorEntity? supervisorProfile = supervisorProfileResult.fold(
-        (failure) {
-          if (kDebugMode) {
-            print(
-                '🟡 SupervisorBloc: Falha ao carregar perfil do supervisor: ${failure.message}');
-          }
-          return null; // Se falhar, continuar sem o perfil
-        },
-        (supervisor) {
-          if (kDebugMode) {
-            print(
-                '🟡 SupervisorBloc: Perfil do supervisor carregado: ${supervisor?.fullName ?? 'null'}');
-          }
-          return supervisor;
-        },
-      );
+      // Já temos supervisorProfile carregado acima
 
       final now = DateTime.now();
       final activeStudents = students
@@ -683,6 +681,51 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
       add(LoadAllSupervisorsEvent());
     } catch (e) {
       emit(SupervisorOperationFailure(message: e.toString()));
+    }
+  }
+
+  Future<void> _onLoadAllStudents(
+    LoadAllStudentsEvent event,
+    Emitter<SupervisorState> emit,
+  ) async {
+    emit(const SupervisorLoading(loadingMessage: 'Carregando estudantes...'));
+    
+    try {
+      // Obter o supervisor atual do AuthBloc
+      final authState = _authBloc.state;
+      if (authState is! auth_state.AuthSuccess) {
+        emit(const SupervisorOperationFailure(
+            message: 'Usuário não autenticado'));
+        return;
+      }
+
+      final supervisorResult = await _getSupervisorByUserIdUsecase.call(authState.user.id);
+      
+      await supervisorResult.fold(
+        (failure) async {
+          emit(SupervisorOperationFailure(message: failure.message));
+        },
+        (supervisor) async {
+          if (supervisor == null) {
+            emit(const SupervisorOperationFailure(
+                message: 'Supervisor não encontrado'));
+            return;
+          }
+          
+          // Carregar todos os estudantes do supervisor
+          final studentsResult = await _getAllStudentsForSupervisorUsecase.call(
+            supervisorId: supervisor.id,
+          );
+          
+          studentsResult.fold(
+            (failure) => emit(SupervisorOperationFailure(message: failure.message)),
+            (students) => emit(SupervisorStudentsLoadSuccess(students: students)),
+          );
+        },
+      );
+    } catch (e) {
+      emit(SupervisorOperationFailure(
+          message: 'Erro ao carregar estudantes: ${e.toString()}'));
     }
   }
 }

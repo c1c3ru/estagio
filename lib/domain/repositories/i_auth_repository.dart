@@ -21,6 +21,7 @@ abstract class IAuthRepository {
     required UserRole role,
     String? registration,
     bool? isMandatoryInternship,
+    bool? receivesScholarship,
     String? supervisorId,
     String? course,
     String? advisorName,

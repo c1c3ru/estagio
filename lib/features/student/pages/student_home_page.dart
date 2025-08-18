@@ -19,6 +19,7 @@ import '../widgets/time_tracker_widget.dart';
 import '../../../data/datasources/supabase/contract_datasource.dart';
 import '../../../domain/entities/time_log_entity.dart';
 import '../../../core/utils/app_logger.dart';
+import '../../../core/theme/app_theme_extensions.dart';
 
 class StudentHomePage extends StatefulWidget {
   const StudentHomePage({super.key});
@@ -181,7 +182,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   : _cachedContracts;
 
               return SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(context.tokens.spaceLg),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -189,7 +190,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                         assetPath: LottieAssetPaths.student,
                         height: 150,
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: context.tokens.spaceXl),
                       const Text(
                         'Página Inicial do Estudante',
                         style: TextStyle(
@@ -198,7 +199,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: context.tokens.spaceXl),
 
                       Text(
                         'Bem-vindo, ${student.fullName}!',
@@ -206,7 +207,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                             fontSize: 20, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: context.tokens.spaceXl),
 
                       // Card com informações básicas
                       Row(
@@ -220,7 +221,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                               children: [
                                 Card(
                                   child: Padding(
-                                    padding: const EdgeInsets.all(16),
+                                    padding: EdgeInsets.all(context.tokens.spaceLg),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
@@ -229,7 +230,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                           style: TextStyle(
                                               fontSize: 16, fontWeight: FontWeight.bold),
                                         ),
-                                        const SizedBox(height: 8),
+                                        SizedBox(height: context.tokens.spaceSm),
                                         Text('Matrícula: ${student.registrationNumber}'),
                                         Text('Curso: ${student.course}'),
                                         Text('Orientador: ${student.advisorName}'),
@@ -238,11 +239,11 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 16),
+                                SizedBox(height: context.tokens.spaceLg),
                                 // Card com estatísticas de tempo
                                 Card(
                                   child: Padding(
-                                    padding: const EdgeInsets.all(16),
+                                    padding: EdgeInsets.all(context.tokens.spaceLg),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
@@ -252,7 +253,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold),
                                         ),
-                                        const SizedBox(height: 8),
+                                        SizedBox(height: context.tokens.spaceSm),
                                         Text('Esta Semana: ${timeStats?.hoursThisWeek ?? 0.0} horas'),
                                         Text('Este Mês: ${timeStats?.hoursThisMonth ?? 0.0} horas'),
                                         if (timeStats?.activeTimeLog != null)
@@ -271,12 +272,12 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 16),
+                                SizedBox(height: context.tokens.spaceLg),
                                 // Card com informações do contrato ativo
                                 if (contracts.isNotEmpty)
                                   Card(
                                     child: Padding(
-                                      padding: const EdgeInsets.all(16),
+                                      padding: EdgeInsets.all(context.tokens.spaceLg),
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
@@ -285,8 +286,9 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                             style: TextStyle(
                                                 fontSize: 16, fontWeight: FontWeight.bold),
                                           ),
-                                          const SizedBox(height: 8),
+                                          SizedBox(height: context.tokens.spaceSm),
                                           Text('Tipo: ${_mapContractType(contracts.first.contractType)} | Status: ${_mapContractStatus(contracts.first.status)}'),
+                                          Text('Bolsa: ${contracts.first.receivesScholarship ? 'Sim' : 'Não'}'),
                                           Text('Início: ${_formatDatePtBr(contracts.first.startDate)}'),
                                           Text('Fim: ${_formatDatePtBr(contracts.first.endDate)}'),
                                         ],
@@ -326,7 +328,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                       },
                                     ),
                                   ),
-                                const SizedBox(height: 16),
+                                SizedBox(height: context.tokens.spaceLg),
                                 // Widget de registro de horas
                                 BlocSelector<StudentBloc, StudentState, TimeLogEntity?>(
                                   selector: (state) =>
@@ -343,7 +345,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                               ],
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: context.tokens.spaceMd),
                           // Logo IFCE (70%) fora do Card
                           Expanded(
                             flex: 7,
@@ -357,7 +359,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: context.tokens.spaceLg),
 
                       // Menu de funcionalidades
                     ],
@@ -621,25 +623,25 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (_checkingContract)
-                const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(),
+                Padding(
+                  padding: EdgeInsets.all(context.tokens.spaceLg),
+                  child: const CircularProgressIndicator(),
                 )
               else if (_hasActiveContract)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: EdgeInsets.all(context.tokens.spaceMd),
+                  margin: EdgeInsets.only(bottom: context.tokens.spaceLg),
                   decoration: BoxDecoration(
                     color: Colors.orange.withOpacity(0.1),
                     border: Border.all(color: Colors.orange),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(context.tokens.radiusSm),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.warning, color: Colors.orange, size: 20),
-                      SizedBox(width: 8),
-                      Expanded(
+                      const Icon(Icons.warning, color: Colors.orange, size: 20),
+                      SizedBox(width: context.tokens.spaceSm),
+                      const Expanded(
                         child: Text(
                           'Você já possui um contrato ativo. Finalize o contrato atual antes de criar um novo.',
                           style: TextStyle(
@@ -653,9 +655,9 @@ class _NovoContratoDialogState extends State<_NovoContratoDialog> {
                   ),
                 ),
               if (_loadingSupervisores)
-                const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(),
+                Padding(
+                  padding: EdgeInsets.all(context.tokens.spaceLg),
+                  child: const CircularProgressIndicator(),
                 )
               else
                 Flexible(

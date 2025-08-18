@@ -35,6 +35,7 @@ class RegisterRequested extends AuthEvent {
   final UserRole role;
   final String? registration;
   final bool? isMandatoryInternship;
+  final bool? receivesScholarship;
   final String? supervisorId;
   final String? course;
   final String? advisorName;
@@ -52,6 +53,7 @@ class RegisterRequested extends AuthEvent {
     required this.role,
     this.registration,
     this.isMandatoryInternship,
+    this.receivesScholarship,
     this.supervisorId,
     this.course,
     this.advisorName,
@@ -71,6 +73,7 @@ class RegisterRequested extends AuthEvent {
         role,
         registration,
         isMandatoryInternship,
+        receivesScholarship,
         supervisorId,
         course,
         advisorName,

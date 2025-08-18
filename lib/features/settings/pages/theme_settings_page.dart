@@ -1,6 +1,7 @@
 // lib/features/settings/pages/theme_settings_page.dart
 import 'package:flutter/material.dart';
 import '../../../core/theme/theme_service.dart';
+import '../../../core/theme/app_theme_extensions.dart';
 
 class ThemeSettingsPage extends StatefulWidget {
   const ThemeSettingsPage({super.key});
@@ -44,6 +45,19 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
         title: const Text('Configurações de Tema'),
         actions: [
           IconButton(
+            tooltip: _config.themeType == AppThemeType.dark
+                ? 'Alternar para claro'
+                : 'Alternar para escuro',
+            icon: Icon(
+              _config.themeType == AppThemeType.dark
+                  ? Icons.light_mode
+                  : Icons.dark_mode,
+            ),
+            onPressed: () async {
+              await _themeService.toggleTheme();
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _resetToDefault,
             tooltip: 'Restaurar padrão',
@@ -51,32 +65,32 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(context.tokens.spaceLg),
         children: [
           // Seção de modo de tema
           _buildThemeModeSection(),
           
-          const SizedBox(height: 24),
+          SizedBox(height: context.tokens.spaceXl),
           
           // Seção de esquemas de cores
           _buildColorSchemeSection(),
           
-          const SizedBox(height: 24),
+          SizedBox(height: context.tokens.spaceXl),
           
           // Seção de tipografia
           _buildTypographySection(),
           
-          const SizedBox(height: 24),
+          SizedBox(height: context.tokens.spaceXl),
           
           // Seção de acessibilidade
           _buildAccessibilitySection(),
           
-          const SizedBox(height: 24),
+          SizedBox(height: context.tokens.spaceXl),
           
           // Preview do tema
           _buildThemePreview(),
           
-          const SizedBox(height: 32),
+          SizedBox(height: context.tokens.spaceXl * 2),
           
           // Botões de ação
           _buildActionButtons(),
@@ -88,7 +102,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
   Widget _buildThemeModeSection() {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(context.tokens.spaceLg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -98,14 +112,14 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                   Icons.brightness_6,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: context.tokens.spaceSm),
                 Text(
                   'Modo do Tema',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: context.tokens.spaceLg),
             
             // Opções de modo de tema
             Column(
@@ -136,7 +150,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
     
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(context.tokens.spaceLg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -146,23 +160,23 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                   Icons.palette,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: context.tokens.spaceSm),
                 Text(
                   'Esquema de Cores',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: context.tokens.spaceLg),
             
             // Grid de esquemas de cores
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
+                crossAxisSpacing: context.tokens.spaceSm,
+                mainAxisSpacing: context.tokens.spaceSm,
                 childAspectRatio: 1.2,
               ),
               itemCount: colorSchemes.length,
@@ -174,10 +188,10 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                   onTap: () {
                     _themeService.setColorScheme(scheme.scheme);
                   },
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(context.tokens.radiusSm),
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(context.tokens.radiusSm),
                       border: Border.all(
                         color: isSelected 
                             ? Theme.of(context).colorScheme.primary
@@ -203,7 +217,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                                 )
                               : null,
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: context.tokens.spaceSm),
                         Text(
                           scheme.name,
                           style: Theme.of(context).textTheme.bodySmall,
@@ -224,7 +238,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
   Widget _buildTypographySection() {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(context.tokens.spaceLg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -234,21 +248,21 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                   Icons.text_fields,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: context.tokens.spaceSm),
                 Text(
                   'Tipografia',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: context.tokens.spaceLg),
             
             // Tamanho da fonte
             Text(
               'Tamanho da Fonte',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: context.tokens.spaceSm),
             
             Row(
               children: [
@@ -275,14 +289,14 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
               ],
             ),
             
-            const SizedBox(height: 8),
+            SizedBox(height: context.tokens.spaceSm),
             
             // Preview do tamanho da fonte
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(context.tokens.spaceMd),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceVariant,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(context.tokens.radiusSm),
               ),
               child: Text(
                 'Exemplo de texto com tamanho ${_config.fontSize.toInt()}pt',
@@ -290,7 +304,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
               ),
             ),
             
-            const SizedBox(height: 16),
+            SizedBox(height: context.tokens.spaceLg),
             
             // Usar fonte do sistema
             SwitchListTile(
@@ -312,7 +326,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
   Widget _buildAccessibilitySection() {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(context.tokens.spaceLg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -322,14 +336,14 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                   Icons.accessibility,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: context.tokens.spaceSm),
                 Text(
                   'Acessibilidade',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: context.tokens.spaceLg),
             
             // Alto contraste
             SwitchListTile(
@@ -359,7 +373,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
   Widget _buildThemePreview() {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(context.tokens.spaceLg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -369,21 +383,21 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                   Icons.preview,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: context.tokens.spaceSm),
                 Text(
                   'Visualização',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: context.tokens.spaceLg),
             
             // Preview dos componentes
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(context.tokens.spaceLg),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(context.tokens.radiusSm),
                 border: Border.all(
                   color: Theme.of(context).colorScheme.outline,
                 ),
@@ -396,14 +410,14 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                     'Título do Card',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: context.tokens.spaceSm),
                   
                   // Texto corpo
                   Text(
                     'Este é um exemplo de texto corpo para demonstrar como o tema aparece na aplicação.',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: context.tokens.spaceLg),
                   
                   // Botões
                   Row(
@@ -412,14 +426,14 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                         onPressed: () {},
                         child: const Text('Primário'),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: context.tokens.spaceSm),
                       OutlinedButton(
                         onPressed: () {},
                         child: const Text('Secundário'),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: context.tokens.spaceLg),
                   
                   // Campo de texto
                   const TextField(
@@ -429,11 +443,11 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                     ),
                     enabled: false,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: context.tokens.spaceLg),
                   
                   // Chips
                   Wrap(
-                    spacing: 8,
+                    spacing: context.tokens.spaceSm,
                     children: [
                       Chip(
                         label: const Text('Tag 1'),
@@ -465,7 +479,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
             label: const Text('Exportar Configurações'),
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: context.tokens.spaceSm),
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
@@ -474,7 +488,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
             label: const Text('Importar Configurações'),
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: context.tokens.spaceSm),
         SizedBox(
           width: double.infinity,
           child: TextButton.icon(
@@ -555,12 +569,12 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('Suas configurações de tema:'),
-            const SizedBox(height: 8),
+            SizedBox(height: context.tokens.spaceSm),
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(context.tokens.spaceSm),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceVariant,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(context.tokens.radiusSm),
               ),
               child: Text(
                 config.toString(),

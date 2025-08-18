@@ -53,6 +53,7 @@ class _StudentEditPageState extends State<StudentEditPage> {
   ClassShift _selectedClassShift = ClassShift.morning;
   InternshipShift _selectedInternshipShift = InternshipShift.morning;
   bool _selectedIsMandatoryInternship = false;
+  bool _selectedReceivesScholarship = false;
 
   @override
   void initState() {
@@ -101,6 +102,7 @@ class _StudentEditPageState extends State<StudentEditPage> {
       orElse: () => InternshipShift.morning,
     );
     _selectedIsMandatoryInternship = student.isMandatoryInternship;
+    _selectedReceivesScholarship = student.receivesScholarship;
 
     _weeklyHoursTargetController.text =
         student.weeklyHoursTarget.toStringAsFixed(1);
@@ -167,6 +169,7 @@ class _StudentEditPageState extends State<StudentEditPage> {
       status: _isEditMode ? _studentToEdit!.status : null,
       weeklyHoursTarget:
           double.tryParse(_weeklyHoursTargetController.text) ?? 0.0,
+      receivesScholarship: _selectedReceivesScholarship,
     );
 
     if (_isEditMode) {
@@ -421,6 +424,15 @@ class _StudentEditPageState extends State<StudentEditPage> {
             onChanged: (value) {
               setState(() {
                 _selectedIsMandatoryInternship = value ?? false;
+              });
+            },
+          ),
+          CheckboxListTile(
+            title: const Text('Recebe Bolsa'),
+            value: _selectedReceivesScholarship,
+            onChanged: (value) {
+              setState(() {
+                _selectedReceivesScholarship = value ?? false;
               });
             },
           ),

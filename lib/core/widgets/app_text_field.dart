@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/app_colors.dart'; // Para cores, se necessário
+import '../../core/theme/app_theme_extensions.dart';
 
 class AppTextField extends StatefulWidget {
   final TextEditingController? controller;
@@ -68,6 +69,7 @@ class _AppTextFieldState extends State<AppTextField> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final t = context.tokens;
     return TextFormField(
       controller: widget.controller,
       focusNode: widget.focusNode,
@@ -133,31 +135,30 @@ class _AppTextFieldState extends State<AppTextField> {
                   )
                 : null),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(t.radiusMd),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(t.radiusMd),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderRadius: BorderRadius.circular(t.radiusMd),
+          borderSide: BorderSide(color: AppColors.primary, width: t.strokeRegular),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(t.radiusMd),
           borderSide: const BorderSide(color: AppColors.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.error, width: 2),
+          borderRadius: BorderRadius.circular(t.radiusMd),
+          borderSide: BorderSide(color: AppColors.error, width: t.strokeRegular),
         ),
         filled: true,
         fillColor: widget.enabled
             ? (isDark ? AppColors.greyDark : AppColors.surface)
             : AppColors.greyLight.withOpacity(0.3),
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 18.0, horizontal: 16.0),
+        contentPadding: EdgeInsets.symmetric(vertical: t.spaceLg + 2, horizontal: t.spaceLg),
         // Sombra leve ao focar
         // (Flutter não suporta shadow direto, mas pode ser feito via Material/Container se necessário)
       ),

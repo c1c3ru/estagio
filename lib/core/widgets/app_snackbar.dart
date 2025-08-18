@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../../core/theme/app_theme_extensions.dart';
 
 enum SnackBarType { success, error, warning, info }
 
@@ -12,6 +13,7 @@ class AppSnackBar {
     String? actionLabel,
     VoidCallback? onActionPressed,
   }) {
+    final t = context.tokens;
     final snackBar = SnackBar(
       content: Row(
         children: [
@@ -20,7 +22,7 @@ class AppSnackBar {
             color: Colors.white,
             size: 20,
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: t.spaceMd),
           Expanded(
             child: Text(
               message,
@@ -36,7 +38,7 @@ class AppSnackBar {
       duration: duration,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(t.radiusSm),
       ),
       action: actionLabel != null
           ? SnackBarAction(

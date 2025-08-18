@@ -18,6 +18,7 @@ import '../../../core/utils/validators.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/utils/feedback_service.dart';
 import 'package:gestao_de_estagio/features/shared/widgets/student_animation.dart';
+import '../../../core/theme/app_theme_extensions.dart';
 
 class StudentRegisterPage extends StatefulWidget {
   const StudentRegisterPage({super.key});
@@ -47,7 +48,8 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
   DateTime? _selectedContractEndDate;
 
   // Novos campos para estágio obrigatório e supervisor
-  bool? _isMandatoryInternship;
+  bool _isMandatoryInternship = false;
+  bool _receivesScholarship = false;
   String? _selectedSupervisorId;
   List<Map<String, dynamic>> _supervisors = [];
   bool _loadingSupervisors = false;
@@ -121,11 +123,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
   void _onRegisterPressed() {
     if (_formKey.currentState?.validate() ?? false) {
       if (_selectedRole == UserRole.student) {
-        if (_isMandatoryInternship == null) {
-          FeedbackService.showWarning(
-              context, 'Informe se o estágio é obrigatório.');
-          return;
-        }
+        // Validação removida pois _isMandatoryInternship agora é bool (não nullable)
         if (_selectedSupervisorId == null) {
           FeedbackService.showWarning(context, 'Selecione um supervisor.');
           return;
@@ -150,7 +148,8 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
           password: _passwordController.text,
           role: _selectedRole,
           registration: _registrationController.text.trim(),
-          isMandatoryInternship: _isMandatoryInternship ?? false,
+          isMandatoryInternship: _isMandatoryInternship,
+          receivesScholarship: _receivesScholarship,
           supervisorId: _selectedSupervisorId,
           // Novos campos
           course: _courseController.text.trim(),
@@ -256,7 +255,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
             return SafeArea(
               child: Center(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: EdgeInsets.all(context.tokens.spaceXl),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -265,13 +264,13 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                       children: [
                         // Animação de estudante no topo
                         const StudentAnimation(size: 120),
-                        const SizedBox(height: 16),
+                        SizedBox(height: context.tokens.spaceLg),
                         const Text(
                           'Cadastro de Estudante/Bolsista/Estagiário',
                           style: AppTextStyles.h3,
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: context.tokens.spaceSm),
                         Text(
                           'Preencha os dados para se cadastrar como estudante, bolsista ou estagiário',
                           style: AppTextStyles.bodyMedium.copyWith(
@@ -279,7 +278,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 32),
+                        SizedBox(height: context.tokens.spaceXl * 2),
                         AuthTextField(
                           controller: _courseController,
                           label: 'Curso',
@@ -288,7 +287,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                           validator: (value) =>
                               Validators.required(value, fieldName: 'Curso'),
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: context.tokens.spaceLg),
                         AuthTextField(
                           controller: _advisorController,
                           label: 'Nome do Orientador',
@@ -297,7 +296,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                           validator: (value) => Validators.required(value,
                               fieldName: 'Nome do Orientador'),
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: context.tokens.spaceLg),
                         AuthTextField(
                           controller: _nameController,
                           label: 'Nome Completo',
@@ -313,7 +312,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: context.tokens.spaceLg),
                         AuthTextField(
                           controller: _emailController,
                           label: AppStrings.email,
@@ -321,7 +320,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                           prefixIcon: Icons.email_outlined,
                           validator: Validators.email,
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: context.tokens.spaceLg),
                         // Matrícula de estudante/bolsista/estagiário
                         AuthTextField(
                           controller: _registrationController,
@@ -330,7 +329,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                           prefixIcon: Icons.badge_outlined,
                           validator: Validators.studentRegistration,
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: context.tokens.spaceLg),
                         // Data de Nascimento
                         _buildDateField(
                           context: context,
@@ -340,7 +339,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                             setState(() => _selectedBirthDate = date);
                           }),
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: context.tokens.spaceLg),
                         DropdownButtonFormField<ClassShift>(
                           value: _selectedClassShift,
                           decoration: _buildInputDecoration(
@@ -365,7 +364,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                           validator: (value) =>
                               value == null ? 'Selecione um turno' : null,
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: context.tokens.spaceLg),
                         DropdownButtonFormField<InternshipShift>(
                           value: _selectedInternshipShift,
                           decoration: _buildInputDecoration(
@@ -390,20 +389,31 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                           validator: (value) =>
                               value == null ? 'Selecione um turno' : null,
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: context.tokens.spaceLg),
                         // Estágio obrigatório
                         SwitchListTile(
                           title: const Text('Estágio obrigatório?',
                               style:
                                   TextStyle(color: AppColors.textPrimaryDark)),
-                          value: _isMandatoryInternship ?? false,
+                          value: _isMandatoryInternship,
                           onChanged: (value) {
                             setState(() => _isMandatoryInternship = value);
                           },
                           activeColor: AppColors.primary,
                           contentPadding: EdgeInsets.zero,
                         ),
-                        const SizedBox(height: 20),
+                        SwitchListTile(
+                          title: const Text('Recebe bolsa?',
+                              style:
+                                  TextStyle(color: AppColors.textPrimaryDark)),
+                          value: _receivesScholarship,
+                          onChanged: (value) {
+                            setState(() => _receivesScholarship = value);
+                          },
+                          activeColor: AppColors.primary,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        SizedBox(height: context.tokens.spaceLg),
                         // Seleção de supervisor
                         _loadingSupervisors
                             ? const Center(child: CircularProgressIndicator())
@@ -411,11 +421,10 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                                 ? Column(
                                     children: [
                                       Container(
-                                        padding: const EdgeInsets.all(16),
+                                        padding: EdgeInsets.all(context.tokens.spaceLg),
                                         decoration: BoxDecoration(
                                           color: Colors.orange.shade50,
-                                          borderRadius:
-                                              BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(context.tokens.radiusSm),
                                           border: Border.all(
                                               color: Colors.orange.shade200),
                                         ),
@@ -423,7 +432,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                                           children: [
                                             Icon(Icons.warning_amber,
                                                 color: Colors.orange.shade600),
-                                            const SizedBox(width: 12),
+                                            SizedBox(width: context.tokens.spaceMd),
                                             Expanded(
                                               child: Text(
                                                 'Nenhum supervisor encontrado. É necessário cadastrar um supervisor primeiro.',
@@ -435,7 +444,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                                           ],
                                         ),
                                       ),
-                                      const SizedBox(height: 8),
+                                      SizedBox(height: context.tokens.spaceSm),
                                       TextButton.icon(
                                         onPressed: _fetchSupervisors,
                                         icon: const Icon(Icons.refresh),
@@ -473,7 +482,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                                         ? 'Selecione um supervisor'
                                         : null,
                                   ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: context.tokens.spaceLg),
                         _buildDateField(
                           context: context,
                           label: 'Data de Início do Contrato',
@@ -482,7 +491,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                             setState(() => _selectedContractStartDate = date);
                           }),
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: context.tokens.spaceLg),
                         _buildDateField(
                           context: context,
                           label: 'Data de Fim do Contrato',
@@ -491,7 +500,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                             setState(() => _selectedContractEndDate = date);
                           }),
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: context.tokens.spaceLg),
                         AuthTextField(
                           controller: _passwordController,
                           label: AppStrings.password,
@@ -509,7 +518,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                             },
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: context.tokens.spaceLg),
                         AuthTextField(
                           controller: _confirmPasswordController,
                           label: AppStrings.confirmPassword,
@@ -527,13 +536,13 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                             },
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: context.tokens.spaceLg),
                         const Text(
                           'Após o cadastro, você receberá um e-mail de confirmação. É necessário confirmar o e-mail para acessar o sistema.',
                           style: TextStyle(color: Colors.orange, fontSize: 15),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: context.tokens.spaceXl),
                         // Botão de cadastro
                         SizedBox(
                           width: double.infinity,
@@ -554,16 +563,16 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
                               foregroundColor: AppColors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 18),
+                              padding: EdgeInsets.symmetric(vertical: context.tokens.spaceLg),
                               textStyle: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 17),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(context.tokens.radiusSm),
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: context.tokens.spaceLg),
                         TextButton(
                           onPressed: _onLoginPressed,
                           child: const Text('Já tem uma conta? Entrar'),

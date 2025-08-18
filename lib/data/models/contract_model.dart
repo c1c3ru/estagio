@@ -14,6 +14,7 @@ class ContractModel {
   final String? createdBy;
   final DateTime createdAt;
   final DateTime? updatedAt;
+  final bool receivesScholarship;
 
   ContractModel({
     required this.id,
@@ -28,6 +29,7 @@ class ContractModel {
     this.createdBy,
     required this.createdAt,
     this.updatedAt,
+    this.receivesScholarship = false,
   });
 
   factory ContractModel.fromJson(Map<String, dynamic> json) {
@@ -46,6 +48,7 @@ class ContractModel {
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
           : null,
+      receivesScholarship: (json['receives_scholarship'] as bool?) ?? false,
     );
   }
 
@@ -58,6 +61,7 @@ class ContractModel {
       'start_date': startDate.toIso8601String().split('T')[0],
       'end_date': endDate.toIso8601String().split('T')[0],
       'created_at': createdAt.toIso8601String(),
+      'receives_scholarship': receivesScholarship,
     };
     
     if (id.isNotEmpty) json['id'] = id;
@@ -83,6 +87,7 @@ class ContractModel {
       createdBy: createdBy,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      receivesScholarship: receivesScholarship,
     );
   }
 
@@ -100,6 +105,7 @@ class ContractModel {
       createdBy: entity.createdBy,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      receivesScholarship: entity.receivesScholarship,
     );
   }
 
@@ -116,6 +122,7 @@ class ContractModel {
     String? createdBy,
     DateTime? createdAt,
     DateTime? updatedAt,
+    bool? receivesScholarship,
   }) {
     return ContractModel(
       id: id ?? this.id,
@@ -130,6 +137,7 @@ class ContractModel {
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      receivesScholarship: receivesScholarship ?? this.receivesScholarship,
     );
   }
 
@@ -153,7 +161,8 @@ class ContractModel {
         other.documentUrl == documentUrl &&
         other.createdBy == createdBy &&
         other.createdAt == createdAt &&
-        other.updatedAt == updatedAt;
+        other.updatedAt == updatedAt &&
+        other.receivesScholarship == receivesScholarship;
   }
 
   @override
@@ -169,11 +178,13 @@ class ContractModel {
         documentUrl.hashCode ^
         createdBy.hashCode ^
         createdAt.hashCode ^
-        updatedAt.hashCode;
+        updatedAt.hashCode ^
+        receivesScholarship.hashCode;
   }
 
   @override
   String toString() {
     return 'ContractModel(id: $id, studentId: $studentId, supervisorId: $supervisorId, contractType: $contractType, status: $status, startDate: $startDate, endDate: $endDate, description: $description, documentUrl: $documentUrl, createdBy: $createdBy, createdAt: $createdAt, updatedAt: $updatedAt)';
+    
   }
 }

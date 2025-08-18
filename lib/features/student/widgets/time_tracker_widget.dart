@@ -14,6 +14,7 @@ import '../bloc/student_bloc.dart';
 import '../bloc/student_event.dart';
 import '../bloc/student_state.dart';
 import '../../../core/utils/feedback_service.dart';
+import '../../../../core/theme/app_theme_extensions.dart';
 
 class TimeTrackerWidget extends StatefulWidget {
   // Pode receber o activeTimeLog diretamente ou buscar através do BLoC
@@ -35,6 +36,7 @@ class _TimeTrackerWidgetState extends State<TimeTrackerWidget> {
   late AuthBloc _authBloc;
   String? _userId;
   TimeLogEntity? _activeTimeLog;
+  bool _hasInitialFetch = false; // Flag para controlar busca inicial
 
   @override
   void initState() {
@@ -51,8 +53,9 @@ class _TimeTrackerWidgetState extends State<TimeTrackerWidget> {
       }
     }
 
-    if (_userId != null && _activeTimeLog == null) {
-      // Se não recebeu um log ativo inicial, tenta buscar
+    // Só busca se não recebeu um log ativo inicial E ainda não fez a busca inicial
+    if (_userId != null && _activeTimeLog == null && !_hasInitialFetch) {
+      _hasInitialFetch = true;
       _studentBloc.add(FetchActiveTimeLogEvent(userId: _userId!));
     }
   }
@@ -108,7 +111,9 @@ class _TimeTrackerWidgetState extends State<TimeTrackerWidget> {
             _activeTimeLog = state.activeTimeLog;
           });
         } else if (state is StudentTimeLogOperationSuccess) {
-          if (_userId != null) {
+          // Só busca novamente após operações de check-in/check-out bem-sucedidas
+          if (_userId != null && !_hasInitialFetch) {
+            _hasInitialFetch = true;
             _studentBloc.add(FetchActiveTimeLogEvent(userId: _userId!));
           }
           FeedbackService.showSuccess(context, state.message);
@@ -117,9 +122,9 @@ class _TimeTrackerWidgetState extends State<TimeTrackerWidget> {
         }
       },
       child: Card(
-        margin: const EdgeInsets.all(16),
+        margin: EdgeInsets.all(context.tokens.spaceLg),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(context.tokens.spaceLg),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -127,13 +132,13 @@ class _TimeTrackerWidgetState extends State<TimeTrackerWidget> {
                 'Registro de Horas',
                 style: theme.textTheme.titleLarge,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: context.tokens.spaceLg),
               if (_activeTimeLog != null) ...[
                 Text(
                   'Check-in: ${_formatTimeOfDay(_parseTimeOfDay(_activeTimeLog!.checkInTime))}',
                   style: theme.textTheme.bodyLarge,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: context.tokens.spaceSm),
                 AppButton(
                   text: 'Finalizar Registro',
                   onPressed: _performCheckOut,

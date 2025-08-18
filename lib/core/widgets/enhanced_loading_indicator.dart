@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../../core/theme/app_theme_extensions.dart';
 
 class EnhancedLoadingIndicator extends StatelessWidget {
   final String? message;
@@ -31,7 +32,7 @@ class EnhancedLoadingIndicator extends StatelessWidget {
           ),
         ),
         if (showMessage && message != null) ...[
-          const SizedBox(height: 12),
+          SizedBox(height: context.tokens.spaceMd),
           Text(
             message!,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -68,7 +69,7 @@ class LoadingOverlay extends StatelessWidget {
             child: Center(
               child: Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.all(context.tokens.spaceXl),
                   child: EnhancedLoadingIndicator(
                     message: loadingMessage ?? 'Carregando...',
                   ),
@@ -113,7 +114,7 @@ class LoadingButton extends StatelessWidget {
               children: [
                 if (icon != null) ...[
                   Icon(icon),
-                  const SizedBox(width: 8),
+                  SizedBox(width: context.tokens.spaceSm),
                 ],
                 Text(text),
               ],

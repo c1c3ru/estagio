@@ -18,7 +18,9 @@ import '../../../../domain/entities/time_log_entity.dart';
 import '../bloc/student_bloc.dart';
 import '../bloc/student_event.dart';
 import '../bloc/student_state.dart';
+import '../widgets/time_tracker_widget.dart';
 import '../../../core/utils/feedback_service.dart';
+import '../../../../core/theme/app_theme_extensions.dart';
 
 class StudentTimeLogPage extends StatefulWidget {
   const StudentTimeLogPage({super.key});
@@ -183,7 +185,7 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
                       }
                     },
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: context.tokens.spaceLg),
                   // Campo Check-in
                   AppTextField(
                     controller: checkInController,
@@ -205,7 +207,7 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
                       }
                     },
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: context.tokens.spaceLg),
                   // Campo Check-out
                   AppTextField(
                     controller: checkOutController,
@@ -241,7 +243,7 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
                       }
                     },
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: context.tokens.spaceLg),
                   // Campo Descrição
                   AppTextField(
                     controller: descriptionController,
@@ -433,28 +435,26 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
     return RefreshIndicator(
       onRefresh: _refreshTimeLogs,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(context.tokens.spaceLg),
         child: Column(
           children: [
-            // Registro rápido (clock in/out) - temporariamente removido para evitar loop infinito
-            //
-            // Align(TODO: Reintegrar TimeTrackerWidget sem causar loop infinito
-            //   alignment: Alignment.centerLeft,
-            //   child: TimeTrackerWidget(
-            //     currentUserId: _currentUserId,
-            //   ),
-            // ),
-            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.topCenter,
+              child: TimeTrackerWidget(
+                currentUserId: _currentUserId,
+              ),
+            ),
+            SizedBox(height: context.tokens.spaceLg),
             if (timeLogs.isEmpty)
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.history_toggle_off_outlined,
                       size: 60, color: theme.hintColor),
-                  const SizedBox(height: 16),
+                  SizedBox(height: context.tokens.spaceLg),
                   const Text(AppStrings.noTimeLogsFound,
                       style: TextStyle(fontSize: 16)),
-                  const SizedBox(height: 16),
+                  SizedBox(height: context.tokens.spaceLg),
                   AppButton(
                     text: AppStrings.addFirstTimeLog,
                     onPressed: () => _showAddEditTimeLogDialog(),
@@ -464,7 +464,7 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
               )
             else ...[
               _buildTimeLogTable(timeLogs),
-              const SizedBox(height: 16),
+              SizedBox(height: context.tokens.spaceLg),
               _buildMonthlySummary(timeLogs),
             ],
           ],
@@ -477,24 +477,24 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
     final theme = Theme.of(context);
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(context.tokens.spaceLg),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.error_outline, size: 60, color: theme.colorScheme.error),
-            const SizedBox(height: 16),
+            SizedBox(height: context.tokens.spaceLg),
             Text(
               AppStrings.errorOccurred,
               style: theme.textTheme.headlineSmall,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: context.tokens.spaceSm),
             Text(
               message,
               style: theme.textTheme.bodyLarge,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: context.tokens.spaceXl),
             AppButton(
               text: AppStrings.tryAgain,
               onPressed: _refreshTimeLogs,
@@ -513,7 +513,7 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(context.tokens.spaceLg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -521,7 +521,7 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
               'Registro de Horas',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: context.tokens.spaceLg),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: DataTable(
@@ -565,13 +565,13 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
                           style: const TextStyle(fontWeight: FontWeight.bold))),
                       DataCell(
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: context.tokens.spaceSm, vertical: context.tokens.spaceXs),
                           decoration: BoxDecoration(
                             color: isApproved
                                 ? AppColors.success
                                 : AppColors.warning,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(context.tokens.radiusSm),
                           ),
                           child: Text(
                             isApproved ? 'Aprovado' : 'Pendente',
@@ -611,7 +611,7 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(context.tokens.spaceLg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -619,7 +619,7 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
               'Resumo - ${DateFormat('MMMM yyyy', 'pt_BR').format(currentMonth)}',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: context.tokens.spaceLg),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -631,14 +631,14 @@ class _StudentTimeLogPageState extends State<StudentTimeLogPage> {
                     '${pendingHours.toStringAsFixed(1)}h', AppColors.warning),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: context.tokens.spaceLg),
             LinearProgressIndicator(
               value: totalHours > 0 ? approvedHours / totalHours : 0,
               backgroundColor: AppColors.warning.withOpacity(0.3),
               valueColor:
                   const AlwaysStoppedAnimation<Color>(AppColors.success),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: context.tokens.spaceSm),
             Text(
               'Progresso de aprovação: ${totalHours > 0 ? ((approvedHours / totalHours) * 100).toStringAsFixed(1) : 0}%',
               style: const TextStyle(fontSize: 12, color: Colors.grey),
