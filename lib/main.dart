@@ -51,16 +51,25 @@ Future<void> _loadEnvironmentVariables() async {
 }
 
 Future<void> _initializeSupabase() async {
-  final url = dotenv.env['SUPABASE_URL'];
-  final anonKey = dotenv.env['SUPABASE_ANON_KEY'];
-  
-  if (url == null || anonKey == null) {
+  // Prefer compile-time defines (e.g., injected by CI/CD) and fallback to .env
+  final url = const String.fromEnvironment('SUPABASE_URL',
+      defaultValue: '')
+    .isNotEmpty
+      ? const String.fromEnvironment('SUPABASE_URL')
+      : (dotenv.env['SUPABASE_URL'] ?? '');
+  final anonKey = const String.fromEnvironment('SUPABASE_ANON_KEY',
+      defaultValue: '')
+    .isNotEmpty
+      ? const String.fromEnvironment('SUPABASE_ANON_KEY')
+      : (dotenv.env['SUPABASE_ANON_KEY'] ?? '');
+
+  if (url.isEmpty || anonKey.isEmpty) {
     if (kDebugMode) {
-      debugPrint('⚠️ Supabase credentials not found in .env');
+      debugPrint('⚠️ Supabase credentials not provided (env or defines)');
     }
     return;
   }
-  
+
   await Supabase.initialize(url: url, anonKey: anonKey);
   if (kDebugMode) {
     debugPrint('✅ Supabase initialized successfully');

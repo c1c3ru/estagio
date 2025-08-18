@@ -21,6 +21,11 @@ flutter pub get
 
 # Build web
 echo "[Netlify] Building Flutter Web (release)..."
-flutter build web --release --no-tree-shake-icons
+if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_ANON_KEY:-}" ]; then
+  echo "[Netlify] WARNING: SUPABASE_URL or SUPABASE_ANON_KEY not set in Netlify env. Build will proceed but app may fail to auth."
+fi
+flutter build web --release --no-tree-shake-icons \
+  --dart-define=SUPABASE_URL="${SUPABASE_URL:-}" \
+  --dart-define=SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY:-}"
 
 echo "[Netlify] Build finished. Output at build/web"
