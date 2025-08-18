@@ -7,6 +7,7 @@ import '../../../features/auth/bloc/auth_bloc.dart';
 import '../../../features/auth/bloc/auth_state.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:provider/provider.dart';
+import '../../../core/theme/app_theme_extensions.dart';
 
 class StudentColleaguesPage extends StatefulWidget {
   const StudentColleaguesPage({super.key});
@@ -29,21 +30,21 @@ class _StudentColleaguesPageState extends State<StudentColleaguesPage> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(context.tokens.spaceLg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Card com informações gerais
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(context.tokens.spaceLg),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
                         const Icon(Icons.people, color: AppColors.primary),
-                        const SizedBox(width: 8),
+                        SizedBox(width: context.tokens.spaceSm),
                         Expanded(
                           child: Text(
                             'Comunidade de Estagiários',
@@ -55,7 +56,7 @@ class _StudentColleaguesPageState extends State<StudentColleaguesPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: context.tokens.spaceSm),
                     Text(
                       'Conecte-se com seus colegas e acompanhe quem está trabalhando agora.',
                       style: AppTextStyles.bodyMedium.copyWith(
@@ -67,22 +68,22 @@ class _StudentColleaguesPageState extends State<StudentColleaguesPage> {
               ),
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: context.tokens.spaceLg),
 
             // Time Tracker Widget
             const TimeTrackerWidget(),
 
-            const SizedBox(height: 16),
+            SizedBox(height: context.tokens.spaceLg),
 
             // Online Colleagues Widget
             const OnlineColleaguesWidget(),
 
-            const SizedBox(height: 24),
+            SizedBox(height: context.tokens.spaceXl),
 
             // Informações sobre status
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(context.tokens.spaceLg),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -92,7 +93,7 @@ class _StudentColleaguesPageState extends State<StudentColleaguesPage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: context.tokens.spaceLg),
                     Row(
                       children: [
                         Container(
@@ -103,14 +104,14 @@ class _StudentColleaguesPageState extends State<StudentColleaguesPage> {
                             shape: BoxShape.circle,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: context.tokens.spaceSm),
                         const Text(
                           'Online - Trabalhando agora',
                           style: AppTextStyles.bodyMedium,
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: context.tokens.spaceSm),
                     Row(
                       children: [
                         Container(
@@ -121,7 +122,7 @@ class _StudentColleaguesPageState extends State<StudentColleaguesPage> {
                             shape: BoxShape.circle,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: context.tokens.spaceSm),
                         Text(
                           'Offline - Não está trabalhando',
                           style: AppTextStyles.bodyMedium.copyWith(
@@ -135,12 +136,12 @@ class _StudentColleaguesPageState extends State<StudentColleaguesPage> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: context.tokens.spaceXl),
 
             // Ações rápidas
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(context.tokens.spaceLg),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -150,7 +151,7 @@ class _StudentColleaguesPageState extends State<StudentColleaguesPage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: context.tokens.spaceLg),
                     Row(
                       children: [
                         Expanded(
@@ -163,11 +164,11 @@ class _StudentColleaguesPageState extends State<StudentColleaguesPage> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.success,
                               foregroundColor: AppColors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              padding: EdgeInsets.symmetric(vertical: context.tokens.spaceMd),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: context.tokens.spaceMd),
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () {
@@ -187,7 +188,7 @@ class _StudentColleaguesPageState extends State<StudentColleaguesPage> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
                               foregroundColor: AppColors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              padding: EdgeInsets.symmetric(vertical: context.tokens.spaceMd),
                             ),
                           ),
                         ),

@@ -85,9 +85,9 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(Icons.error_outline, size: 64, color: Colors.grey),
-                  const SizedBox(height: 16),
+                  SizedBox(height: context.tokens.spaceLg),
                   const Text('Erro ao carregar dados dos relatórios'),
-                  const SizedBox(height: 16),
+                  SizedBox(height: context.tokens.spaceLg),
                   ElevatedButton(
                     onPressed: () {
                       Modular.get<SupervisorBloc>().add(LoadSupervisorDashboardDataEvent());

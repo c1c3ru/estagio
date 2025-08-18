@@ -14,6 +14,7 @@ import '../bloc/student_bloc.dart';
 import '../bloc/student_event.dart';
 import '../bloc/student_state.dart';
 import '../../../core/utils/feedback_service.dart';
+import '../../../../core/theme/app_theme_extensions.dart';
 
 class TimeTrackerWidget extends StatefulWidget {
   // Pode receber o activeTimeLog diretamente ou buscar através do BLoC
@@ -121,9 +122,9 @@ class _TimeTrackerWidgetState extends State<TimeTrackerWidget> {
         }
       },
       child: Card(
-        margin: const EdgeInsets.all(16),
+        margin: EdgeInsets.all(context.tokens.spaceLg),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(context.tokens.spaceLg),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -131,13 +132,13 @@ class _TimeTrackerWidgetState extends State<TimeTrackerWidget> {
                 'Registro de Horas',
                 style: theme.textTheme.titleLarge,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: context.tokens.spaceLg),
               if (_activeTimeLog != null) ...[
                 Text(
                   'Check-in: ${_formatTimeOfDay(_parseTimeOfDay(_activeTimeLog!.checkInTime))}',
                   style: theme.textTheme.bodyLarge,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: context.tokens.spaceSm),
                 AppButton(
                   text: 'Finalizar Registro',
                   onPressed: _performCheckOut,
