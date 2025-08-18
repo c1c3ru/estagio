@@ -24,6 +24,7 @@ import '../../../core/utils/feedback_service.dart';
 import '../../../../domain/repositories/i_student_repository.dart';
 import '../../student/bloc/student_bloc.dart' as student_bloc;
 import '../../student/bloc/student_event.dart' as student_event;
+import '../../../../domain/repositories/i_supervisor_repository.dart';
 
 class SupervisorTimeApprovalPage extends StatefulWidget {
   const SupervisorTimeApprovalPage({super.key});
@@ -49,16 +50,37 @@ class _SupervisorTimeApprovalPageState
 
     final currentAuthState = _authBloc.state;
     if (currentAuthState is auth_state.AuthSuccess) {
-      _supervisorId = currentAuthState.user.id;
+      // Buscar o perfil do supervisor para obter o ID correto da tabela de supervisores
+      final supRepo = Modular.get<ISupervisorRepository>();
+      supRepo.getSupervisorByUserId(currentAuthState.user.id).then((either) {
+        either.fold(
+          (_) {},
+          (supervisor) {
+            if (mounted) {
+              setState(() {
+                _supervisorId = supervisor?.id;
+              });
+            }
+          },
+        );
+      });
     }
     // Ouve o AuthBloc para o caso de o ID do supervisor mudar ou o login acontecer depois
     _authBloc.stream.listen((authState) {
       if (mounted && authState is auth_state.AuthSuccess) {
-        if (_supervisorId != authState.user.id) {
-          setState(() {
-            _supervisorId = authState.user.id;
-          });
-        }
+        final supRepo = Modular.get<ISupervisorRepository>();
+        supRepo.getSupervisorByUserId(authState.user.id).then((either) {
+          either.fold(
+            (_) {},
+            (supervisor) {
+              if (mounted) {
+                setState(() {
+                  _supervisorId = supervisor?.id;
+                });
+              }
+            },
+          );
+        });
       } else if (mounted && authState is auth_state.AuthUnauthenticated) {
         setState(() {
           _supervisorId = null;

@@ -195,8 +195,7 @@ class _ManageStudentsPageState extends State<ManageStudentsPage> {
         borderRadius: BorderRadius.circular(12),
         onTap: () {
           // Navegar para detalhes do estudante
-          Modular.to
-              .pushNamed('/supervisor/student-details', arguments: student.id);
+          Modular.to.pushNamed('/supervisor/student-details/${student.id}');
         },
         child: Padding(
           padding: const EdgeInsets.all(16),
