@@ -292,6 +292,15 @@ class ThemeService extends ChangeNotifier {
       ),
 
       // Cards
+      cardTheme: CardThemeData(
+        color: isDark ? colorScheme.surfaceVariant : colorScheme.surface,
+        elevation: _config.highContrast ? 6 : 2,
+        shape: RoundedRectangleBorder(
+          borderRadius:
+              BorderRadius.all(Radius.circular(const AppTokens().radiusMd)),
+        ),
+        margin: EdgeInsets.all(const AppTokens().spaceSm),
+      ),
 
       // Botões
       elevatedButtonTheme: ElevatedButtonThemeData(

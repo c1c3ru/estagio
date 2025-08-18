@@ -45,6 +45,19 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
         title: const Text('Configurações de Tema'),
         actions: [
           IconButton(
+            tooltip: _config.themeType == AppThemeType.dark
+                ? 'Alternar para claro'
+                : 'Alternar para escuro',
+            icon: Icon(
+              _config.themeType == AppThemeType.dark
+                  ? Icons.light_mode
+                  : Icons.dark_mode,
+            ),
+            onPressed: () async {
+              await _themeService.toggleTheme();
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _resetToDefault,
             tooltip: 'Restaurar padrão',
