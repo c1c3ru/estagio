@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/theme/app_theme_extensions.dart';
 
 class AuthButton extends StatelessWidget {
   final String text;
@@ -32,9 +33,9 @@ class AuthButton extends StatelessWidget {
               ? const BorderSide(color: AppColors.primary)
               : null,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(context.tokens.radiusMd),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: EdgeInsets.symmetric(horizontal: context.tokens.spaceXl),
         ),
         child: isLoading
             ? const SizedBox(
@@ -50,7 +51,7 @@ class AuthButton extends StatelessWidget {
                 children: [
                   if (icon != null) ...[
                     Icon(icon, size: 20),
-                    const SizedBox(width: 8),
+                    SizedBox(width: context.tokens.spaceSm),
                   ],
                   Text(
                     text,

@@ -8,6 +8,7 @@ import '../../../core/constants/app_colors.dart';
 import '../bloc/supervisor_bloc.dart';
 import '../bloc/supervisor_event.dart';
 import '../bloc/supervisor_state.dart';
+import '../../../core/theme/app_theme_extensions.dart';
 
 class SupervisorReportsPage extends StatefulWidget {
   const SupervisorReportsPage({super.key});
@@ -110,11 +111,11 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
     }
     
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(context.tokens.spaceLg),
       children: [
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(context.tokens.spaceLg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -122,7 +123,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                   'Resumo de Performance',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: context.tokens.spaceLg),
                 Row(
                   children: [
                     Expanded(
@@ -133,7 +134,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                         AppColors.primary,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: context.tokens.spaceMd),
                     Expanded(
                       child: _buildStatCard(
                         'Estudantes Ativos',
@@ -148,10 +149,10 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: context.tokens.spaceLg),
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(context.tokens.spaceLg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -159,7 +160,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                   'Lista de Estudantes',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: context.tokens.spaceMd),
                 ...state.students.map((student) => ListTile(
                   leading: CircleAvatar(
                     backgroundColor: AppColors.primary.withOpacity(0.1),
@@ -203,11 +204,11 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
     }
     
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(context.tokens.spaceLg),
       children: [
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(context.tokens.spaceLg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -215,7 +216,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                   'Resumo de Contratos',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: context.tokens.spaceLg),
                 Row(
                   children: [
                     Expanded(
@@ -226,7 +227,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                         AppColors.primary,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: context.tokens.spaceMd),
                     Expanded(
                       child: _buildStatCard(
                         'A Vencer em 30d',
@@ -241,10 +242,10 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: context.tokens.spaceLg),
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(context.tokens.spaceLg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -252,7 +253,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                   'Contratos Recentes',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: context.tokens.spaceMd),
                 ...state.contracts.take(5).map((contract) {
                   final student = state.students.where((s) => s.id == contract.studentId).isNotEmpty
                       ? state.students.firstWhere((s) => s.id == contract.studentId)
@@ -286,11 +287,11 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
     }
     
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(context.tokens.spaceLg),
       children: [
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(context.tokens.spaceLg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -298,19 +299,19 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
                   'Análise Geral',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: context.tokens.spaceLg),
                 _buildStatCard(
                   'Aprovações Pendentes',
                   '${state.pendingApprovals.length}',
                   Icons.pending_actions,
                   AppColors.warning,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: context.tokens.spaceLg),
                 const Text(
                   'Distribuição por Status',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: context.tokens.spaceMd),
                 ListTile(
                   leading: const Icon(Icons.check_circle, color: AppColors.success),
                   title: const Text('Estudantes Ativos'),
@@ -331,15 +332,15 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(context.tokens.spaceLg),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(context.tokens.radiusSm),
       ),
       child: Column(
         children: [
           Icon(icon, color: color, size: 32),
-          const SizedBox(height: 8),
+          SizedBox(height: context.tokens.spaceSm),
           Text(
             value,
             style: TextStyle(
@@ -348,7 +349,7 @@ class _SupervisorReportsPageState extends State<SupervisorReportsPage>
               color: color,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: context.tokens.spaceXs),
           Text(
             title,
             style: const TextStyle(fontSize: 12),

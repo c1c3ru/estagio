@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/services/report_service.dart';
 import '../../../core/widgets/loading_indicator.dart';
+import '../../../core/theme/app_theme_extensions.dart';
 
 class StudentReportsPage extends StatefulWidget {
   const StudentReportsPage({super.key});
@@ -43,7 +44,7 @@ class _StudentReportsPageState extends State<StudentReportsPage> {
 
   Widget _buildPeriodSelector() {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(context.tokens.spaceLg),
       child: DropdownButton<String>(
         value: _selectedPeriod,
         items: const [

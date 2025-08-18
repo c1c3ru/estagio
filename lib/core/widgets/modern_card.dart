@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../../core/theme/app_theme_extensions.dart';
 
 class ModernCard extends StatelessWidget {
   final Widget child;
@@ -20,13 +21,14 @@ class ModernCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.tokens;
     return Container(
-      margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: margin ?? EdgeInsets.symmetric(horizontal: t.spaceLg, vertical: t.spaceSm),
       decoration: BoxDecoration(
         color: useGlassmorphism 
             ? Colors.white.withOpacity(0.1)
             : backgroundColor ?? AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(t.radiusLg),
         border: useGlassmorphism 
             ? Border.all(color: Colors.white.withOpacity(0.2))
             : Border.all(color: AppColors.border.withOpacity(0.1)),
@@ -40,17 +42,17 @@ class ModernCard extends StatelessWidget {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(t.radiusLg),
         child: useGlassmorphism
             ? BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                 child: Container(
-                  padding: padding ?? const EdgeInsets.all(16),
+                  padding: padding ?? EdgeInsets.all(t.spaceLg),
                   child: child,
                 ),
               )
             : Container(
-                padding: padding ?? const EdgeInsets.all(16),
+                padding: padding ?? EdgeInsets.all(t.spaceLg),
                 child: child,
               ),
       ),

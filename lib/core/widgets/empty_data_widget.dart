@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_theme_extensions.dart';
 
 class EmptyDataWidget extends StatelessWidget {
   final String message;
@@ -23,7 +24,7 @@ class EmptyDataWidget extends StatelessWidget {
             size: 64,
             color: Colors.grey[400],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: context.tokens.spaceLg),
           Text(
             message,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -32,7 +33,7 @@ class EmptyDataWidget extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           if (onRetry != null) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: context.tokens.spaceLg),
             ElevatedButton(
               onPressed: onRetry,
               child: const Text('Tentar novamente'),

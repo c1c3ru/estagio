@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../utils/app_logger.dart';
+import 'app_theme_extensions.dart';
 
 /// Tipos de tema disponíveis
 enum AppThemeType {
@@ -296,9 +297,12 @@ class ThemeService extends ChangeNotifier {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: _config.highContrast ? 6 : 2,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: EdgeInsets.symmetric(
+            horizontal: const AppTokens().spaceXl,
+            vertical: const AppTokens().spaceMd,
+          ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(const AppTokens().radiusSm),
           ),
         ),
       ),
@@ -310,19 +314,22 @@ class ThemeService extends ChangeNotifier {
             ? colorScheme.surfaceVariant.withOpacity(0.3)
             : colorScheme.surfaceVariant.withOpacity(0.5),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius:
+              BorderRadius.circular(const AppTokens().radiusSm),
           borderSide: _config.highContrast
               ? BorderSide(color: colorScheme.outline, width: 2)
               : BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius:
+              BorderRadius.circular(const AppTokens().radiusSm),
           borderSide: _config.highContrast
               ? BorderSide(color: colorScheme.outline)
               : BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius:
+              BorderRadius.circular(const AppTokens().radiusSm),
           borderSide: BorderSide(
             color: colorScheme.primary,
             width: _config.highContrast ? 3 : 2,

@@ -4,6 +4,7 @@ import '../constants/app_colors.dart';
 // import '../constants/app_strings.dart'; // Removed: Unused import
 import '../../features/shared/animations/loading_animation.dart';
 import '../../features/shared/animations/lottie_animations.dart';
+import '../../core/theme/app_theme_extensions.dart';
 
 enum FeedbackType { success, error, warning, info }
 
@@ -107,6 +108,7 @@ class FeedbackService {
     Color? textColor,
     VoidCallback? onTap,
   }) {
+    final t = context.tokens;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
@@ -121,7 +123,7 @@ class FeedbackService {
                     color: textColor ?? Colors.white,
                     size: 20,
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: t.spaceMd),
                 ],
                 Expanded(
                   child: Text(
@@ -139,9 +141,9 @@ class FeedbackService {
           backgroundColor: backgroundColor,
           duration: duration,
           behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(16),
+          margin: EdgeInsets.all(t.spaceLg),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(t.radiusLg),
           ),
           elevation: 0,
         ),
@@ -180,10 +182,10 @@ class FeedbackService {
         color: backgroundColor ?? Colors.black.withOpacity(0.5),
         child: Center(
           child: Container(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(context.tokens.spaceXl),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(context.tokens.radiusLg),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
@@ -197,7 +199,7 @@ class FeedbackService {
               children: [
                 const CircularProgressIndicator(),
                 if (message != null) ...[
-                  const SizedBox(height: 16),
+                  SizedBox(height: context.tokens.spaceLg),
                   Text(
                     message,
                     style: const TextStyle(
@@ -232,7 +234,7 @@ class FeedbackService {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(context.tokens.radiusLg),
         ),
         title: Row(
           children: [
@@ -242,7 +244,7 @@ class FeedbackService {
                 color: isDangerous ? AppColors.error : AppColors.primary,
                 size: 24,
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: context.tokens.spaceMd),
             ],
             Expanded(
               child: Text(
@@ -278,7 +280,7 @@ class FeedbackService {
                   (isDangerous ? AppColors.error : AppColors.primary),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(context.tokens.radiusSm),
               ),
             ),
             child: Text(
@@ -307,7 +309,7 @@ class FeedbackService {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(context.tokens.radiusLg),
         ),
         title: Row(
           children: [
@@ -316,7 +318,7 @@ class FeedbackService {
               color: AppColors.error,
               size: 24,
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: context.tokens.spaceMd),
             Expanded(
               child: Text(
                 title,
@@ -335,7 +337,7 @@ class FeedbackService {
               assetPath: LottieAssetPaths.errorCross,
               height: 100,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: context.tokens.spaceLg),
             Text(
               message,
               textAlign: TextAlign.center,
@@ -364,7 +366,7 @@ class FeedbackService {
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(context.tokens.radiusSm),
                 ),
               ),
               child: Text(
