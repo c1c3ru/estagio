@@ -267,4 +267,28 @@ class SupervisorRepository implements ISupervisorRepository {
       return Left(ServerFailure(message: e.toString()));
     }
   }
+
+  @override
+  Future<Either<AppFailure, SupervisorEntity>> ensureSupervisorProfile({
+    required String userId,
+    required String fullName,
+  }) async {
+    try {
+      final existing = await _supervisorDatasource.getSupervisorByUserId(userId);
+      if (existing != null) {
+        return Right(SupervisorModel.fromJson(existing).toEntity());
+      }
+
+      final now = DateTime.now();
+      final created = await _supervisorDatasource.createSupervisor({
+        'id': userId,
+        'full_name': fullName.isEmpty ? 'Supervisor' : fullName,
+        'created_at': now.toIso8601String(),
+      });
+
+      return Right(SupervisorModel.fromJson(created).toEntity());
+    } catch (e) {
+      return Left(ServerFailure(message: 'Erro ao garantir perfil de supervisor: $e'));
+    }
+  }
 }

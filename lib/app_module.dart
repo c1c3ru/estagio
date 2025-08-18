@@ -74,6 +74,7 @@ import 'domain/usecases/supervisor/update_student_by_supervisor_usecase.dart';
 import 'domain/usecases/supervisor/delete_student_by_supervisor_usecase.dart';
 import 'domain/usecases/supervisor/get_all_time_logs_for_supervisor_usecase.dart';
 import 'domain/usecases/supervisor/approve_or_reject_time_log_usecase.dart';
+import 'domain/usecases/supervisor/ensure_supervisor_profile_usecase.dart';
 
 // Use Cases - TimeLog
 import 'domain/usecases/time_log/clock_in_usecase.dart';
@@ -225,6 +226,8 @@ class AppModule extends Module {
         () => GetAllTimeLogsForSupervisorUsecase(i()));
     i.addLazySingleton<ApproveOrRejectTimeLogUsecase>(
         () => ApproveOrRejectTimeLogUsecase(i(), i(), i()));
+    i.addLazySingleton<EnsureSupervisorProfileUsecase>(
+        () => EnsureSupervisorProfileUsecase(i()));
 
     // Use Cases - TimeLog
     i.addLazySingleton<ClockInUsecase>(() => ClockInUsecase(i()));
@@ -270,6 +273,7 @@ class AppModule extends Module {
           updateProfileUseCase: i(),
           getAuthStateChangesUseCase: i(),
           resetPasswordUseCase: i(),
+          ensureSupervisorProfileUsecase: i(),
         ));
 
     i.addLazySingleton<StudentBloc>(() => StudentBloc(

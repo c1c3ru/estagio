@@ -14,6 +14,7 @@ import '../../../domain/usecases/auth/reset_password_usecase.dart';
 
 import 'auth_event.dart';
 import 'auth_state.dart';
+import '../../../domain/usecases/supervisor/ensure_supervisor_profile_usecase.dart';
 
 // BLoC
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
@@ -24,6 +25,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final GetAuthStateChangesUsecase _getAuthStateChangesUseCase;
   final UpdateProfileUsecase _updateProfileUseCase;
   final ResetPasswordUsecase _resetPasswordUseCase;
+  final EnsureSupervisorProfileUsecase _ensureSupervisorProfileUsecase;
   StreamSubscription<UserEntity?>? _authStateSubscription;
 
   AuthBloc({
@@ -34,6 +36,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required GetAuthStateChangesUsecase getAuthStateChangesUseCase,
     required UpdateProfileUsecase updateProfileUseCase,
     required ResetPasswordUsecase resetPasswordUseCase,
+    required EnsureSupervisorProfileUsecase ensureSupervisorProfileUsecase,
   })  : _loginUseCase = loginUseCase,
         _logoutUseCase = logoutUseCase,
         _registerUseCase = registerUseCase,
@@ -41,6 +44,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         _getAuthStateChangesUseCase = getAuthStateChangesUseCase,
         _updateProfileUseCase = updateProfileUseCase,
         _resetPasswordUseCase = resetPasswordUseCase,
+        _ensureSupervisorProfileUsecase = ensureSupervisorProfileUsecase,
         super(AuthInitial()) {
     on<LoginRequested>(_onLoginRequested);
     on<LogoutRequested>(_onLogoutRequested);
@@ -103,10 +107,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(AuthFailure(failure.message));
         }
       },
-      (user) {
+      (user) async {
         if (_isProfileIncomplete(user)) {
           emit(AuthProfileIncomplete(user));
         } else {
+          // Bootstrap de supervisor: garantir perfil no login
+          if (user.role.name == 'supervisor') {
+            await _ensureSupervisorProfileUsecase(
+              userId: user.id,
+              fullName: user.fullName,
+            );
+          }
           emit(AuthSuccess(user));
         }
       },
@@ -178,7 +189,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           }
           emit(AuthInitial());
         },
-        (user) {
+        (user) async {
           if (kDebugMode) {
             print(
                 '🟡 AuthBloc: Usuário atual obtido: ${user?.email ?? 'null'}');
@@ -188,6 +199,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             }
           }
           if (user != null) {
+            // Bootstrap de supervisor ao iniciar app
+            if (user.role.name == 'supervisor') {
+              await _ensureSupervisorProfileUsecase(
+                userId: user.id,
+                fullName: user.fullName,
+              );
+            }
             if (_isProfileIncomplete(user)) {
               if (kDebugMode) {
                 print(

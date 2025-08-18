@@ -13,12 +13,17 @@ import 'package:gestao_de_estagio/domain/usecases/auth/reset_password_usecase.da
 import 'package:gestao_de_estagio/features/auth/bloc/auth_bloc.dart';
 import 'package:gestao_de_estagio/features/auth/bloc/auth_event.dart';
 import 'package:gestao_de_estagio/features/auth/bloc/auth_state.dart';
+import 'package:gestao_de_estagio/domain/usecases/supervisor/ensure_supervisor_profile_usecase.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
 import 'auth_bloc_test.mocks.dart';
 // import '../../../mocks/mock_notification_service.dart';
 // import 'package:gestao_de_estagio/core/services/notification_service.dart';
+
+// Mock manual sem codegen para o novo usecase
+class MockEnsureSupervisorProfileUsecase extends Mock
+    implements EnsureSupervisorProfileUsecase {}
 
 @GenerateMocks([
   LoginUsecase,
@@ -38,6 +43,7 @@ void main() {
   late MockGetAuthStateChangesUsecase mockGetAuthStateChangesUseCase;
   late MockUpdateProfileUsecase mockUpdateProfileUseCase;
   late MockResetPasswordUsecase mockResetPasswordUseCase;
+  late MockEnsureSupervisorProfileUsecase mockEnsureSupervisorProfileUsecase;
 
   setUp(() {
     mockLoginUseCase = MockLoginUsecase();
@@ -47,6 +53,7 @@ void main() {
     mockGetAuthStateChangesUseCase = MockGetAuthStateChangesUsecase();
     mockUpdateProfileUseCase = MockUpdateProfileUsecase();
     mockResetPasswordUseCase = MockResetPasswordUsecase();
+    mockEnsureSupervisorProfileUsecase = MockEnsureSupervisorProfileUsecase();
 
     when(mockGetAuthStateChangesUseCase.call())
         .thenAnswer((_) => const Stream.empty());
@@ -62,6 +69,7 @@ void main() {
       getAuthStateChangesUseCase: mockGetAuthStateChangesUseCase,
       updateProfileUseCase: mockUpdateProfileUseCase,
       resetPasswordUseCase: mockResetPasswordUseCase,
+      ensureSupervisorProfileUsecase: mockEnsureSupervisorProfileUsecase,
     );
   });
 

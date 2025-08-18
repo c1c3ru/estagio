@@ -52,4 +52,11 @@ abstract class ISupervisorRepository {
           Either<AppFailure,
               (StudentEntity, List<TimeLogEntity>, List<ContractEntity>)>>
       getStudentDetails(String studentId);
+
+  // Garante que existe um perfil de supervisor para o usuário autenticado;
+  // se não existir, cria um com dados mínimos.
+  Future<Either<AppFailure, SupervisorEntity>> ensureSupervisorProfile({
+    required String userId,
+    required String fullName,
+  });
 }
