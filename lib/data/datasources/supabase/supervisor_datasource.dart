@@ -38,50 +38,17 @@ class SupervisorDatasource {
       if (userId.isEmpty) {
         return null;
       }
-      
-      // Tenta consulta padrão no schema público
-      try {
-        final response = await _supabaseClient
-            .from('public.supervisors')
-            .select('*')
-            .eq('user_id', userId)
-            .limit(1)
-            .maybeSingle();
-        if (response != null) return response;
-      } on PostgrestException catch (e) {
-        // ignore: avoid_print
-        print('[Supabase] getSupervisorByUserId primary query failed: code=${e.code} message=${e.message}');
-      }
 
-      // Fallback 1: coluna alternativa userId
-      try {
-        final response = await _supabaseClient
-            .from('public.supervisors')
-            .select('*')
-            .eq('userId', userId)
-            .limit(1)
-            .maybeSingle();
-        if (response != null) return response;
-      } on PostgrestException catch (e) {
-        // ignore: avoid_print
-        print('[Supabase] getSupervisorByUserId fallback userId failed: code=${e.code} message=${e.message}');
-      }
+      // De acordo com o schema fornecido: supervisors.id referencia users(id)
+      // Portanto, o lookup por userId deve usar a coluna "id"
+      final response = await _supabaseClient
+          .from('public.supervisors')
+          .select('*')
+          .eq('id', userId)
+          .limit(1)
+          .maybeSingle();
 
-      // Fallback 2: tabela singular supervisor
-      try {
-        final response = await _supabaseClient
-            .from('public.supervisor')
-            .select('*')
-            .eq('user_id', userId)
-            .limit(1)
-            .maybeSingle();
-        if (response != null) return response;
-      } on PostgrestException catch (e) {
-        // ignore: avoid_print
-        print('[Supabase] getSupervisorByUserId fallback table singular failed: code=${e.code} message=${e.message}');
-      }
-
-      return null;
+      return response;
     } on PostgrestException catch (e) {
       // Log detalhado para diagnosticar erros 400/403 etc.
       // Isso ajuda a identificar problemas de schema, RLS, tipos ou nome de coluna/tabela.
